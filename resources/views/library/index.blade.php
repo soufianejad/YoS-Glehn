@@ -4,6 +4,12 @@
 
 @push('styles')
 <style>
+    .hero {
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80') no-repeat center center;
+        background-size: cover;
+        min-height: 40vh;
+        color: white;
+    }
     .book-card .card-img-top {
         height: 300px;
         object-fit: cover;
@@ -35,7 +41,17 @@
 @endpush
 
 @section('content')
-<div class="container py-5">
+<div class="container-fluid p-0">
+    <!-- Hero Section -->
+    <section class="hero text-center d-flex align-items-center justify-content-center">
+        <div class="hero-content">
+            <h1 class="display-3 font-weight-bold animate__animated animate__fadeInDown">{{ __('Notre Bibliothèque') }}</h1>
+            <p class="lead my-4 animate__animated animate__fadeInUp">{{ __('Plongez dans un monde de savoir et d\'aventure.') }}</p>
+        </div>
+    </section>
+</div>
+
+<div class="container py-5 bg-light">
     <div class="row">
         <!-- Sidebar -->
         <div class="col-lg-3">
@@ -95,7 +111,7 @@
         </div>
 
         <!-- Main content -->
-        <div class="col-lg-9">
+        <div class="col-lg-9 bg-white p-4 rounded">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="mb-0">
                     @if(isset($category))
