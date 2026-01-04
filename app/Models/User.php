@@ -75,7 +75,7 @@ class User extends Authenticatable
     {
         return $this->avatar
             ? asset('storage/'.$this->avatar)
-            : asset('assets/images/default-avatar.png');
+            : asset('/images/default-avatar.png');
     }
 
     // Vérification des rôles
