@@ -8,7 +8,7 @@
 
     <div class="row mb-3">
         <div class="col-md-12">
-            <form action="{{ route('library.category', $category) }}" method="GET" class="form-inline">
+            <form action="{{ route('library.index', ['category' => $category->slug]) }}" method="GET" class="form-inline">
                 <div class="input-group">
                     <input type="text" name="search" class="form-control" placeholder="{{ __('Search books...') }}" value="{{ request('search') }}">
                     <div class="input-group-append">
@@ -25,7 +25,7 @@
             <ul class="list-group">
                 @foreach($categories as $cat)
                     <li class="list-group-item @if($cat->id === $category->id) active @endif">
-                        <a href="{{ route('library.category', $cat->slug) }}">{{ $cat->name }}</a>
+                        <a href="{{ route('library.index', ['category' => $cat->slug]) }}">{{ $cat->name }}</a>
                     </li>
                 @endforeach
             </ul>
