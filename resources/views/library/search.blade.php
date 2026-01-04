@@ -60,7 +60,7 @@
                         </div>
                     @endforeach
                 </div>
-                {{ $books->links('pagination::bootstrap-5')pagination::bootstrap-5') }}
+                {{ $books->links('pagination::bootstrap-5') }}
             @endif
         </div>
     </div>
