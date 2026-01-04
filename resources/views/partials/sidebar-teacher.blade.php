@@ -1,39 +1,39 @@
 <ul class="list-unstyled components">
     <li class="nav-item {{ request()->routeIs('teacher.dashboard*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('teacher.dashboard') }}">
-            <i class="fas fa-tachometer-alt"></i> {{ __('Tableau de bord') }}
+            <i class="fas fa-tachometer-alt"></i> {{ __('Dashboard') }}
         </a>
     </li>
     <li class="nav-item {{ request()->routeIs('teacher.dashboard') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('teacher.dashboard') }}">
-            <i class="fas fa-school"></i> {{ __('Mes Classes') }}
+            <i class="fas fa-school"></i> {{ __('My Classes') }}
         </a>
     </li>
 
     <li class="nav-item {{ request()->routeIs('teacher.progress.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('teacher.progress.list-classes') }}">
-            <i class="fas fa-chart-line"></i> {{ __('Suivi des Élèves') }}
+            <i class="fas fa-chart-line"></i> {{ __('Student Progress') }}
         </a>
     </li>
 
     <!-- Quiz Management -->
-    <li class="sidebar-heading mt-4">{{ __("Gestion des Quiz") }}</li>
+    <li class="sidebar-heading mt-4">{{ __("Quiz Management") }}</li>
     <li class="nav-item {{ request()->routeIs('teacher.quizzes.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('teacher.quizzes.select-book') }}">
-            <i class="fas fa-plus-circle"></i> {{ __('Créer un Quiz') }}
+            <i class="fas fa-plus-circle"></i> {{ __('Create Quiz') }}
         </a>
     </li>
 
     <!-- My Account -->
-    <li class="sidebar-heading mt-4">{{ __("Mon Compte") }}</li>
+    <li class="sidebar-heading mt-4">{{ __("My account") }}</li>
     <li class="nav-item {{ request()->routeIs('reader.profile') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('reader.profile') }}"><i class="fas fa-user-cog"></i> {{ __("Mon Profil") }}</a>
+        <a class="nav-link" href="{{ route('reader.profile') }}"><i class="fas fa-user-cog"></i> {{ __("My Profile") }}</a>
     </li>
     
     <!-- Communication -->
     <li class="sidebar-heading mt-4">{{ __("Communication") }}</li>
     <li class="nav-item {{ request()->routeIs('messaging.index') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('messaging.index') }}"><i class="fas fa-comments"></i> {{ __("Messagerie") }}
+        <a class="nav-link" href="{{ route('messaging.index') }}"><i class="fas fa-comments"></i> {{ __("Messaging") }}
             @if(isset($unreadMessagesCount) && $unreadMessagesCount > 0)
                 <span class="badge bg-danger float-end">{{ $unreadMessagesCount }}</span>
             @endif

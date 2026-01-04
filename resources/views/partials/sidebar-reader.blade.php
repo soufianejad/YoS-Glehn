@@ -22,14 +22,14 @@
            data-bs-toggle="collapse"
            aria-expanded="{{ request()->routeIs('reader.library') || request()->routeIs('reader.favorites') || request()->routeIs('bookmarks.showAll') ? 'true' : 'false' }}"
            class="dropdown-toggle nav-link sidebar-heading text-decoration-none">
-            {{ __('My library') }}
+            {{ __('My Library') }}
         </a>
         <ul class="p-0 collapse {{ request()->routeIs('reader.library') || request()->routeIs('reader.favorites') || request()->routeIs('bookmarks.showAll') ? 'show' : '' }}" id="librarySubmenu">
             <li style="display:block" class="nav-item {{ request()->routeIs('reader.library') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('reader.library') }}"><i class="fas fa-book-open"></i> {{ __('My library') }}</a>
+                <a class="nav-link" href="{{ route('reader.library') }}"><i class="fas fa-book-open"></i> {{ __('My Library') }}</a>
             </li>
             <li style="display:block" class="nav-item {{ request()->routeIs('reader.favorites') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('reader.favorites') }}"><i class="fas fa-heart"></i> {{ __('My favorites') }}</a>
+                <a class="nav-link" href="{{ route('reader.favorites') }}"><i class="fas fa-heart"></i> {{ __('My Favorites') }}</a>
             </li>
             <li style="display:block" class="nav-item {{ request()->routeIs('bookmarks.showAll') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('bookmarks.showAll') }}"><i class="fas fa-bookmark"></i> {{ __('My bookmarks') }}</a>
@@ -47,10 +47,10 @@
         </a>
         <ul class="p-0 collapse {{ request()->routeIs('reader.quizzes') || request()->routeIs('reader.badges') ? 'show' : '' }}" id="activitySubmenu">
             <li style="display:block" class="nav-item {{ request()->routeIs('reader.quizzes') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('reader.quizzes') }}"><i class="fas fa-question-circle"></i> {{ __('My quizzes') }}</a>
+                <a class="nav-link" href="{{ route('reader.quizzes') }}"><i class="fas fa-question-circle"></i> {{ __('My Quizzes') }}</a>
             </li>
             <li style="display:block" class="nav-item {{ request()->routeIs('reader.badges') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('reader.badges') }}"><i class="fas fa-award"></i> {{ __('My badges') }}</a>
+                <a class="nav-link" href="{{ route('reader.badges') }}"><i class="fas fa-award"></i> {{ __('My Badges') }}</a>
             </li>
         </ul>
     </li>
@@ -65,13 +65,13 @@
         </a>
         <ul class="p-0 collapse {{ request()->routeIs('reader.profile') || request()->routeIs('reader.subscription') || request()->routeIs('reader.payments') ? 'show' : '' }}" id="accountSubmenu">
             <li style="display:block" class="nav-item {{ request()->routeIs('reader.profile') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('reader.profile') }}"><i class="fas fa-user"></i> {{ __('My profile') }}</a>
+                <a class="nav-link" href="{{ route('reader.profile') }}"><i class="fas fa-user"></i> {{ __('My Profile') }}</a>
             </li>
             <li style="display:block" class="nav-item {{ request()->routeIs('reader.subscription') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('reader.subscription') }}"><i class="fas fa-credit-card"></i> {{ __('My subscription') }}</a>
+                <a class="nav-link" href="{{ route('reader.subscription') }}"><i class="fas fa-credit-card"></i> {{ __('My Subscription') }}</a>
             </li>
             <li style="display:block" class="nav-item {{ request()->routeIs('reader.payments') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('reader.payments') }}"><i class="fas fa-money-bill-wave"></i> {{ __('My payments') }}</a>
+                <a class="nav-link" href="{{ route('reader.payments') }}"><i class="fas fa-money-bill-wave"></i> {{ __('My Payments') }}</a>
             </li>
         </ul>
     </li>

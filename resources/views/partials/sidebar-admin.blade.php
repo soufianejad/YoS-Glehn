@@ -92,7 +92,7 @@
            data-bs-toggle="collapse"
            aria-expanded="{{ request()->routeIs('admin.quiz*') || request()->routeIs('admin.badges*') || request()->routeIs('admin.announcements*') || request()->routeIs('admin.messaging*') || request()->routeIs('admin.notifications*') ? 'true' : 'false' }}"
            class="dropdown-toggle nav-link sidebar-heading text-decoration-none">
-            {{ __('Tools Engagement') }}
+            {{ __('Tools & Engagement') }}
         </a>
         <ul class="p-0 collapse {{ request()->routeIs('admin.quiz*') || request()->routeIs('admin.badges*') || request()->routeIs('admin.announcements*') || request()->routeIs('admin.messaging*') || request()->routeIs('admin.notifications*') ? 'show' : '' }}" id="toolsSubmenu">
             <li style="display:block" class="nav-item {{ request()->routeIs('admin.quiz*') ? 'active' : '' }}">
