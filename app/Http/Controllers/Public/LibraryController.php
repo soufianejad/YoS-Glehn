@@ -63,20 +63,20 @@ class LibraryController extends Controller
     public function search(Request $request)
     {
         $request->validate([
-            'query' => 'nullable|string|max:255',
+            'search' => 'nullable|string|max:255',
         ]);
 
-        $query = $request->input('query');
+        $search = $request->input('search');
         $books = Book::where('space', 'public')
             ->where('status', 'published')
-            ->where(function ($q) use ($query) {
-                $q->where('title', 'like', '%'.$query.'%')
-                    ->orWhere('description', 'like', '%'.$query.'%');
+            ->where(function ($q) use ($search) {
+                $q->where('title', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%');
             })
             ->paginate(10);
         $categories = Category::public()->active()->get();
 
-        return view('library.search', compact('books', 'query', 'categories'));
+        return view('library.search', compact('books', 'search', 'categories'));
     }
 
     public function popular(Request $request)

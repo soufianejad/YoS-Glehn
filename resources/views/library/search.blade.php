@@ -4,13 +4,13 @@
 
 @section('content')
 <div class="container">
-    <h1>Search Results for "{{ $query }}"</h1>
+    <h1>Search Results for "{{ $search }}"</h1>
 
     <div class="row mb-3">
         <div class="col-md-12">
             <form action="{{ route('library.search') }}" method="GET" class="form-inline">
                 <div class="input-group">
-                    <input type="text" name="query" class="form-control" placeholder="{{ __('Search books...') }}" value="{{ request('query') }}">
+                    <input type="text" name="search" class="form-control" placeholder="{{ __('Search books...') }}" value="{{ request('search') }}">
                     <div class="input-group-append">
                         <button class="btn btn-outline-secondary" type="submit">{{ __('Search') }}</button>
                     </div>
