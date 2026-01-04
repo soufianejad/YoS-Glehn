@@ -36,10 +36,10 @@ Route::post('/contact', [ContactController::class, 'store'])->name('contact.stor
 
 // Bibliothèque publique
 Route::prefix('library')->name('library.')->group(function () {
-    Route::get('/{category:slug?}', [LibraryController::class, 'index'])->name('index'); // Updated index route
     Route::get('/search', [LibraryController::class, 'search'])->name('search');
     Route::get('/popular', [LibraryController::class, 'popular'])->name('popular');
     Route::get('/recent', [LibraryController::class, 'recent'])->name('recent');
+    Route::get('/{category:slug?}', [LibraryController::class, 'index'])->name('index'); // Updated index route
 });
 
 // Détails d'un livre
