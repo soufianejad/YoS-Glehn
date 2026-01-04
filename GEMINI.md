@@ -175,6 +175,7 @@ This script performs the following.
     npm run build
     # or yarn build
     ```
+    > **Agent Note:** Do NOT run `npm run build` or `npm run dev` unless explicitly instructed by the user, as this can interfere with the local development environment or cause unintended side effects.
 
 ### Development
 
