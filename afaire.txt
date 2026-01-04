@@ -1,0 +1,112 @@
+# ===============================================
+# FICHIER afaire.txt (Généré le 2025-11-19)
+# ===============================================
+# Ce fichier est une synthèse de toutes les tâches restantes identifiées
+# dans les fichiers *todo.txt et requirement.txt du projet.
+
+# -----------------------------------------------
+# Tâches de Haute Priorité / Critiques
+# -----------------------------------------------
+
+### 1. Intégration des Passerelles de Paiement Réelles
+- **Problème:** Les paiements sont actuellement simulés.
+- **Tâche:** Intégrer des fournisseurs de paiement réels (Mobile Money : Orange, MTN, Moov, Wave; Cartes : Visa/MasterCard).
+- **Fichiers concernés:** `todo.txt`
+
+### 2. Gestion des Abonnements pour les Écoles
+- **Problème:** Les écoles n'ont aucune visibilité ou gestion sur leur plan d'abonnement.
+- **Tâches:**
+    - Créer un `SubscriptionController` pour l'espace école.
+    - Afficher les détails du plan actuel, le statut, et l'historique des paiements.
+    - Implémenter la mise à niveau/rétrogradation et le renouvellement.
+- **Fichiers concernés:** `school_todo.txt`, `requirement.txt`
+
+### 3. Accès Étudiant par Code QR / Code d'Accès
+- **Problème:** L'ajout des étudiants est manuel. Le besoin est un système d'auto-inscription.
+- **Tâches:**
+    - Générer un code d'accès/QR code unique par école.
+    - Créer une page d'inscription publique où le code peut être utilisé.
+    - Associer automatiquement l'étudiant à l'école.
+- **Fichiers concernés:** `school_todo.txt`, `requirement.txt`
+
+### 4. Création d'un Rôle "Enseignant" Dédié
+- **Problème:** Le rôle "auteur" est utilisé pour les enseignants, ce qui n'est pas adapté.
+- **Tâches:**
+    - Créer un nouveau rôle "teacher" avec des permissions restreintes.
+    - Permettre aux écoles d'inviter/gérer des enseignants.
+    - Créer un tableau de bord pour les enseignants pour gérer leurs classes et élèves.
+- **Fichiers concernés:** `school_todo.txt`, `todo.txt`, `requirement.txt`
+
+### 5. Amélioration de la Logique d'Achat/Téléchargement de Livre
+- **Problème:** La distinction entre "lire en ligne" et "acheter pour télécharger" n'est pas claire.
+- **Tâche:** Ré-implémenter la logique d'affichage sur la page `book.show` pour clarifier les options d'accès et d'achat en fonction des droits de l'utilisateur.
+- **Fichiers concernés:** `todo.txt`
+
+### 6. Options de Gestion des Conversations (Messagerie)
+- **Problème:** Les utilisateurs ne peuvent pas gérer leurs conversations.
+- **Tâches:**
+    - Ajouter les options "archiver", "supprimer", "marquer comme non lu".
+    - Mettre à jour la base de données, créer les routes et la logique backend.
+    - Implémenter l'interface et les appels AJAX en frontend.
+- **Fichiers concernés:** `messaging_todo.txt`
+
+# -----------------------------------------------
+# Tâches de Priorité Moyenne
+# -----------------------------------------------
+
+### 7. Génération de Quiz par IA
+- **Problème:** La création de quiz est manuelle.
+- **Tâche:** Intégrer une API d'IA (Gemini, OpenAI) pour générer automatiquement des questions de quiz à partir du contenu d'un livre.
+- **Fichiers concernés:** `todo.txt`, `requirement.txt`
+
+### 8. Implémentation Complète PWA & Mode Hors Ligne
+- **Problème:** Le mode hors ligne n'est pas pleinement fonctionnel.
+- **Tâche:** Développer un service worker pour la mise en cache et permettre l'accès temporaire hors ligne aux livres sans achat de téléchargement permanent.
+- **Fichiers concernés:** `todo.txt`, `requirement.txt`
+
+### 9. Recommandations Avancées par IA pour les Étudiants
+- **Problème:** Les recommandations de livres sont trop basiques.
+- **Tâche:** Implémenter un moteur de recommandation plus sophistiqué (filtrage collaboratif/basé sur le contenu) basé sur l'historique de l'étudiant.
+- **Fichiers concernés:** `student_todo.txt`, `todo.txt`
+
+### 10. Refactorisation des Contrôleurs de l'Espace École
+- **Problème:** Le `DashboardController` de l'école est surchargé.
+- **Tâche:** Déplacer la logique de gestion (étudiants, classes, livres, annonces) dans des contrôleurs dédiés (`StudentController`, `ClassController`, etc.).
+- **Fichiers concernés:** `school_todo.txt`
+
+### 11. Recherche dans les Messages
+- **Problème:** Impossible de rechercher du texte dans les conversations.
+- **Tâche:** Ajouter une barre de recherche et créer le backend pour traiter les requêtes de recherche dans la table `messages`.
+- **Fichiers concernés:** `messaging_todo.txt`
+
+### 12. Statistiques par Classe
+- **Problème:** Les statistiques sont uniquement à l'échelle de l'école.
+- **Tâche:** Ajouter un onglet "Statistiques" sur la page de détail d'une classe pour afficher des données spécifiques à la classe (livres lus, scores moyens).
+- **Fichiers concernés:** `school_todo.txt`
+
+# -----------------------------------------------
+# Tâches de Faible Priorité / Améliorations Futures
+# -----------------------------------------------
+
+### 13. Outils de Lecture Avancés (Annotations & Surlignage)
+- **Problème:** L'expérience de lecture est passive.
+- **Tâches:**
+    - Permettre la sélection de texte, le surlignage et l'ajout de notes.
+    - Créer un modèle `Annotation`, des API et l'interface JS nécessaire.
+    - Créer une section "Mes Notes" dans le tableau de bord de l'utilisateur.
+- **Fichiers concernés:** `reader_todo.txt`
+
+### 14. Accès Parent/Tuteur
+- **Problème:** Les parents ne peuvent pas suivre les progrès de leurs enfants.
+- **Tâche:** Envisager un nouveau rôle "parent" avec un accès en lecture seule aux progrès de l'enfant.
+- **Fichiers concernés:** `school_todo.txt`
+
+### 15. Système de Gamification Complet
+- **Problème:** Le système de badges est basique.
+- **Tâche:** Développer un système plus robuste avec des points, des classements et des certificats virtuels.
+- **Fichiers concernés:** `todo.txt`, `requirement.txt`
+
+### 16. Rapports et Analyses Détaillés
+- **Problème:** Les statistiques disponibles sont basiques.
+- **Tâche:** Développer des rapports plus granulaires pour les admins, auteurs et écoles.
+- **Fichiers concernés:** `todo.txt`

@@ -1,0 +1,74 @@
+# School Space - Feature Todo List
+
+This document outlines planned improvements for the platform's school space to enhance management capabilities for schools, students, and subscriptions.
+
+## High Priority (Core Functionality & Management)
+
+1.  **Feature: School Subscription Management**
+    *   **Problem:** Schools cannot manage their subscription plan from their dashboard. The subscription is likely created by an admin, but the school has no visibility.
+    *   **Tasks:**
+        *   [ ] Create a new `SubscriptionController` in the `School` namespace.
+        *   [ ] Add a "Subscription" page to the school dashboard.
+        *   [ ] Display the current subscription plan details (e.g., plan name, student limit, price, expiration date).
+        *   [ ] Show subscription status (Active, Expired, Canceled).
+        *   [ ] Provide a way to upgrade/downgrade the subscription plan.
+        *   [ ] Implement a renewal process for subscriptions.
+        *   [ ] Display payment history.
+
+2.  **Feature: Teacher Role and Management**
+    *   **Problem:** The "teacher" is currently an "author" role, which is not ideal. A dedicated teacher role is needed.
+    *   **Tasks:**
+        *   [ ] Create a new "teacher" role in the system.
+        *   [ ] Create a `TeacherController` in the `School` namespace to manage teachers.
+        *   [ ] Allow school admins to invite/add teachers to the school.
+        *   [ ] Teachers should have their own dashboard to manage their classes, students, and assignments.
+        *   [ ] Teachers should not have access to school-wide settings or billing information.
+
+3.  **Feature: Student Access via QR Code/Access Code**
+    *   **Problem:** The `requirement.txt` mentions student access via QR code or an access code, but this is not implemented. Students are currently added manually by email.
+    *   **Tasks:**
+        *   [ ] Generate a unique access code and QR code for each school.
+        *   [ ] Create a public registration page where students can enter the access code or scan the QR code.
+        *   [ ] Upon successful registration, the student should be automatically associated with the school.
+        *   [ ] The school admin should be able to view and reset the access code from the settings page.
+
+## Medium Priority (Improving Existing Features)
+
+4.  **Refactor: `DashboardController`**
+    *   **Problem:** The `DashboardController` is too large and handles too many responsibilities (students, classes, books, announcements).
+    *   **Tasks:**
+        *   [ ] Move student management logic to `StudentController`.
+        *   [ ] Move class management logic to `ClassController`.
+        *   [ ] Move book assignment logic to `BookAssignmentController`.
+        *   [ ] Move announcement logic to a new `AnnouncementController`.
+        *   [ ] The `DashboardController` should only be responsible for displaying the main dashboard with summary data.
+
+5.  **Feature: Improved Student Importer**
+    *   **Problem:** The current student import functionality is basic. It should provide better feedback and error handling.
+    *   **Tasks:**
+        *   [ ] In `StudentController@import`, add validation for each row in the imported file.
+        *   [ ] Provide a downloadable report of the import process, including which students were imported successfully and which ones failed, with error messages.
+        *   [ ] Allow the school admin to map columns from the CSV file to the student fields (e.g., "First Name" column in CSV maps to `first_name` field).
+
+6.  **Feature: Class-level statistics**
+    *   **Problem:** The current statistics are school-wide. Teachers and school admins should be able to see statistics for each class.
+    *   **Tasks:**
+        *   [ ] Add a "Statistics" tab to the class details page (`classes.show`).
+        *   [ ] Display class-specific data, such as the number of books read, average quiz scores, and student engagement.
+        *   [ ] This will likely require new methods in the `ClassController` and `ClassModel`.
+
+## Low Priority / Future Enhancements
+
+7.  **Feature: Parent/Guardian Access**
+    *   **Problem:** Parents have no way to track their children's progress.
+    *   **Tasks:**
+        *   [ ] Consider a new "parent" role.
+        *   [ ] Parents could be linked to one or more student accounts.
+        *   [ ] Parents would have a read-only view of their child's progress, assignments, and quiz results.
+
+8.  **Feature: School Branding**
+    *   **Problem:** The school space is generic. Allowing schools to customize their space would improve the user experience.
+    *   **Tasks:**
+        *   [ ] The `School` model already has `logo` and `primary_color` fields. Ensure these are used throughout the school space.
+        *   [ ] Allow school admins to upload a banner image for their dashboard.
+        *   [ ] The school's logo and colors should be visible to students associated with the school.

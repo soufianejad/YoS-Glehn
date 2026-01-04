@@ -1,0 +1,199 @@
+Voici les informations concernant le fonctionnement métier de la plateforme, rédigé avec l'aide de l'IA:
+
+?? 1. Objectif global
+Créer une plateforme de lecture et d’écoute numérique dédiée à la promotion de la lecture, avec trois grands univers :
+
+1. Espace public : pour les lecteurs particuliers et amateurs de littérature africaine.
+2. Espace éducatif : pour les établissements scolaires, avec classes virtuelles et quiz intégrés.
+3. Espace adulte : pour les ouvrages dédiés aux adultes.
+L’application doit être installable sur smartphone (PWA) et fonctionner hors ligne partiellement (lecture/écoute des œuvres téléchargées).
+
+?? 2. Types d’utilisateurs et accès
+?? 1. Lecteur (particulier, adulte)
+Accès uniquement à l’espace public ou privé (livres PDF et audio grand public).
+Peut lire, écouter, noter, et commenter les œuvres.
+N’a pas accès a l'espace école .
+Accès par abonnement mensuel ou annuel, ou achat ponctuel.
+
+?? 2. Auteur
+Peut publier des livres (PDF, audio) dans la catégorie “publique” ou “éducative” ou les 2 catégories (sur validation admin).
+Peut suivre les statistiques (lectures, écoutes, revenus).
+Est rémunéré selon le modèle défini :
+80 % des ventes pour les livres fournis par l’auteur.
+60 % pour les livres traduits ou produits par la plateforme.
+
+?? 3. Établissement scolaire / Université
+Dispose d’un espace éducatif dédié, séparé du contenu grand public.
+Peut :
+Sélectionner des livres éducatifs parmi un catalogue spécial.
+Attribuer des quiz automatiques à chaque livre.
+Suivre les progrès et résultats des élèves.
+L’abonnement est collectif, calculé selon le nombre d’élèves (forfait modulable).
+L’accès se fait via des comptes élèves liés à l’établissement.
+
+?? 4. Élèves / Étudiants
+Accèdent uniquement à la bibliothèque éducative de leur établissement.
+Peuvent lire les livres attribués, faire les quiz associés, et voir leurs résultats.
+N’ont aucun accès à la bibliothèque grand public.
+
+?? 5. Administrateur
+Valide les auteurs, établissements et livres.
+Classe les livres dans la bonne catégorie (publique, adulte ou éducative).
+Supervise les paiements, abonnements, et statistiques.
+Peut générer ou vérifier les rapports de répartition des gains.
+
+?? 3. Fonctionnement spécifique du quiz (uniquement pour les écoles)
+Chaque livre éducatif approuvé peut être accompagné d’un quiz automatique.
+Le quiz comprend 10 questions générées par l’IA, basées sur le contenu du livre (si possible via API IA ou base interne).
+Les questions sont aléatoires à chaque tentative, avec correction immédiate.
+Résultats enregistrés dans le tableau de bord de l’élève et de l’enseignant.
+Les quiz ne sont accessibles que depuis les comptes école et admin.
+
+?? 4. Modèle économique
+?? Abonnements individuels :
+Mensuel : 7 000 FCFA
+Annuel : 50 000 FCFA
+Achat PDF : 3 000 FCFA
+Achat audio : 3 500 FCFA
+?? Abonnements établissements :
+Tarification groupée selon le nombre d’élèves :
+50 élèves : 50 000 FCFA / mois
+150 élèves : 100 000 FCFA / mois
+Évolutif selon volume
+?? Répartition des gains :
+80 % auteurs (contenu original)
+60 % auteurs (contenu produit/traduit par la plateforme)
+20–40 % plateforme (hébergement, maintenance, traduction, marketing)
+
+?? 5. Fonctionnalités principales
+
+?? Espace public :
+Catalogue PDF et audio (avec catégories, auteurs, filtres)
+Lecteur intégré (lecture, signets, téléchargement temporaire)
+Paiement et abonnement individuel
+Système de notation et de favoris
+Tableau de bord utilisateur (historique, temps de lecture, recommandations IA)
+
+?? Espace éducatif :
+Tableau de bord établissement (gestion des classes et élèves)
+Attribution de livres éducatifs
+Quiz automatique IA (10 questions)
+Statistiques de progression par élève et par classe
+Communication interne enseignant ? élève (messagerie)
+
+?? Espace Adultes (privé et invisible)
+Espace strictement séparé du reste du site, non visible publiquement.
+Accessible uniquement sur invitation par lien privé sécurisé (non indexé, non visible dans la navigation).
+Les utilisateurs de cet espace :
+Créent un compte restreint via le lien reçu.
+Ont accès à une bibliothèque adulte dédiée (PDF et audio).
+Peuvent lire, écouter, et acheter des œuvres.
+Aucun lien ni contenu de cet espace n’apparaît sur la plateforme publique ou éducative.
+
+?? Espace auteur :
+Upload de livres (PDF, audio)
+Statistiques de lectures / écoutes
+Revenus générés
+Outil de suivi des versements
+
+?? Administration centrale :
+Gestion des utilisateurs et des rôles
+Validation des livres et attribution de catégorie (publique/éducative)
+Attribution des quiz aux œuvres éducatives
+Gestion des paiements et abonnements
+Calcul automatique des revenus à reverser
+Tableau de bord analytique complet
+
+?? 6. Aspects techniques recommandés
+Architecture modulaire : séparée en modules (lecture publique, espace école, espace adulte, auteurs, admin)
+Espace multi-accès (Public / École / Adulte).
+IA intégrée pour génération de quiz.
+Tableau de bord dynamique (élèves, auteurs, admin).
+Backend : Laravel
+Frontend : botstrap
+Application PWA installable (pour Android, iOS, desktop)
+Paiements intégrés : Mobile Money, cartes Visa/MasterCard
+Support multilingue (français, anglais, langues africaines)
+Sécurité : chiffrement SSL, gestion des rôles, stockage protégé des fichiers
+
+?? 7. Flux métier simplifié
+1?? L’utilisateur (lecteur ou école) s’inscrit et choisit un plan d'abonnement
+2?? L’accès au contenu dépend de son profil (public ou éducatif)
+3?? Les lectures, écoutes et quiz sont enregistrés
+4?? Les auteurs reçoivent des statistiques en temps réel
+5?? En fin de mois, le système calcule automatiquement les parts de revenus à reverser
+6?? L’administrateur valide les paiements, supervise les performances, ajoute également et gère les oeuvres, paramètre le nombre d'élèves par plan d'abonnement éducatif, aussi les offres d'abonnements public
+
+Offre Établissement :
+Accès aux livres éducatifs du programme scolaire (lecture, sciences, histoire, contes africains éducatifs) + statistiques d’utilisation + classes virtuelles + quiz intégrés
+200 000 FCFA / mois par établissement (jusqu’à 200 élèves)
+350 000 FCFA / mois (jusqu’à 450 élèves)
+650 000 FCFA / mois (nombre d'élèves illimité)
+
+Abonnements groupés par école:
+L'établissement paie un abonnement global pour donner accès à tous ses élèves sans que chacun n’ait à payer individuellement.
+
+Fonctionnement technique:
+L’école reçoit un code d’accès ou un QR code unique (ex : “LYCEE-2410”).
+Les élèves créent leur compte avec ce code ? leur abonnement est activé automatiquement.
+Le compte est lié à l’établissement, avec suivi global des utilisateurs.
+Plafond d’utilisateurs à définir par admin (ex : 200 élèves).
+
+Paiement et gestion
+Paiement unique via Mobile Money ou Carte Visa.
+
+Tableau de bord “Établissement” :
+nombre d’élèves actifs,
+temps total de lecture ou d'écoute,
+renouvellement automatique ou manuel.
+
+Interface personnalisée pour les élèves et étudiants
+Rubriques principales
+Tableau de bord
+Bienvenue [Prénom]
+Statistiques : nombre de livres lus, temps total, derniers livres consultés
+Badges / récompenses (gamification)
+Ma Bibliothèque
+Livres recommandés par mon école
+Livres populaires
+Mes téléchargements (PDF/audio)
+Reprendre ma lecture
+Écoute Audio
+Lecteur audio intégré avec contrôle de vitesse
+Marque-pages audio
+Historique d’écoute
+Quiz & Exercices
+Quiz après certains livres éducatifs
+Système de points et classement entre élèves
+Certificats virtuels (PDF téléchargeables)
+
+Espace École
+
+Logo et nom de l’établissement
+Messages / annonces de l’école
+Sélection spéciale du professeur
+Classements par classe ou niveau
+
+Langues locales
+
+Choix de la langue de lecture/écoute (français, anglais, baoulé, malinké, bété, Wolof, Swahili etc.)
+Traduction instantanée du texte ou lecture bilingue
+
+Profil
+
+Avatar / nom
+Classe / établissement
+Historique de progression
+Paramètres de langue et de lecture
+
+Fonctionnalités à ajouter:
+-Mode hors ligne (télécharger pour lire sans connexion).
+-Abonnement groupé par école (accès via QR code ou code d’établissement)
+
+Exemple d’expérience utilisateur (élève) :
+- L’élève entre le code de son établissement.
+- Il accède à son espace personnalisé : “Bienvenue dans la bibliothèque de ton école, le Lycée Sainte-Marie”.
+- Il voit les livres recommandés par ses professeurs, lit ou écoute en audio.
+- Il gagne des badges : “Lecteur du mois”, “Curieux des contes africains”.
+- Les professeurs et l’administration peuvent suivre sa progression.
+

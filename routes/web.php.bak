@@ -1,0 +1,174 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Public\HomeController;
+use App\Http\Controllers\Public\LibraryController;
+use App\Http\Controllers\Public\BookController;
+use App\Http\Controllers\Public\SubscriptionController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Public\ContactController;
+use App\Http\Controllers\Public\AboutController;
+use App\Http\Controllers\Public\FaqController;
+use App\Http\Controllers\Adult\InvitationController;
+use App\Http\Controllers\MessagingController;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes - Espace Public
+|--------------------------------------------------------------------------
+*/
+
+
+// Page d'accueil publique
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Contact
+Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+
+// About
+Route::get('/about', [AboutController::class, 'index'])->name('about');
+
+// FAQ
+Route::get('/faq', [FaqController::class, 'index'])->name('faq');
+
+// Bibliothèque publique
+Route::prefix('bibliotheque')->name('library.')->group(function () {
+    Route::get('/{category:slug?}', [LibraryController::class, 'index'])->name('index'); // Updated index route
+    Route::get('/recherche', [LibraryController::class, 'search'])->name('search');
+    Route::get('/populaires', [LibraryController::class, 'popular'])->name('popular');
+    Route::get('/nouveautes', [LibraryController::class, 'recent'])->name('recent');
+});
+
+// Détails d'un livre
+Route::prefix('livre')->name('book.')->group(function () {
+    Route::get('/{book:slug}', [BookController::class, 'show'])->name('show');
+    Route::post('/{book}/incrementer-vues', [BookController::class, 'incrementViews'])->name('increment-views');
+});
+
+// Authentification
+Route::middleware('guest')->group(function () {
+    Route::get('/connexion', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/connexion', [LoginController::class, 'login']);
+    Route::get('/inscription', [RegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/inscription', [RegisterController::class, 'register']);
+});
+
+Route::post('/deconnexion', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
+
+// Routes protégées (lecteurs authentifiés)
+Route::middleware(['auth'])->group(function () {
+    
+    // Lecture de livres
+    Route::prefix('lire')->name('read.')->group(function () {
+        Route::get('/{book:slug}', [BookController::class, 'read'])->name('book');
+        Route::post('/{book}/progression', [BookController::class, 'updateReadingProgress'])->name('progress');
+        Route::post('/{book}/telecharger', [BookController::class, 'download'])->name('download');
+    });
+    
+    // Écoute audio
+    Route::prefix('ecouter')->name('listen.')->group(function () {
+        Route::get('/{book:slug}', [BookController::class, 'listen'])->name('book');
+        Route::post('/{book}/progression', [BookController::class, 'updateAudioProgress'])->name('progress');
+    });
+    
+    // Favoris
+    Route::post('/favoris/{book}/toggle', [App\Http\Controllers\FavoriteController::class, 'toggleFavorite'])->name('favorites.toggle');
+    
+    // Avis
+    Route::post('/livre/{book}/avis', [App\Http\Controllers\Public\BookController::class, 'storeReview'])->name('review.store');
+    Route::put('/avis/{review}', [App\Http\Controllers\Public\BookController::class, 'updateReview'])->name('review.update');
+    Route::delete('/avis/{review}', [App\Http\Controllers\Public\BookController::class, 'deleteReview'])->name('review.destroy');
+
+    // Achats individuels
+    Route::post('/acheter/{book}/pdf', [App\Http\Controllers\Public\BookController::class, 'purchasePdf'])->name('purchase.pdf');
+    Route::post('/acheter/{book}/audio', [App\Http\Controllers\Public\BookController::class, 'purchaseAudio'])->name('purchase.audio');
+
+    // Tableau de bord utilisateur
+    Route::get('/mon-espace', [App\Http\Controllers\Public\HomeController::class, 'dashboard'])->name('dashboard');
+    Route::get('/profile', [App\Http\Controllers\Public\HomeController::class, 'redirectToProfile'])->name('profile');
+
+    // General Quiz Routes
+    Route::middleware(['auth'])->prefix('quiz')->name('quiz.')->group(function () {
+        Route::get('/book/{book}', [App\Http\Controllers\QuizController::class, 'show'])->name('show');
+        Route::get('/{quiz}/start', [App\Http\Controllers\QuizController::class, 'start'])->name('start');
+        Route::post('/{quiz}', [App\Http\Controllers\QuizController::class, 'submit'])->name('submit');
+        Route::get('/result/{attempt}', [App\Http\Controllers\QuizController::class, 'result'])->name('result');
+    });
+
+
+});
+// Abonnements
+Route::prefix('abonnements')->name('subscription.')->group(function () {
+    Route::get('/', [SubscriptionController::class, 'index'])->name('index');
+    Route::get('/plans', [SubscriptionController::class, 'plans'])->name('plans');
+    Route::post('/souscrire/{plan}', [SubscriptionController::class, 'subscribe'])->name('subscribe');
+    Route::post('/renouveler', [SubscriptionController::class, 'renew'])->name('renew');
+    Route::post('/annuler', [SubscriptionController::class, 'cancel'])->name('cancel');
+});
+/*
+|--------------------------------------------------------------------------
+| Routes Admin
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    require __DIR__ . '/admin.php';
+});
+
+/*
+|--------------------------------------------------------------------------
+| Routes Auteur
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'author'])->prefix('auteur')->name('author.')->group(function () {
+    require __DIR__ . '/author.php';
+});
+
+/*
+|--------------------------------------------------------------------------
+| Routes École
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'school'])->prefix('ecole')->name('school.')->group(function () {
+    require __DIR__ . '/school.php';
+});
+
+/*
+|--------------------------------------------------------------------------
+| Routes Étudiant
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'student'])->prefix('etudiant')->name('student.')->group(function () {
+    require __DIR__ . '/student.php';
+});
+
+/*
+|--------------------------------------------------------------------------
+| Routes Lecteur
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'reader'])->prefix('lecteur')->name('reader.')->group(function () {
+    require __DIR__ . '/reader.php';
+});
+
+/*
+|--------------------------------------------------------------------------
+| Routes Messagerie
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    require __DIR__ . '/messaging.php';
+});
+
+/*
+|--------------------------------------------------------------------------
+| Routes Espace Adulte (Accès restreint)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'adult_access'])->prefix('adulte')->name('adult.')->group(function () {
+    require __DIR__ . '/adult.php';
+});
+
+// Inscription espace adulte via invitation
+Route::get('/invitation-adulte/{token}', [InvitationController::class, 'showRegistrationForm'])->name('adult.invitation');
+Route::post('/inscription-adulte/{token}', [InvitationController::class, 'register'])->name('adult.register');

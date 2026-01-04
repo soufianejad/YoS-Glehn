@@ -1,0 +1,26 @@
+{
+    "folder": "resources",
+    "file_types": [
+        "blade.php",
+        ".jsx",
+        ".vue",
+        ".php"
+    ],
+    "ignore_names": [
+
+    ],
+    "methods": [
+        "text",
+        "placeholder",
+        "alt",
+        "title",
+        "hashtag"
+    ],
+    "detailed": false,
+    "force": false,
+    "log_folder": "hsa/log",
+    "prefix": "{{ __(\"",
+    "suffix": "\") }}",
+    "ignore": ["#", "_", ">", "^", "*", "=", "@"],
+    "warnings": ["%", "{", "(", "}", ")", "$"]
+}

@@ -1,0 +1,75 @@
+<!-- resources/views/book/show.blade.php -->
+
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <img src="{{ $book->cover_image ? asset('storage/' . $book->cover_image) : asset('images/default_book_cover.png') }}" class="img-fluid" alt="{{ $book->title }}">
+        </div>
+        <div class="col-md-8">
+            <h1>{{ $book->title }}</h1>
+            <p><strong>{{ __('Author:') }}</strong> {{ $book->author->name }}</p>
+            <p><strong>{{ __('Category:') }}</strong> <a href="{{ route('library.index', ['category' => $book->category->slug]) }}">{{ $book->category->name }}</a></p>
+            <p><strong>{{ __('Description:') }}</strong> {{ $book->description }}</p>
+            <p><strong>{{ __('Published Year:') }}</strong> {{ $book->published_year }}</p>
+            <p><strong>{{ __('Language:') }}</strong> {{ $book->language }}</p>
+            <p><strong>{{ __('ISBN:') }}</strong> {{ $book->isbn }}</p>
+
+            @auth
+                @if($book->pdf_file)
+                    <p>PDF Price: ${{ $book->pdf_price }}</p>
+                    <form action="{{ route('purchase.pdf', $book) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-success">{{ __('Purchase PDF') }}</button>
+                    </form>
+                @endif
+                @if($book->audio_file)
+                    <p>Audio Price: ${{ $book->audio_price }}</p>
+                    <form action="{{ route('purchase.audio', $book) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-info">{{ __('Purchase Audio') }}</button>
+                    </form>
+                @endif
+            @endauth
+
+            <hr>
+            <h3>{{ __('Reviews') }}</h3>
+            @forelse($book->reviews as $review)
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ $review->user->name }} - Rating: {{ $review->rating }}/5</h5>
+                        <p class="card-text">{{ $review->comment }}</p>
+                    </div>
+                </div>
+            @empty
+                <p>{{ __('No reviews yet. Be the first to review this book!') }}</p>
+            @endforelse
+
+            @auth
+                <hr>
+                <h3>{{ __('Submit a Review') }}</h3>
+                <form action="{{ route('review.store', $book) }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">{{ __('Rating') }}</label>
+                        <select class="form-control" id="rating" name="rating">
+                            <option value="5">{{ __('5 Stars') }}</option>
+                            <option value="4">{{ __('4 Stars') }}</option>
+                            <option value="3">{{ __('3 Stars') }}</option>
+                            <option value="2">{{ __('2 Stars') }}</option>
+                            <option value="1">{{ __('1 Star') }}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">{{ __('Comment') }}</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">{{ __('Submit Review') }}</button>
+                </form>
+            @endauth
+        </div>
+    </div>
+</div>
+@endsection

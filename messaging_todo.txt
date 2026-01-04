@@ -1,0 +1,45 @@
+# Messaging System - Feature Todo List
+
+This document outlines planned improvements for the platform's messaging system.
+
+## High Priority (Core User Experience)
+
+1.  **Feature: Conversation Options**
+    *   **Problem:** Users have no way to manage their conversation list (e.g., archive, delete, mark as unread).
+    *   **Tasks:**
+        *   [ ] **Database:** Create a migration to add `archived_at` (timestamp, nullable) and `deleted_at` (timestamp, nullable) to the `conversation_user` pivot table. Also, add `last_read_at` (timestamp, nullable) to replace the simple `is_read` logic.
+        *   [ ] **Backend (Routes):**
+            *   Create `POST /messaging/{conversation}/toggle-read` route.
+            *   Create `POST /messaging/{conversation}/archive` route.
+            *   Create `DELETE /messaging/{conversation}` route.
+        *   [ ] **Backend (Controller):**
+            *   Implement `MessagingController@toggleRead` to update `last_read_at`.
+            *   Implement `MessagingController@archive` to set the `archived_at` timestamp.
+            *   Implement `MessagingController@destroy` to set the `deleted_at` timestamp.
+            *   Update `MessagingController@index` to exclude archived and deleted conversations from the main list.
+        *   [ ] **Frontend (UI):** Add a "three-dot" dropdown menu to each conversation item in `messaging/index.blade.php`.
+        *   [ ] **Frontend (JS):** Implement AJAX calls for the new options (toggle read, archive, delete) with UI feedback (e.g., removing item from list).
+
+## Medium Priority (Significant Enhancements)
+
+2.  **Feature: Message Search**
+    *   **Problem:** Users cannot search for specific text within their conversations.
+    *   **Tasks:**
+        *   Add a search bar to the messaging interface.
+        *   Create a backend route and controller method to handle search queries (e.g., `GET /messaging/search?q=...`).
+        *   The backend should search the `messages` table and return matching messages, grouped by conversation.
+        *   The frontend should display search results clearly.
+
+3.  **Feature: Improved Group Chat Management**
+    *   **Problem:** Group chat functionality is basic. The creator cannot manage the group after creation.
+    *   **Tasks:**
+        *   Allow the group creator (or designated admins) to rename the group.
+        *   Allow adding or removing participants from a group chat.
+        *   Display system messages in the chat for events like "User A added User B to the conversation."
+
+4.  **Feature: "Archived" Conversation View**
+    *   **Problem:** Once a conversation is archived, there is no way to view it.
+    *   **Tasks:**
+        *   Add a link or button (e.g., "View Archived") on the messaging index page.
+        *   Create a new route and controller method to fetch and display only archived conversations.
+        *   Allow users to "unarchive" a conversation from this view.

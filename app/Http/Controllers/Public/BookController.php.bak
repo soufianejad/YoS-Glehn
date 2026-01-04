@@ -1,0 +1,279 @@
+<?php
+
+namespace App\Http\Controllers\Public;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\Book;
+use App\Models\Review;
+use App\Models\ReadingProgress;
+use App\Models\AudioProgress;
+use App\Models\Payment;
+use App\Models\Purchase;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
+use App\Services\RevenueCalculatorService;
+
+class BookController extends Controller
+{
+    protected $revenueCalculator;
+
+    public function __construct(RevenueCalculatorService $revenueCalculator)
+    { 
+        $this->revenueCalculator = $revenueCalculator;
+    }
+
+    public function show(Book $book)
+    {
+        $readingProgress = null;
+        if (auth()->check()) {
+            $readingProgress = auth()->user()->getReadingProgressFor($book);
+        }
+        return view('book.show', compact('book', 'readingProgress'));
+    }
+
+    public function incrementViews(Book $book)
+    {
+        $book->increment('views'); // Assuming a 'views' column exists in the books table
+        return response()->json(['views' => $book->views]);
+    }
+
+    public function read(Book $book)
+    {
+        if (!$book->pdf_file) {
+            abort(404, 'PDF not available for this book.');
+        }
+
+        $initialPage = 0;
+        if (auth()->check()) {
+            $user = auth()->user();
+            $readingProgress = ReadingProgress::where('user_id', $user->id)
+                                            ->where('book_id', $book->id)
+                                            ->first();
+            $initialPage = $readingProgress ? $readingProgress->current_page : 0;
+        }
+
+        return view('book.read', compact('book', 'initialPage'));
+    }
+
+
+    public function updateReadingProgress(Request $request, Book $book)
+    {
+        $request->validate([
+            'total_pages' => 'required|integer|min:1',
+            'current_page' => 'required|integer|min:0|lte:total_pages',
+            'time_spent' => 'nullable|integer|min:0',
+        ]);
+
+        $user = auth()->user();
+
+        $progress = ReadingProgress::firstOrCreate(
+            ['user_id' => $user->id, 'book_id' => $book->id],
+            ['current_page' => 0, 'total_pages' => $book->pdf_pages ?? $request->total_pages, 'progress_percentage' => 0, 'time_spent' => 0]
+        );
+
+        $progress->current_page = $request->current_page;
+        $progress->total_pages = $book->pdf_pages ?? $request->total_pages;
+        $progress->progress_percentage = ($request->current_page / $progress->total_pages) * 100;
+        $progress->time_spent += $request->time_spent ?? 0;
+        $progress->last_read_at = now();
+
+        if ($progress->current_page >= $progress->total_pages) {
+            $progress->completed_at = now();
+        }
+
+        $progress->save();
+
+        return response()->json(['message' => 'Reading progress updated.', 'progress' => $progress]);
+    }
+
+    public function download(Book $book)
+    {
+        // Implement logic to check if user has purchased or subscribed
+        // For now, assuming direct download if pdf_file exists
+        if (!$book->pdf_file) {
+            abort(404, 'PDF not available for this book.');
+        }
+
+        $filePath = storage_path('app/public/' . $book->pdf_file);
+
+        if (!file_exists($filePath)) {
+            abort(404, 'File not found.');
+        }
+
+        return response()->download($filePath, $book->slug . '.pdf');
+    }
+
+    public function listen(Book $book)
+    {
+        // Check if the user has access to listen to the book (e.g., purchased or subscribed)
+        // For now, assuming direct access if audio_file exists
+        if (!$book->audio_file) {
+            abort(404, 'Audio not available for this book.');
+        }
+        return view('book.listen', compact('book'));
+    }
+
+    public function updateAudioProgress(Request $request, Book $book)
+    {
+        $request->validate([
+            'total_duration' => 'required|integer|min:1',
+            'current_position' => 'required|integer|min:0|lte:total_duration',
+            'playback_speed' => 'nullable|numeric|min:0.5|max:3',
+        ]);
+
+        $user = auth()->user();
+
+        $progress = AudioProgress::firstOrCreate(
+            ['user_id' => $user->id, 'book_id' => $book->id],
+            ['current_position' => 0, 'total_duration' => $book->audio_duration ?? $request->total_duration, 'progress_percentage' => 0, 'playback_speed' => 1.0]
+        );
+
+        $progress->current_position = $request->current_position;
+        $progress->total_duration = $book->audio_duration ?? $request->total_duration;
+        $progress->progress_percentage = ($request->current_position / $progress->total_duration) * 100;
+        $progress->playback_speed = $request->playback_speed ?? 1.0;
+        $progress->last_listened_at = now();
+
+        if ($progress->current_position >= $progress->total_duration) {
+            $progress->completed_at = now();
+        }
+
+        $progress->save();
+
+        return response()->json(['message' => 'Audio progress updated.', 'progress' => $progress]);
+    }
+
+    public function addToFavorites(Book $book)
+    {
+        $user = auth()->user();
+        $user->favorites()->firstOrCreate(['book_id' => $book->id]);
+
+        return back()->with('success', 'Book added to favorites!');
+    }
+
+    public function removeFromFavorites(Book $book)
+    {
+        $user = auth()->user();
+        $user->favorites()->where('book_id', $book->id)->delete();
+
+        return back()->with('success', 'Book removed from favorites.');
+    }
+
+    public function storeReview(Request $request, Book $book)
+    {
+        $request->validate([
+            'rating' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:5',
+                function ($attribute, $value, $fail) use ($book) {
+                    $exists = $book->reviews()->where('user_id', auth()->id())->exists();
+                    if ($exists) {
+                        $fail('You have already reviewed this book.');
+                    }
+                },
+            ],
+            'comment' => 'nullable|string|max:1000',
+        ]);
+
+        $book->reviews()->create([
+            'user_id' => auth()->id(),
+            'rating' => $request->rating,
+            'comment' => $request->comment,
+        ]);
+
+        return back()->with('success', 'Review submitted successfully!');
+    }
+
+    public function updateReview(Request $request, Review $review)
+    {
+        $this->authorize('update', $review); // Assuming a policy for Review exists
+
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:1000',
+        ]);
+
+        $review->update([
+            'rating' => $request->rating,
+            'comment' => $request->comment,
+        ]);
+
+        return back()->with('success', 'Review updated successfully!');
+    }
+
+    public function deleteReview(Review $review)
+    {
+        $this->authorize('delete', $review); // Assuming a policy for Review exists
+
+        $review->delete();
+
+        return back()->with('success', 'Review deleted successfully!');
+    }
+
+    public function purchasePdf(Book $book)
+    {
+        $user = auth()->user();
+
+        // For now, we'll simulate a pending purchase.
+
+        // Create a dummy payment record with pending status
+        $payment = Payment::create([
+            'user_id' => $user->id,
+            'book_id' => $book->id,
+            'transaction_id' => 'TRX-' . uniqid(),
+            'payment_type' => 'book_pdf',
+            'amount' => $book->pdf_price,
+            'currency' => 'XOF',
+            'payment_method' => 'simulated',
+            'payment_provider' => 'simulated',
+            'status' => 'pending', // Payment starts as pending
+        ]);
+
+        // Create a purchase record
+        Purchase::create([
+            'user_id' => $user->id,
+            'book_id' => $book->id,
+            'payment_id' => $payment->id,
+            'purchase_type' => 'pdf',
+            'price' => $book->pdf_price,
+            'is_active' => false, // Will become active once payment is completed
+        ]);
+
+        return back()->with('success', 'Your purchase is pending validation. You will be notified shortly.');
+    }
+
+    public function purchaseAudio(Book $book)
+    {
+        $user = auth()->user();
+
+        // For now, we'll simulate a pending purchase.
+
+        // Create a dummy payment record with pending status
+        $payment = Payment::create([
+            'user_id' => $user->id,
+            'book_id' => $book->id,
+            'transaction_id' => 'TRX-' . uniqid(),
+            'payment_type' => 'book_audio',
+            'amount' => $book->audio_price,
+            'currency' => 'XOF',
+            'payment_method' => 'simulated',
+            'payment_provider' => 'simulated',
+            'status' => 'pending', // Payment starts as pending
+        ]);
+
+        // Create a purchase record
+        Purchase::create([
+            'user_id' => $user->id,
+            'book_id' => $book->id,
+            'payment_id' => $payment->id,
+            'purchase_type' => 'audio',
+            'price' => $book->audio_price,
+            'is_active' => false, // Will become active once payment is completed
+        ]);
+
+        return back()->with('success', 'Your purchase is pending validation. You will be notified shortly.');
+    }
+}
