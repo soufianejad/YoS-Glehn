@@ -36,7 +36,7 @@
     <!-- Hero Section -->
     <section class="hero text-center d-flex align-items-center justify-content-center">
         <div class="hero-content">
-            <h1 class="display-3 font-weight-bold animate__animated animate__fadeInDown">{{ __("Décdouvrez les Trésors de la Littérature Africaine") }}</h1>
+            <h1 class="display-3 font-weight-bold animate__animated animate__fadeInDown">dd{{ __("Décdouvrez les Trésors de la Littérature Africaine") }}</h1>
             <p class="lead my-4 animate__animated animate__fadeInUp">{{ __('Votre portail exclusif pour des histoires qui inspirent, éduquent et transportent.') }}</p>
             <div class="hero-cta animate__animated animate__zoomIn">
                 <a href="{{ route('library.index') }}" class="btn btn-primary btn-lg">{{ __('Explorer la Bibliothèque') }}</a>
