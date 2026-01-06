@@ -474,7 +474,7 @@ class BookController extends Controller
             'currency' => 'XOF',
             'payment_method' => 'simulated',
             'payment_provider' => 'simulated',
-            'status' => 'pending', // Payment starts as pending
+            'status' => 'completed', // Payment starts as pending
         ]);
 
         // Create a purchase record
@@ -484,7 +484,7 @@ class BookController extends Controller
             'payment_id' => $payment->id,
             'purchase_type' => 'audio',
             'price' => $book->audio_price,
-            'is_active' => false, // Will become active once payment is completed
+            'is_active' => true, // Will become active once payment is completed
         ]);
 
         // Send notification
