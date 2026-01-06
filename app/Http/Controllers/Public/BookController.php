@@ -352,6 +352,17 @@ class BookController extends Controller
         $user = auth()->user();
 
         $purchaseType = $book->is_downloadable ? 'pdf_download' : 'pdf';
+
+        // Check if the user has already purchased this PDF
+        $existingPurchase = Purchase::where('user_id', $user->id)
+            ->where('book_id', $book->id)
+            ->whereIn('purchase_type', ['pdf', 'pdf_download'])
+            ->first();
+
+        if ($existingPurchase) {
+            return back()->with('error', __('You have already purchased this item.'));
+        }
+
         $amount = $book->pdf_price;
 
         // Apply discount if user has active subscription and book is downloadable
@@ -440,6 +451,16 @@ class BookController extends Controller
     public function purchaseAudio(Book $book)
     {
         $user = auth()->user();
+
+        // Check if the user has already purchased this audio book
+        $existingPurchase = Purchase::where('user_id', $user->id)
+            ->where('book_id', $book->id)
+            ->where('purchase_type', 'audio')
+            ->first();
+
+        if ($existingPurchase) {
+            return back()->with('error', __('You have already purchased this item.'));
+        }
 
         // For now, we'll simulate a pending purchase.
 
