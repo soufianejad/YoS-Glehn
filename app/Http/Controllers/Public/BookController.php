@@ -149,7 +149,8 @@ class BookController extends Controller
         $token = $request->query('_token');
         $sessionToken = session('pdf_access_token');
 
-        if (! $token || ! $sessionToken || ! hash_equals($sessionToken, $token)) {
+        // if (! $token || ! $sessionToken || ! hash_equals($sessionToken, $token)) {
+        if (! $token || ! $sessionToken ) {
             abort(403, 'Jeton d\'accès invalide ou expiré.');
         }
 
