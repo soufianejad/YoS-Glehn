@@ -462,9 +462,7 @@ class BookController extends Controller
             return back()->with('error', __('You have already purchased this item.'));
         }
 
-        // For now, we'll simulate a pending purchase.
-
-        // Create a dummy payment record with pending status
+        // Create a dummy payment record with completed status
         $payment = Payment::create([
             'user_id' => $user->id,
             'book_id' => $book->id,
@@ -474,28 +472,28 @@ class BookController extends Controller
             'currency' => 'XOF',
             'payment_method' => 'simulated',
             'payment_provider' => 'simulated',
-            'status' => 'completed', // Payment starts as pending
+            'status' => 'completed', // Simulate a successful payment
         ]);
 
-        // Create a purchase record
+        // Create an active purchase record
         Purchase::create([
             'user_id' => $user->id,
             'book_id' => $book->id,
             'payment_id' => $payment->id,
             'purchase_type' => 'audio',
             'price' => $book->audio_price,
-            'is_active' => true, // Will become active once payment is completed
+            'is_active' => true, // The purchase is active immediately
         ]);
 
         // Send notification
         $this->notificationService->sendNotification(
             $user,
-            'Achat en attente',
-            "Votre achat pour la version audio de '{$book->title}' est en cours de validation. Vous serez notifié(e) dès qu'il sera disponible.",
-            route('reader.payments'),
-            'info'
+            'Achat confirmé',
+            "Merci pour votre achat de la version audio de '{$book->title}'. Vous pouvez y accéder dès maintenant.",
+            route('reader.library'),
+            'success'
         );
 
-        return back()->with('success', 'Your purchase is pending validation. You will be notified shortly.');
+        return back()->with('success', __('Your purchase is complete! You can now listen to the book.'));
     }
 }
