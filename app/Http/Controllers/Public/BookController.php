@@ -154,7 +154,7 @@ class BookController extends Controller
         }
 
         // The token is valid, so invalidate it immediately to prevent reuse
-        $request->session()->forget('pdf_access_token');
+        // $request->session()->forget('pdf_access_token');
 
         if (! $book->pdf_file) {
             abort(404, 'PDF non disponible pour ce livre.');
