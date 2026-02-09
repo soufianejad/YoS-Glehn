@@ -154,8 +154,8 @@ class BookController extends Controller
             abort(403, 'Jeton d\'accès invalide ou expiré.');
         }
 
-        // Invalidate the token to prevent reuse
-        $request->session()->forget('pdf_access_token');
+        // Invalidate the token to prevent reuse (commented out to prevent issues with range requests)
+        // $request->session()->forget('pdf_access_token');
 
         if (! $book->pdf_file) {
             abort(404, 'PDF non disponible pour ce livre.');
