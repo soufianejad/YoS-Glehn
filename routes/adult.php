@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Adult\DashboardController as AdultDashboardController;
 use App\Http\Controllers\Adult\LibraryController as AdultLibraryController;
+use App\Http\Controllers\Public\BookController;
 use Illuminate\Support\Facades\Route;
 
 // Tableau de bord
@@ -11,8 +12,8 @@ Route::get('/', [AdultDashboardController::class, 'index'])->name('dashboard');
 Route::prefix('library')->name('library.')->group(function () {
     Route::get('/{book:slug}', [AdultLibraryController::class, 'show'])->name('show');
     Route::get('/{category:slug?}', [AdultLibraryController::class, 'index'])->name('index');
-    Route::get('/{book:slug}/read', [AdultLibraryController::class, 'read'])->name('read');
-    Route::get('/{book:slug}/listen', [AdultLibraryController::class, 'listen'])->name('listen');
+    Route::get('/{book:slug}/read', [BookController::class, 'read'])->name('read');
+    Route::get('/{book:slug}/listen', [BookController::class, 'listen'])->name('listen');
     Route::post('/{book:slug}/review', [AdultLibraryController::class, 'storeReview'])->name('review.store');
 });
 
