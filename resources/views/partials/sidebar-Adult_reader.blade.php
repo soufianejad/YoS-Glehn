@@ -1,5 +1,5 @@
 <ul class="list-unstyled components">
-    <!-- General  -->
+    <!-- General -->
     <li>
         <a href="#generalSubmenu"
            data-bs-toggle="collapse"
