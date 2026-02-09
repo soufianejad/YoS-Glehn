@@ -14,6 +14,7 @@ use App\Services\BadgeService;
 use App\Services\NotificationService;
 use App\Services\RevenueCalculatorService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class BookController extends Controller
@@ -149,13 +150,12 @@ class BookController extends Controller
         $token = $request->query('_token');
         $sessionToken = session('pdf_access_token');
 
-        // if (! $token || ! $sessionToken || ! hash_equals($sessionToken, $token)) {
-        if (! $token || ! $sessionToken ) {
+        if (! $token || ! $sessionToken || ! hash_equals($sessionToken, $token)) {
             abort(403, 'Jeton d\'accès invalide ou expiré.');
         }
 
-        // The token is valid, so invalidate it immediately to prevent reuse
-        // $request->session()->forget('pdf_access_token');
+        // Invalidate the token to prevent reuse
+        $request->session()->forget('pdf_access_token');
 
         if (! $book->pdf_file) {
             abort(404, 'PDF non disponible pour ce livre.');
@@ -165,10 +165,15 @@ class BookController extends Controller
             abort(403, 'Accès non autorisé.');
         }
 
-        $filePath = storage_path('app/'.$book->pdf_file);
+        $filePath = null;
 
-        if (! file_exists($filePath)) {
-            abort(404, 'Fichier non trouvé.');
+        // Check the private disk first, then the public disk as a fallback.
+        if (Storage::disk('local')->exists($book->pdf_file)) {
+            $filePath = Storage::disk('local')->path($book->pdf_file);
+        } elseif (Storage::disk('public')->exists($book->pdf_file)) {
+            $filePath = Storage::disk('public')->path($book->pdf_file);
+        } else {
+            abort(404, 'Fichier non trouvé sur le serveur.');
         }
 
         // Award badges for reading the book
