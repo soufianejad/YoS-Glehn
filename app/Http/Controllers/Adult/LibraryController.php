@@ -81,6 +81,13 @@ class LibraryController extends Controller
             abort(403, 'Access denied to this book.');
         }
 
+        // --- START: Grant full access to adult content ---
+        // To revert, comment out the following two lines and uncomment the block below.
+        $hasPurchasedPdf = true;
+        $hasPurchasedAudio = true;
+
+        /*
+        // Original purchase-check logic
         $hasPurchasedPdf = false;
         $hasPurchasedAudio = false;
 
@@ -89,6 +96,8 @@ class LibraryController extends Controller
             $hasPurchasedPdf = $user->purchases()->where('book_id', $book->id)->where('purchase_type', 'pdf')->exists();
             $hasPurchasedAudio = $user->purchases()->where('book_id', $book->id)->where('purchase_type', 'audio')->exists();
         }
+        */
+        // --- END: Grant full access to adult content ---
 
         return view('adult.book.show', compact('book', 'hasPurchasedPdf', 'hasPurchasedAudio'));
     }
