@@ -233,8 +233,13 @@
                 });
 
             function renderPage(num) {
-                if (!pdfDoc || num < 1 || num > totalPages) return;
-                pdfDoc.getPage(num).then(page => {
+                const pageNum = parseInt(num, 10);
+                if (!pdfDoc || isNaN(pageNum) || pageNum < 1 || pageNum > totalPages) {
+                    console.error('Invalid page number requested:', num);
+                    return;
+                }
+
+                pdfDoc.getPage(pageNum).then(page => {
                         const viewport = page.getViewport({
                             scale
                         });
@@ -254,7 +259,7 @@
                         }).promise;
                     })
                     .then(() => {
-                        currentPage = num;
+                        currentPage = pageNum;
                         pageNumSpan.textContent = currentPage;
                         updateProgressBar();
                         updateNavButtons();
