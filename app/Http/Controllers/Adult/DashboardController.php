@@ -80,4 +80,34 @@ class DashboardController extends Controller
 
         return view('adult.profile.index', compact('user'));
     }
+
+    public function favorites()
+    {
+        // Placeholder for adult favorites
+        return view('adult.dashboard.favorites');
+    }
+
+    public function quizzes()
+    {
+        // Placeholder for adult quizzes
+        return view('adult.dashboard.quizzes');
+    }
+
+    public function badges()
+    {
+        // Placeholder for adult badges
+        return view('adult.dashboard.badges');
+    }
+
+    public function subscription()
+    {
+        // Placeholder for adult subscription
+        return view('adult.dashboard.subscription');
+    }
+
+    public function payments()
+    {
+        // Placeholder for adult payments
+        return view('adult.dashboard.payments');
+    }
 }

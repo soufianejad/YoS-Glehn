@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\AdultAccess;
 
 /**
  * Model User
@@ -286,6 +287,17 @@ class User extends Authenticatable
         if ($book->author_id === $this->id) {
             return true;
         }
+
+        // START - Modification for Adult Space Access
+        // This grants full access to adult books if the user has adult section access.
+        if ($book->space === 'adult') {
+            // The middleware 'adult_access' already verified the user can be here.
+            // This logic confirms access rights within the model for consistency.
+            if ($this->role === 'adult_reader' || $this->role === 'adult' || AdultAccess::where('user_id', $this->id)->where('status', 'used')->exists()) {
+                return true;
+            }
+        }
+        // END - Modification
 
         // Si l'utilisateur est un étudiant
         if ($this->isStudent()) {

@@ -13,6 +13,7 @@ Route::prefix('library')->name('library.')->group(function () {
     Route::get('/{category:slug?}', [AdultLibraryController::class, 'index'])->name('index');
     Route::get('/{book:slug}/read', [AdultLibraryController::class, 'read'])->name('read');
     Route::get('/{book:slug}/listen', [AdultLibraryController::class, 'listen'])->name('listen');
+    Route::post('/{book:slug}/review', [AdultLibraryController::class, 'storeReview'])->name('review.store');
 });
 
 // Achats
@@ -23,3 +24,10 @@ Route::post('/purchase/{book}/audio', [AdultLibraryController::class, 'purchaseA
 Route::get('/bookmarks', [AdultDashboardController::class, 'bookmarks'])->name('bookmarks');
 Route::get('/reviews', [AdultDashboardController::class, 'reviews'])->name('reviews');
 Route::get('/profile', [AdultDashboardController::class, 'profile'])->name('profile');
+
+// New routes for adult user functionalities
+Route::get('/favorites', [AdultDashboardController::class, 'favorites'])->name('favorites');
+Route::get('/quizzes', [AdultDashboardController::class, 'quizzes'])->name('quizzes');
+Route::get('/badges', [AdultDashboardController::class, 'badges'])->name('badges');
+Route::get('/subscription', [AdultDashboardController::class, 'subscription'])->name('subscription');
+Route::get('/payments', [AdultDashboardController::class, 'payments'])->name('payments');

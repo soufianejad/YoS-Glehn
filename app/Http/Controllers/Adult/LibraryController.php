@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\Category;
 use App\Models\Payment;
 use App\Models\Purchase;
+use App\Models\Review;
 use App\Services\RevenueCalculatorService;
 use Illuminate\Http\Request;
 
@@ -112,7 +113,10 @@ class LibraryController extends Controller
             abort(404, 'PDF not available for this book.');
         }
 
-        // Check if user has purchased or has adult access
+        if (! auth()->user()->hasAccessToBook($book)) {
+            abort(403, 'Access denied: You do not have permission to read this book.');
+        }
+
         return view('adult.book.read', compact('book'));
     }
 
@@ -126,7 +130,10 @@ class LibraryController extends Controller
             abort(404, 'Audio not available for this book.');
         }
 
-        // Check if user has purchased or has adult access
+        if (! auth()->user()->hasAccessToBook($book)) {
+            abort(403, 'Access denied: You do not have permission to listen to this book.');
+        }
+
         return view('adult.book.listen', compact('book'));
     }
 
@@ -200,5 +207,22 @@ class LibraryController extends Controller
         $this->revenueCalculator->recordRevenue($payment);
 
         return back()->with('success', 'Audio purchased successfully!');
+    }
+
+    public function storeReview(Request $request, Book $book)
+    {
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'required|string|max:1000',
+        ]);
+
+        $book->reviews()->create([
+            'user_id' => auth()->id(),
+            'rating' => $request->rating,
+            'comment' => $request->comment,
+            'is_approved' => true, // Automatically approve for now
+        ]);
+
+        return back()->with('success', 'Your review has been submitted successfully!');
     }
 }

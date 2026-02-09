@@ -70,7 +70,7 @@
                 <div class="mb-4">
                     <h5>Laisser un avis</h5>
                     {{-- Assuming a route 'adult.review.store' needs to be created --}}
-                    <form action="#" method="POST">
+                    <form action="{{ route('adult.library.review.store', $book) }}" method="POST">
                         @csrf
                         <div class="mb-2">
                             <label for="rating" class="form-label">Note</label>
