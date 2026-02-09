@@ -44,16 +44,20 @@
             <div class="col-12">
                 @if ($book->pdf_file)
                     <!-- Zone de chargement -->
-                    <div id="loading-indicator" class="text-center py-5 d-none">
+                    <div id="loading-indicator" class="text-center py-5">
                         <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">{{ __('Chargement du PDF...') }}</span>
+                            <span class="visually-hidden">{{ __('Chargement du livre...') }}</span>
                         </div>
-                        <p class="mt-2 text-muted">{{ __('Chargement du livre...') }}</p>
+                        <p class="mt-2 text-muted">{{ __('Préparation du livre, cela peut prendre un moment...') }}</p>
                     </div>
 
-                    <!-- Conteneur du PDF -->
-                    <div id="pdf-container" class="border rounded shadow-sm bg-white"
-                        style="height: 75vh; overflow: auto; display: none;"></div>
+                    <!-- Conteneur Flipbook -->
+                    <div class="flipbook-viewport d-none">
+                        <div class="container">
+                            <div class="flipbook" id="flipbook"></div>
+                        </div>
+                    </div>
+
 
                     <!-- Barre de contrôle -->
                     <div id="pdf-controls"
@@ -87,15 +91,6 @@
                             </button>
                             <button id="add-bookmark" class="btn btn-outline-success btn-sm" title="{{ __('Ajouter un marque-page') }}">
                                 <i class="bi bi-bookmark-plus"></i>
-                            </button>
-                            <button id="fullscreen" class="btn btn-outline-dark btn-sm" title="{{ __('Plein écran') }}">
-                                <i class="bi bi-fullscreen"></i>
-                            </button>
-                            <button id="zoom-out" class="btn btn-outline-dark btn-sm" title="{{ __('Zoom -') }}">
-                                <i class="bi bi-zoom-out"></i>
-                            </button>
-                            <button id="zoom-in" class="btn btn-outline-dark btn-sm" title="{{ __('Zoom +') }}">
-                                <i class="bi bi-zoom-in"></i>
                             </button>
                         </div>
                     </div>
@@ -148,29 +143,68 @@
     </div>
 @endsection
 
+@push('styles')
+<style>
+.flipbook-viewport {
+    overflow: hidden;
+    width: 100%;
+    height: 80vh;
+}
+.flipbook-viewport .container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: auto;
+}
+.flipbook {
+    width: 922px;
+    height: 600px;
+    left: -461px;
+    top: -300px;
+}
+.flipbook .page {
+    width: 461px;
+    height: 600px;
+    background-color: white;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+}
+.flipbook .page canvas {
+    width: 100%;
+    height: 100%;
+}
+.flipbook .shadow,
+.flipbook .gradient {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    z-index: 2;
+}
+</style>
+@endpush
+
 @push('scripts')
     {{-- PDF.js --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
     </script>
-
+    {{-- turn.js --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4.1.0/turn.min.js"></script>
+    
     <script>
+        // Note: turn.js requires jQuery, which is already loaded in the main app layout.
         document.addEventListener('DOMContentLoaded', () => {
-            // Elements du lecteur PDF
-            const container = document.getElementById('pdf-container');
             const loading = document.getElementById('loading-indicator');
+            const flipbookContainer = document.querySelector('.flipbook-viewport');
+            const flipbook = $('#flipbook');
             const controls = document.getElementById('pdf-controls');
             const pageNumSpan = document.getElementById('page-num');
             const pageCountSpan = document.getElementById('page-count');
             const progressBar = document.getElementById('progress-bar');
             const prevBtn = document.getElementById('prev');
             const nextBtn = document.getElementById('next');
-            const fullscreenBtn = document.getElementById('fullscreen');
-            const zoomInBtn = document.getElementById('zoom-in');
-            const zoomOutBtn = document.getElementById('zoom-out');
 
-            // Elements des marque-pages
             const toggleBookmarksBtn = document.getElementById('toggle-bookmarks');
             const closeBookmarksBtn = document.getElementById('close-bookmarks');
             const bookmarksPanel = document.getElementById('bookmarks-panel');
@@ -184,153 +218,123 @@
             const bookmarkPageNumSpan = document.getElementById('bookmark-page-number');
 
             let pdfDoc = null;
-
-            // Get page from URL query parameter if it exists
-            const urlParams = new URLSearchParams(window.location.search);
-            const pageFromUrl = parseInt(urlParams.get('page'));
-
-            // Set initial page: URL parameter > DB progress > default 1
-            let currentPage = pageFromUrl > 0 ? pageFromUrl : ({{ $initialPage > 1 ? $initialPage : 1 }});
-
             let totalPages = 0;
-            let scale = 1.5;
+            let currentPage = 1;
             let startTime = Date.now();
 
             const pdfUrl = "{{ route('read.pdf.content', $book) }}?_token={{ $token }}";
 
-            // --- Initialisation du lecteur PDF ---
-            loading.classList.remove('d-none');
-            fetch(pdfUrl, {
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            // --- PDF Loading ---
+            pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+                pdfDoc = pdf;
+                totalPages = pdf.numPages;
+                pageCountSpan.textContent = totalPages;
+                
+                // Initialize flipbook
+                initializeFlipbook();
+
+                loading.classList.add('d-none');
+                flipbookContainer.classList.remove('d-none');
+                controls.style.display = 'flex';
+                
+            }).catch(err => {
+                console.error("PDF loading error:", err);
+                loading.innerHTML = `<div class="alert alert-danger">{{ __('Erreur de chargement du PDF.') }}</div>`;
+            });
+
+
+            function initializeFlipbook() {
+                flipbook.turn({
+                    width: 922,
+                    height: 600,
+                    elevation: 50,
+                    gradients: true,
+                    autoCenter: true,
+                    page: {{ $initialPage > 1 ? $initialPage : 1 }},
+                    pages: totalPages,
+                    when: {
+                        turning: function(event, page, view) {
+                            // Pre-render pages that are about to be shown
+                            for (let i = 0; i < view.length; i++) {
+                                if (view[i] !== 0) {
+                                    renderPageInto(view[i]);
+                                }
+                            }
+                        },
+                        turned: function(event, page, view) {
+                            currentPage = page;
+                            pageNumSpan.textContent = page;
+                            updateProgressBar();
+                            sendProgressUpdate();
+                        }
                     }
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error('PDF non accessible');
-                    return response.arrayBuffer();
-                })
-                .then(data => pdfjsLib.getDocument({
-                    data
-                }).promise)
-                .then(pdf => {
-                    pdfDoc = pdf;
-                    totalPages = pdf.numPages;
-                    pageCountSpan.textContent = totalPages;
-                    updateProgressBar();
-                    enableControls();
-                    renderPage(currentPage);
-                    sendProgressUpdate(currentPage);
-                    loadBookmarks(); // Charger les marque-pages après le PDF
-                    loading.classList.add('d-none');
-                    container.style.display = 'block';
-                    controls.style.display = 'flex';
-                })
-                .catch(err => {
-                    console.error(err);
-                    container.innerHTML =
-                        `<div class="alert alert-danger p-4">{{ __('Erreur : impossible de charger le PDF.') }}</div>`;
-                    loading.classList.add('d-none');
                 });
 
-            function renderPage(num) {
-                const pageNum = parseInt(num, 10);
-                if (!pdfDoc || isNaN(pageNum) || pageNum < 1 || pageNum > totalPages) {
-                    console.error('Invalid page number requested:', num);
-                    return;
+                // Add placeholders for all pages
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageElement = $(`<div id="page-container-${i}" />`);
+                    flipbook.turn('addPage', pageElement, i);
                 }
 
-                pdfDoc.getPage(pageNum).then(page => {
-                        const viewport = page.getViewport({
-                            scale
-                        });
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-                        canvas.style.display = 'block';
-                        canvas.style.margin = '0 auto';
-                        canvas.style.maxWidth = '100%';
-                        canvas.classList.add('shadow-sm', 'mb-3', 'rounded');
-                        container.innerHTML = '';
-                        container.appendChild(canvas);
-                        return page.render({
-                            canvasContext: context,
-                            viewport
-                        }).promise;
-                    })
-                    .then(() => {
-                        currentPage = pageNum;
-                        pageNumSpan.textContent = currentPage;
-                        updateProgressBar();
-                        updateNavButtons();
-                        container.scrollTop = 0;
-                    });
+                loadBookmarks();
             }
 
-            // --- Contrôles du lecteur PDF ---
-            function updateProgressBar() {
+            // --- Page Rendering ---
+            function renderPageInto(pageNumber) {
+                const container = document.getElementById(`page-container-${pageNumber}`);
+
+                // If page is already rendered or rendering, skip.
+                if (!container || container.hasAttribute('data-rendered')) {
+                    return;
+                }
+                container.setAttribute('data-rendered', 'true'); // Mark as rendering
+
+                pdfDoc.getPage(pageNumber).then(page => {
+                    const viewport = page.getViewport({ scale: 1 });
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    
+                    // Adjust canvas size to match the desired page size of the flipbook
+                    const scale = Math.min(461 / viewport.width, 600 / viewport.height);
+                    const scaledViewport = page.getViewport({ scale });
+                    
+                    canvas.height = scaledViewport.height;
+                    canvas.width = scaledViewport.width;
+
+                    container.innerHTML = '';
+                    container.appendChild(canvas);
+
+                    page.render({
+                        canvasContext: context,
+                        viewport: scaledViewport
+                    });
+                });
+            }
+
+            // --- Controls ---
+             function updateProgressBar() {
                 progressBar.style.width = (totalPages > 0 ? (currentPage / totalPages) * 100 : 0) + '%';
             }
 
-            function updateNavButtons() {
-                prevBtn.disabled = currentPage <= 1;
-                nextBtn.disabled = currentPage >= totalPages;
-            }
+            prevBtn.onclick = () => flipbook.turn('previous');
+            nextBtn.onclick = () => flipbook.turn('next');
 
-            function enableControls() {
-                prevBtn.disabled = false;
-                nextBtn.disabled = false;
-            }
-            prevBtn.onclick = () => {
-                if (currentPage > 1) {
-                    sendProgressUpdate();
-                    renderPage(currentPage - 1);
-                }
-            };
-            nextBtn.onclick = () => {
-                if (currentPage < totalPages) {
-                    sendProgressUpdate();
-                    renderPage(currentPage + 1);
-                }
-            };
             document.addEventListener('keydown', e => {
                 if (e.key === 'ArrowLeft') prevBtn.click();
                 if (e.key === 'ArrowRight') nextBtn.click();
             });
-            zoomInBtn.onclick = () => {
-                scale = Math.min(scale + 0.25, 3);
-                renderPage(currentPage);
-            };
-            zoomOutBtn.onclick = () => {
-                scale = Math.max(scale - 0.25, 0.5);
-                renderPage(currentPage);
-            };
-            fullscreenBtn.onclick = () => {
-                if (!document.fullscreenElement) container.requestFullscreen();
-                else document.exitFullscreen();
-            };
-            document.addEventListener('fullscreenchange', () => {
-                fullscreenBtn.innerHTML = document.fullscreenElement ?
-                    '<i class="bi bi-fullscreen-exit"></i>' : '<i class="bi bi-fullscreen"></i>';
-            });
 
-            // --- Logique des Marque-pages ---
-
-            // Afficher/Cacher le panneau
+             // --- Bookmarks ---
             toggleBookmarksBtn.addEventListener('click', () => bookmarksPanel.style.transform = 'translateX(0)');
             closeBookmarksBtn.addEventListener('click', () => bookmarksPanel.style.transform = 'translateX(100%)');
 
-            // Charger et afficher les marque-pages
             async function loadBookmarks() {
                 try {
                     const response = await fetch("{{ route('bookmarks.index', $book) }}");
-                    if (!response.ok) throw new Error('Failed to load bookmarks');
                     const bookmarks = await response.json();
                     renderBookmarks(bookmarks);
                 } catch (error) {
-                    console.error(error);
-                    bookmarksList.innerHTML =
-                        '<div class="list-group-item text-danger">{{ __('Erreur de chargement.') }}</div>';
+                    console.error("Bookmark loading error:", error);
                 }
             }
 
@@ -341,55 +345,55 @@
                     return;
                 }
                 bookmarks.forEach(bm => {
+                    const pageNum = parseInt(bm.page_number, 10);
+                    if(isNaN(pageNum)) return;
+
                     const item = document.createElement('div');
-                    item.className =
-                        'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+                    item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
                     item.innerHTML = `
-                                    <div class="flex-grow-1" style="cursor: pointer;">
-                                        <div class="fw-bold">${bm.title}</div>
-                                        <small class="text-muted">Page ${bm.page_number}</small>
-                                    </div>
-                                    <div>
-                                        <button class="btn btn-sm btn-outline-primary edit-bookmark-btn" title="{{ __('Modifier') }}"><i class="bi bi-pencil"></i></button>
-                                        <button class="btn btn-sm btn-outline-danger delete-bookmark-btn" title="{{ __('Supprimer') }}"><i class="bi bi-trash"></i></button>
-                                    </div>
-                                `;
+                        <div class="flex-grow-1" style="cursor: pointer;">
+                            <div class="fw-bold">${bm.title}</div>
+                            <small class="text-muted">Page ${pageNum}</small>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary edit-bookmark-btn" title="{{ __('Modifier') }}"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger delete-bookmark-btn" title="{{ __('Supprimer') }}"><i class="bi bi-trash"></i></button>
+                        </div>`;
+                    
                     item.querySelector('.flex-grow-1').addEventListener('click', () => {
-                        renderPage(bm.page_number);
-                        bookmarksPanel.style.transform =
-                        'translateX(100%)'; // Cacher le panneau après navigation
+                        flipbook.turn('page', pageNum);
+                        bookmarksPanel.style.transform = 'translateX(100%)';
                     });
-                    item.querySelector('.edit-bookmark-btn').addEventListener('click', () =>
-                        openBookmarkModal(bm));
-                    item.querySelector('.delete-bookmark-btn').addEventListener('click', () =>
-                        deleteBookmark(bm.id));
+                    
+                    item.querySelector('.edit-bookmark-btn').addEventListener('click', (e) => { e.stopPropagation(); openBookmarkModal(bm); });
+                    item.querySelector('.delete-bookmark-btn').addEventListener('click', (e) => { e.stopPropagation(); deleteBookmark(bm.id); });
+
                     bookmarksList.appendChild(item);
                 });
             }
 
-            // Ouvrir le modal pour ajouter ou modifier
-            function openBookmarkModal(bookmark = null) {
+             function openBookmarkModal(bookmark = null) {
                 bookmarkForm.reset();
-                if (bookmark) { // Modification
+                if (bookmark) {
                     bookmarkModalTitle.textContent = 'Modifier le marque-page';
                     bookmarkIdInput.value = bookmark.id;
                     bookmarkTitleInput.value = bookmark.title;
                     bookmarkPageNumSpan.textContent = bookmark.page_number;
-                } else { // Ajout
+                } else {
                     bookmarkModalTitle.textContent = 'Ajouter un marque-page';
                     bookmarkIdInput.value = '';
-                    bookmarkPageNumSpan.textContent = currentPage;
+                    bookmarkPageNumSpan.textContent = flipbook.turn('page');
                 }
                 bookmarkModal.show();
             }
 
             addBookmarkBtn.addEventListener('click', () => openBookmarkModal());
 
-            // Gérer la soumission du formulaire (ajout/modif)
             bookmarkForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const id = bookmarkIdInput.value;
                 const title = bookmarkTitleInput.value;
+                const pageNum = id ? document.getElementById('bookmark-page-number').textContent : flipbook.turn('page');
                 const isEditing = !!id;
 
                 const url = isEditing ? `/bookmarks/${id}` : "{{ route('bookmarks.store', $book) }}";
@@ -398,61 +402,51 @@
                 try {
                     const response = await fetch(url, {
                         method: method,
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            title: title,
-                            page_number: currentPage
-                        })
+                        headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+                        body: JSON.stringify({ title: title, page_number: pageNum })
                     });
                     if (!response.ok) throw new Error('Save failed');
                     bookmarkModal.hide();
-                    loadBookmarks(); // Recharger la liste
+                    loadBookmarks();
                 } catch (error) {
-                    console.error(error);
-                    alert('Erreur lors de l\'enregistrement.');
+                    console.error("Bookmark save error:", error);
                 }
             });
 
-            // Supprimer un marque-page
             async function deleteBookmark(id) {
                 if (!confirm('Êtes-vous sûr de vouloir supprimer ce marque-page ?')) return;
                 try {
                     const response = await fetch(`/bookmarks/${id}`, {
                         method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        }
+                        headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'}
                     });
                     if (!response.ok) throw new Error('Delete failed');
-                    loadBookmarks(); // Recharger la liste
+                    loadBookmarks();
                 } catch (error) {
-                    console.error(error);
-                    alert('Erreur lors de la suppression.');
+                    console.error("Bookmark delete error:", error);
                 }
             }
 
-            // --- Progression de lecture ---
+            // --- Progress Saving ---
             function sendProgressUpdate() {
                 const timeSpent = Math.round((Date.now() - startTime) / 1000);
                 if (totalPages === 0) return;
+                
+                let currentPageForProgress = flipbook.turn('page');
+
                 fetch("{{ route('read.progress', $book) }}", {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
                     body: JSON.stringify({
                         total_pages: totalPages,
-                        current_page: currentPage,
+                        current_page: currentPageForProgress,
                         time_spent: timeSpent
                     })
                 }).finally(() => {
                     startTime = Date.now();
                 });
             }
+
             const interval = setInterval(sendProgressUpdate, 30000);
             window.addEventListener('beforeunload', sendProgressUpdate);
             window.addEventListener('unload', () => clearInterval(interval));
