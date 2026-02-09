@@ -22,6 +22,28 @@ class RoleMiddleware
 
         $user = Auth::user();
 
+        // Custom logic for the adult section access
+        if ($role === 'adult_reader') {
+            // Admins have automatic access
+            if ($user->isAdmin()) {
+                return $next($request);
+            }
+
+            // Check if the user has a valid invitation/access record
+            $hasAdultAccess = \App\Models\AdultAccess::where('user_id', $user->id)
+                ->where('status', 'used')
+                ->exists();
+
+            // Grant access if they have a record OR if their role is 'adult_reader'
+            if ($hasAdultAccess || $user->role === 'adult_reader') {
+                return $next($request);
+            }
+
+            // If none of the conditions are met, deny access
+            abort(403, 'Unauthorized. You do not have access to the adult section.');
+        }
+
+        // Original logic for all other roles
         if ($user->role !== $role) {
             abort(403, 'Unauthorized action.');
         }
