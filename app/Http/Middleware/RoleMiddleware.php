@@ -34,8 +34,8 @@ class RoleMiddleware
                 ->where('status', 'used')
                 ->exists();
 
-            // Grant access if they have a record OR if their role is 'adult_reader'
-            if ($hasAdultAccess || $user->role === 'adult_reader') {
+            // Grant access if they have a record OR if their role is 'adult_reader' or 'adult'
+            if ($hasAdultAccess || $user->role === 'adult_reader' || $user->role === 'adult') {
                 return $next($request);
             }
 
