@@ -189,6 +189,8 @@
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
     </script>
+    {{-- jQuery (required by turn.js) --}}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     {{-- turn.js --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4.1.0/turn.min.js"></script>
     
