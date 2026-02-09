@@ -9,8 +9,8 @@ Route::get('/', [AdultDashboardController::class, 'index'])->name('dashboard');
 
 // Bibliothèque adulte
 Route::prefix('library')->name('library.')->group(function () {
-    Route::get('/{category:slug?}', [AdultLibraryController::class, 'index'])->name('index');
     Route::get('/{book:slug}', [AdultLibraryController::class, 'show'])->name('show');
+    Route::get('/{category:slug?}', [AdultLibraryController::class, 'index'])->name('index');
     Route::get('/{book:slug}/read', [AdultLibraryController::class, 'read'])->name('read');
     Route::get('/{book:slug}/listen', [AdultLibraryController::class, 'listen'])->name('listen');
 });
