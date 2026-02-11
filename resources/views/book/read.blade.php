@@ -184,273 +184,511 @@
 @endpush
 
 @push('scripts')
+
     {{-- PDF.js --}}
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-    <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-    </script>
-    {{-- jQuery (required by turn.js) --}}
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    {{-- turn.js --}}
+
+    {{-- turn.js requires jQuery, which is loaded in the main app layout --}}
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4.1.0/turn.min.js"></script>
-    
+
+
+
+    {{-- The application logic in a separate script tag to ensure libraries are loaded first --}}
+
     <script>
-        // Note: turn.js requires jQuery.
-        $(function() {
-            const loading = document.getElementById('loading-indicator');
-            const flipbookContainer = document.querySelector('.flipbook-viewport');
-            const flipbook = $('#flipbook');
-            const controls = document.getElementById('pdf-controls');
-            const pageNumSpan = document.getElementById('page-num');
-            const pageCountSpan = document.getElementById('page-count');
-            const progressBar = document.getElementById('progress-bar');
-            const prevBtn = document.getElementById('prev');
-            const nextBtn = document.getElementById('next');
 
-            const toggleBookmarksBtn = document.getElementById('toggle-bookmarks');
-            const closeBookmarksBtn = document.getElementById('close-bookmarks');
-            const bookmarksPanel = document.getElementById('bookmarks-panel');
-            const bookmarksList = document.getElementById('bookmarks-list');
-            const addBookmarkBtn = document.getElementById('add-bookmark');
-            const bookmarkModal = new bootstrap.Modal(document.getElementById('bookmark-modal'));
-            const bookmarkForm = document.getElementById('bookmark-form');
-            const bookmarkModalTitle = document.getElementById('bookmark-modal-title');
-            const bookmarkIdInput = document.getElementById('bookmark-id');
-            const bookmarkTitleInput = document.getElementById('bookmark-title');
-            const bookmarkPageNumSpan = document.getElementById('bookmark-page-number');
+        const loading = document.getElementById('loading-indicator');
 
-            let pdfDoc = null;
-            let totalPages = 0;
-            let currentPage = 1;
-            let startTime = Date.now();
+        const flipbookContainer = document.querySelector('.flipbook-viewport');
 
-            const pdfUrl = "{{ route('read.pdf.content', $book) }}?_token={{ $token }}";
+        const flipbook = $('#flipbook');
 
-            // --- PDF Loading ---
-            pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
-                pdfDoc = pdf;
-                totalPages = pdf.numPages;
-                pageCountSpan.textContent = totalPages;
-                
-                // Initialize flipbook
-                initializeFlipbook();
+        const controls = document.getElementById('pdf-controls');
 
-                loading.classList.add('d-none');
-                flipbookContainer.classList.remove('d-none');
-                controls.style.display = 'flex';
-                
-            }).catch(err => {
-                console.error("PDF loading error:", err);
-                loading.innerHTML = `<div class="alert alert-danger">{{ __('Erreur de chargement du PDF.') }}</div>`;
+        const pageNumSpan = document.getElementById('page-num');
+
+        const pageCountSpan = document.getElementById('page-count');
+
+        const progressBar = document.getElementById('progress-bar');
+
+        const prevBtn = document.getElementById('prev');
+
+        const nextBtn = document.getElementById('next');
+
+
+
+        const toggleBookmarksBtn = document.getElementById('toggle-bookmarks');
+
+        const closeBookmarksBtn = document.getElementById('close-bookmarks');
+
+        const bookmarksPanel = document.getElementById('bookmarks-panel');
+
+        const bookmarksList = document.getElementById('bookmarks-list');
+
+        const addBookmarkBtn = document.getElementById('add-bookmark');
+
+        const bookmarkModal = new bootstrap.Modal(document.getElementById('bookmark-modal'));
+
+        const bookmarkForm = document.getElementById('bookmark-form');
+
+        const bookmarkModalTitle = document.getElementById('bookmark-modal-title');
+
+        const bookmarkIdInput = document.getElementById('bookmark-id');
+
+        const bookmarkTitleInput = document.getElementById('bookmark-title');
+
+        const bookmarkPageNumSpan = document.getElementById('bookmark-page-number');
+
+
+
+        let pdfDoc = null;
+
+        let totalPages = 0;
+
+        let currentPage = 1;
+
+        let startTime = Date.now();
+
+
+
+        const pdfUrl = "{{ route('read.pdf.content', $book) }}?_token={{ $token }}";
+
+
+
+        // --- PDF Loading ---
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+
+            pdfDoc = pdf;
+
+            totalPages = pdf.numPages;
+
+            pageCountSpan.textContent = totalPages;
+
+            
+
+            initializeFlipbook();
+
+
+
+            loading.classList.add('d-none');
+
+            flipbookContainer.classList.remove('d-none');
+
+            controls.style.display = 'flex';
+
+            
+
+        }).catch(err => {
+
+            console.error("PDF loading error:", err);
+
+            loading.innerHTML = `<div class="alert alert-danger">{{ __('Erreur de chargement du PDF.') }}</div>`;
+
+        });
+
+
+
+
+
+        function initializeFlipbook() {
+
+            flipbook.turn({
+
+                width: 922,
+
+                height: 600,
+
+                elevation: 50,
+
+                gradients: true,
+
+                autoCenter: true,
+
+                page: {{ $initialPage > 1 ? $initialPage : 1 }},
+
+                pages: totalPages,
+
+                when: {
+
+                    turning: function(event, page, view) {
+
+                        for (let i = 0; i < view.length; i++) {
+
+                            if (view[i] !== 0) {
+
+                                renderPageInto(view[i]);
+
+                            }
+
+                        }
+
+                    },
+
+                    turned: function(event, page, view) {
+
+                        currentPage = page;
+
+                        pageNumSpan.textContent = page;
+
+                        updateProgressBar();
+
+                        sendProgressUpdate();
+
+                    }
+
+                }
+
             });
 
 
-            function initializeFlipbook() {
-                flipbook.turn({
-                    width: 922,
-                    height: 600,
-                    elevation: 50,
-                    gradients: true,
-                    autoCenter: true,
-                    page: {{ $initialPage > 1 ? $initialPage : 1 }},
-                    pages: totalPages,
-                    when: {
-                        turning: function(event, page, view) {
-                            // Pre-render pages that are about to be shown
-                            for (let i = 0; i < view.length; i++) {
-                                if (view[i] !== 0) {
-                                    renderPageInto(view[i]);
-                                }
-                            }
-                        },
-                        turned: function(event, page, view) {
-                            currentPage = page;
-                            pageNumSpan.textContent = page;
-                            updateProgressBar();
-                            sendProgressUpdate();
-                        }
-                    }
+
+            for (let i = 1; i <= totalPages; i++) {
+
+                const pageElement = $(`<div id="page-container-${i}" />`);
+
+                flipbook.turn('addPage', pageElement, i);
+
+            }
+
+
+
+            loadBookmarks();
+
+        }
+
+
+
+        function renderPageInto(pageNumber) {
+
+            const container = document.getElementById(`page-container-${pageNumber}`);
+
+            if (!container || container.hasAttribute('data-rendered')) {
+
+                return;
+
+            }
+
+            container.setAttribute('data-rendered', 'true');
+
+
+
+            pdfDoc.getPage(pageNumber).then(page => {
+
+                const viewport = page.getViewport({ scale: 1 });
+
+                const canvas = document.createElement('canvas');
+
+                const context = canvas.getContext('2d');
+
+                const scale = Math.min(461 / viewport.width, 600 / viewport.height);
+
+                const scaledViewport = page.getViewport({ scale });
+
+                
+
+                canvas.height = scaledViewport.height;
+
+                canvas.width = scaledViewport.width;
+
+                container.innerHTML = '';
+
+                container.appendChild(canvas);
+
+                page.render({
+
+                    canvasContext: context,
+
+                    viewport: scaledViewport
+
                 });
 
-                // Add placeholders for all pages
-                for (let i = 1; i <= totalPages; i++) {
-                    const pageElement = $(`<div id="page-container-${i}" />`);
-                    flipbook.turn('addPage', pageElement, i);
-                }
+            });
+
+        }
+
+
+
+         function updateProgressBar() {
+
+            progressBar.style.width = (totalPages > 0 ? (currentPage / totalPages) * 100 : 0) + '%';
+
+        }
+
+
+
+        prevBtn.onclick = () => flipbook.turn('previous');
+
+        nextBtn.onclick = () => flipbook.turn('next');
+
+
+
+        document.addEventListener('keydown', e => {
+
+            if (e.key === 'ArrowLeft') prevBtn.click();
+
+            if (e.key === 'ArrowRight') nextBtn.click();
+
+        });
+
+
+
+        toggleBookmarksBtn.addEventListener('click', () => bookmarksPanel.style.transform = 'translateX(0)');
+
+        closeBookmarksBtn.addEventListener('click', () => bookmarksPanel.style.transform = 'translateX(100%)');
+
+
+
+        async function loadBookmarks() {
+
+            try {
+
+                const response = await fetch("{{ route('bookmarks.index', $book) }}");
+
+                const bookmarks = await response.json();
+
+                renderBookmarks(bookmarks);
+
+            } catch (error) {
+
+                console.error("Bookmark loading error:", error);
+
+            }
+
+        }
+
+
+
+        function renderBookmarks(bookmarks) {
+
+            bookmarksList.innerHTML = '';
+
+            if (bookmarks.length === 0) {
+
+                bookmarksList.innerHTML = '<div class="list-group-item text-muted">{{ __('Aucun marque-page.') }}</div>';
+
+                return;
+
+            }
+
+            bookmarks.forEach(bm => {
+
+                const pageNum = parseInt(bm.page_number, 10);
+
+                if(isNaN(pageNum)) return;
+
+
+
+                const item = document.createElement('div');
+
+                item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+
+                item.innerHTML = `
+
+                    <div class="flex-grow-1" style="cursor: pointer;">
+
+                        <div class="fw-bold">${bm.title}</div>
+
+                        <small class="text-muted">Page ${pageNum}</small>
+
+                    </div>
+
+                    <div>
+
+                        <button class="btn btn-sm btn-outline-primary edit-bookmark-btn" title="{{ __('Modifier') }}"><i class="bi bi-pencil"></i></button>
+
+                        <button class="btn btn-sm btn-outline-danger delete-bookmark-btn" title="{{ __('Supprimer') }}"><i class="bi bi-trash"></i></button>
+
+                    </div>`;
+
+                
+
+                item.querySelector('.flex-grow-1').addEventListener('click', () => {
+
+                    flipbook.turn('page', pageNum);
+
+                    bookmarksPanel.style.transform = 'translateX(100%)';
+
+                });
+
+                
+
+                item.querySelector('.edit-bookmark-btn').addEventListener('click', (e) => { e.stopPropagation(); openBookmarkModal(bm); });
+
+                item.querySelector('.delete-bookmark-btn').addEventListener('click', (e) => { e.stopPropagation(); deleteBookmark(bm.id); });
+
+
+
+                bookmarksList.appendChild(item);
+
+            });
+
+        }
+
+
+
+         function openBookmarkModal(bookmark = null) {
+
+            bookmarkForm.reset();
+
+            if (bookmark) {
+
+                bookmarkModalTitle.textContent = 'Modifier le marque-page';
+
+                bookmarkIdInput.value = bookmark.id;
+
+                bookmarkTitleInput.value = bookmark.title;
+
+                bookmarkPageNumSpan.textContent = bookmark.page_number;
+
+            } else {
+
+                bookmarkModalTitle.textContent = 'Ajouter un marque-page';
+
+                bookmarkIdInput.value = '';
+
+                bookmarkPageNumSpan.textContent = flipbook.turn('page');
+
+            }
+
+            bookmarkModal.show();
+
+        }
+
+
+
+        addBookmarkBtn.addEventListener('click', () => openBookmarkModal());
+
+
+
+        bookmarkForm.addEventListener('submit', async (e) => {
+
+            e.preventDefault();
+
+            const id = bookmarkIdInput.value;
+
+            const title = bookmarkTitleInput.value;
+
+            const pageNum = id ? document.getElementById('bookmark-page-number').textContent : flipbook.turn('page');
+
+            const isEditing = !!id;
+
+
+
+            const url = isEditing ? `/bookmarks/${id}` : "{{ route('bookmarks.store', $book) }}";
+
+            const method = isEditing ? 'PUT' : 'POST';
+
+
+
+            try {
+
+                const response = await fetch(url, {
+
+                    method: method,
+
+                    headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+
+                    body: JSON.stringify({ title: title, page_number: pageNum })
+
+                });
+
+                if (!response.ok) throw new Error('Save failed');
+
+                bookmarkModal.hide();
 
                 loadBookmarks();
+
+            } catch (error) {
+
+                console.error("Bookmark save error:", error);
+
             }
 
-            // --- Page Rendering ---
-            function renderPageInto(pageNumber) {
-                const container = document.getElementById(`page-container-${pageNumber}`);
-
-                // If page is already rendered or rendering, skip.
-                if (!container || container.hasAttribute('data-rendered')) {
-                    return;
-                }
-                container.setAttribute('data-rendered', 'true'); // Mark as rendering
-
-                pdfDoc.getPage(pageNumber).then(page => {
-                    const viewport = page.getViewport({ scale: 1 });
-                    const canvas = document.createElement('canvas');
-                    const context = canvas.getContext('2d');
-                    
-                    // Adjust canvas size to match the desired page size of the flipbook
-                    const scale = Math.min(461 / viewport.width, 600 / viewport.height);
-                    const scaledViewport = page.getViewport({ scale });
-                    
-                    canvas.height = scaledViewport.height;
-                    canvas.width = scaledViewport.width;
-
-                    container.innerHTML = '';
-                    container.appendChild(canvas);
-
-                    page.render({
-                        canvasContext: context,
-                        viewport: scaledViewport
-                    });
-                });
-            }
-
-            // --- Controls ---
-             function updateProgressBar() {
-                progressBar.style.width = (totalPages > 0 ? (currentPage / totalPages) * 100 : 0) + '%';
-            }
-
-            prevBtn.onclick = () => flipbook.turn('previous');
-            nextBtn.onclick = () => flipbook.turn('next');
-
-            document.addEventListener('keydown', e => {
-                if (e.key === 'ArrowLeft') prevBtn.click();
-                if (e.key === 'ArrowRight') nextBtn.click();
-            });
-
-             // --- Bookmarks ---
-            toggleBookmarksBtn.addEventListener('click', () => bookmarksPanel.style.transform = 'translateX(0)');
-            closeBookmarksBtn.addEventListener('click', () => bookmarksPanel.style.transform = 'translateX(100%)');
-
-            async function loadBookmarks() {
-                try {
-                    const response = await fetch("{{ route('bookmarks.index', $book) }}");
-                    const bookmarks = await response.json();
-                    renderBookmarks(bookmarks);
-                } catch (error) {
-                    console.error("Bookmark loading error:", error);
-                }
-            }
-
-            function renderBookmarks(bookmarks) {
-                bookmarksList.innerHTML = '';
-                if (bookmarks.length === 0) {
-                    bookmarksList.innerHTML = '<div class="list-group-item text-muted">{{ __('Aucun marque-page.') }}</div>';
-                    return;
-                }
-                bookmarks.forEach(bm => {
-                    const pageNum = parseInt(bm.page_number, 10);
-                    if(isNaN(pageNum)) return;
-
-                    const item = document.createElement('div');
-                    item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
-                    item.innerHTML = `
-                        <div class="flex-grow-1" style="cursor: pointer;">
-                            <div class="fw-bold">${bm.title}</div>
-                            <small class="text-muted">Page ${pageNum}</small>
-                        </div>
-                        <div>
-                            <button class="btn btn-sm btn-outline-primary edit-bookmark-btn" title="{{ __('Modifier') }}"><i class="bi bi-pencil"></i></button>
-                            <button class="btn btn-sm btn-outline-danger delete-bookmark-btn" title="{{ __('Supprimer') }}"><i class="bi bi-trash"></i></button>
-                        </div>`;
-                    
-                    item.querySelector('.flex-grow-1').addEventListener('click', () => {
-                        flipbook.turn('page', pageNum);
-                        bookmarksPanel.style.transform = 'translateX(100%)';
-                    });
-                    
-                    item.querySelector('.edit-bookmark-btn').addEventListener('click', (e) => { e.stopPropagation(); openBookmarkModal(bm); });
-                    item.querySelector('.delete-bookmark-btn').addEventListener('click', (e) => { e.stopPropagation(); deleteBookmark(bm.id); });
-
-                    bookmarksList.appendChild(item);
-                });
-            }
-
-             function openBookmarkModal(bookmark = null) {
-                bookmarkForm.reset();
-                if (bookmark) {
-                    bookmarkModalTitle.textContent = 'Modifier le marque-page';
-                    bookmarkIdInput.value = bookmark.id;
-                    bookmarkTitleInput.value = bookmark.title;
-                    bookmarkPageNumSpan.textContent = bookmark.page_number;
-                } else {
-                    bookmarkModalTitle.textContent = 'Ajouter un marque-page';
-                    bookmarkIdInput.value = '';
-                    bookmarkPageNumSpan.textContent = flipbook.turn('page');
-                }
-                bookmarkModal.show();
-            }
-
-            addBookmarkBtn.addEventListener('click', () => openBookmarkModal());
-
-            bookmarkForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const id = bookmarkIdInput.value;
-                const title = bookmarkTitleInput.value;
-                const pageNum = id ? document.getElementById('bookmark-page-number').textContent : flipbook.turn('page');
-                const isEditing = !!id;
-
-                const url = isEditing ? `/bookmarks/${id}` : "{{ route('bookmarks.store', $book) }}";
-                const method = isEditing ? 'PUT' : 'POST';
-
-                try {
-                    const response = await fetch(url, {
-                        method: method,
-                        headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
-                        body: JSON.stringify({ title: title, page_number: pageNum })
-                    });
-                    if (!response.ok) throw new Error('Save failed');
-                    bookmarkModal.hide();
-                    loadBookmarks();
-                } catch (error) {
-                    console.error("Bookmark save error:", error);
-                }
-            });
-
-            async function deleteBookmark(id) {
-                if (!confirm('Êtes-vous sûr de vouloir supprimer ce marque-page ?')) return;
-                try {
-                    const response = await fetch(`/bookmarks/${id}`, {
-                        method: 'DELETE',
-                        headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'}
-                    });
-                    if (!response.ok) throw new Error('Delete failed');
-                    loadBookmarks();
-                } catch (error) {
-                    console.error("Bookmark delete error:", error);
-                }
-            }
-
-            // --- Progress Saving ---
-            function sendProgressUpdate() {
-                const timeSpent = Math.round((Date.now() - startTime) / 1000);
-                if (totalPages === 0) return;
-                
-                let currentPageForProgress = flipbook.turn('page');
-
-                fetch("{{ route('read.progress', $book) }}", {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
-                    body: JSON.stringify({
-                        total_pages: totalPages,
-                        current_page: currentPageForProgress,
-                        time_spent: timeSpent
-                    })
-                }).finally(() => {
-                    startTime = Date.now();
-                });
-            }
-
-            const interval = setInterval(sendProgressUpdate, 30000);
-            window.addEventListener('beforeunload', sendProgressUpdate);
-            window.addEventListener('unload', () => clearInterval(interval));
         });
+
+
+
+        async function deleteBookmark(id) {
+
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce marque-page ?')) return;
+
+            try {
+
+                const response = await fetch(`/bookmarks/${id}`, {
+
+                    method: 'DELETE',
+
+                    headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'}
+
+                });
+
+                if (!response.ok) throw new Error('Delete failed');
+
+                loadBookmarks();
+
+            } catch (error) {
+
+                console.error("Bookmark delete error:", error);
+
+            }
+
+        }
+
+
+
+        function sendProgressUpdate() {
+
+            const timeSpent = Math.round((Date.now() - startTime) / 1000);
+
+            if (totalPages === 0) return;
+
+            
+
+            let currentPageForProgress = flipbook.turn('page');
+
+
+
+            fetch("{{ route('read.progress', $book) }}", {
+
+                method: 'POST',
+
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+
+                body: JSON.stringify({
+
+                    total_pages: totalPages,
+
+                    current_page: currentPageForProgress,
+
+                    time_spent: timeSpent
+
+                })
+
+            }).finally(() => {
+
+                startTime = Date.now();
+
+            });
+
+        }
+
+
+
+        const interval = setInterval(sendProgressUpdate, 30000);
+
+        window.addEventListener('beforeunload', sendProgressUpdate);
+
+        window.addEventListener('unload', () => clearInterval(interval));
+
+    </script>
+
 @endpush
+
+
+
+
