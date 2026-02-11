@@ -195,8 +195,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4.1.0/turn.min.js"></script>
     
     <script>
-        // Note: turn.js requires jQuery, which is already loaded in the main app layout.
-        document.addEventListener('DOMContentLoaded', () => {
+        // Note: turn.js requires jQuery.
+        $(function() {
             const loading = document.getElementById('loading-indicator');
             const flipbookContainer = document.querySelector('.flipbook-viewport');
             const flipbook = $('#flipbook');
@@ -453,5 +453,4 @@
             window.addEventListener('beforeunload', sendProgressUpdate);
             window.addEventListener('unload', () => clearInterval(interval));
         });
-    </script>
 @endpush
