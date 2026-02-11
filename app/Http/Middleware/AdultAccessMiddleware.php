@@ -13,6 +13,11 @@ class AdultAccessMiddleware
             return redirect()->route('login')->with('error', 'Vous devez être connecté');
         }
 
+        // Admins should always have access
+        if (auth()->user()->isAdmin()) {
+            return $next($request);
+        }
+
         if (! auth()->user()->isAdultReader()) {
             abort(403, 'Accès réservé aux adultes');
         }
