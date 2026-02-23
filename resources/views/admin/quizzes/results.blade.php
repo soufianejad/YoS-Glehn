@@ -26,7 +26,7 @@
                     <td>{{ $attempt->correct_answers }} / {{ $attempt->total_questions }}</td>
                     <td>{{ number_format($attempt->percentage, 2) }}%</td>
                     <td>{{ $attempt->is_passed ? __('Yes') : __('No') }}</td>
-                    <td>{{ $attempt->completed_at->format('M d, Y H:i') }}</td>
+                    <td>{{ $attempt->completed_at?->format('M d, Y H:i') ?: __('N/A') }}</td>
                     <td>
                         {{-- Add actions to view individual attempt details if needed --}}
                         <a href="#" class="btn btn-sm btn-info">{{ __('View Details') }}</a>

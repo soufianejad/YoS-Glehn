@@ -42,7 +42,7 @@
                                                 @foreach($attempts as $attempt)
                                                     <tr>
                                                         <td>{{ $attempt->quiz->title }}</td>
-                                                        <td>{{ $attempt->completed_at->format('d/m/Y H:i') }}</td>
+                                                        <td>{{ $attempt->completed_at?->format('d/m/Y H:i') ?: 'Non terminé' }}</td>
                                                         <td class="text-center">{{ round($attempt->percentage) }}%</td>
                                                         <td class="text-center">
                                                             @if($attempt->is_passed)
