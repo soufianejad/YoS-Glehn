@@ -49,10 +49,10 @@
                                                                                 <div class="progress-bar" role="progressbar" style="width: {{ $book->readingProgress->first()->progress_percentage }}%;" aria-valuenow="{{ $book->readingProgress->first()->progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
                                                                             </div>
                                                                             <p class="card-text"><small class="text-muted">Progress: {{ number_format($book->readingProgress->first()->progress_percentage, 0) }}%</small></p>
-                                                                            <a href="{{ route('student.book.read', $book->slug) }}" class="btn btn-sm btn-success mt-2">{{ __('Continue Reading') }}</a>
+                                                                            <a href="{{ route('student.book.show', $book->slug) }}" class="btn btn-sm btn-success mt-2">{{ __('Continue Reading') }}</a>
                                                                         @elseif($book->readingProgress->isNotEmpty() && $book->readingProgress->first()->progress_percentage == 100)
                                                                             <p class="card-text"><small class="text-success">{{ __('Completed!') }}</small></p>
-                                                                            <a href="{{ route('student.book.read', $book->slug) }}" class="btn btn-sm btn-info mt-2">{{ __('Read Again') }}</a>
+                                                                            <a href="{{ route('student.book.show', $book->slug) }}" class="btn btn-sm btn-info mt-2">{{ __('Read Again') }}</a>
                                                                         @endif
                                                                     @endauth
                                     
