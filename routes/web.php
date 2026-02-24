@@ -20,7 +20,16 @@ use App\Http\Controllers\Admin\UserManagementController;
 | Web Routes - Espace Public
 |--------------------------------------------------------------------------
 */
+Route::get('/clear-all-cache', function () {
 
+    Artisan::call('cache:clear');
+    Artisan::call('config:clear');
+    Artisan::call('route:clear');
+    Artisan::call('view:clear');
+    Artisan::call('optimize:clear');
+
+    return "✅ Tous les caches ont été supprimés.";
+});
 // Language Switcher
 Route::get('lang/{locale}', [ChangeLanguageController::class, 'changeLocale'])->name('change.language');
 
