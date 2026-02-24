@@ -25,7 +25,7 @@
             <ul class="list-group">
                 @foreach($categories as $category)
                     <li class="list-group-item">
-                        <a href="{{ route('student.library.category', $category->slug) }}">{{ $category->name }}</a>
+                        <a href="{{ route('student.library.index', $category->slug) }}">{{ $category->name }}</a>
                     </li>
                 @endforeach
             </ul>
