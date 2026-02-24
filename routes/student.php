@@ -21,10 +21,10 @@ Route::put('/profile', [DashboardController::class, 'updateProfile'])->name('pro
 |--------------------------------------------------------------------------
 */
 Route::prefix('library')->name('library.')->group(function () {
-    Route::get('/{category:slug?}', [LibraryController::class, 'index'])->name('index'); // Updated index route
     Route::get('/recommended', [LibraryController::class, 'recommended'])->name('recommended');
     Route::get('/assigned', [LibraryController::class, 'assigned'])->name('assigned');
     Route::get('/search', [LibraryController::class, 'search'])->name('search');
+    Route::get('/{category:slug?}', [LibraryController::class, 'index'])->name('index'); // Updated index route
 });
 
 /*
