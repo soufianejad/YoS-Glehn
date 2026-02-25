@@ -432,25 +432,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (target < 1 || target > totalPages) return;
     isAnimating = true;
 
-    /* 1. Sauvegarder la page courante dans le flipper (face avant) */
+    /* 1. Copier la page courante dans le flipper (face avant = ce qui part) */
     copyCanvas(canvasFront, flipFront);
 
-    /* 2. Afficher IMMÉDIATEMENT la nouvelle page sur canvas-front */
-    await renderToCanvas(canvasFront, target);
+    /* 2. Rendre la nouvelle page sur canvas-BACK (en dessous, invisible sous le flipper) */
+    await renderToCanvas(canvasBack, target);
 
-    /* 3. Positionner le flipper par-dessus (il cache temporairement la nouvelle page) */
+    /* 3. Le flipper couvre tout, canvas-front reste intact */
     flipper.style.transformOrigin = dir === 'next' ? 'left center' : 'right center';
     flipper.style.transition = 'none';
     flipper.style.transform  = 'rotateY(0deg)';
     flipper.style.visibility = 'visible';
 
-    /* 4. Reflow puis animer : l'ancienne page "part" */
     flipper.getBoundingClientRect();
     flipper.style.transition = `transform ${DURATION}ms cubic-bezier(0.645, 0.045, 0.355, 1.000)`;
     flipper.style.transform  = dir === 'next' ? 'rotateY(-180deg)' : 'rotateY(180deg)';
 
-    /* 5. Fin : cacher le flipper, la nouvelle page est déjà là */
+    /* 4. Fin : copier canvas-back sur canvas-front, tout cacher */
     setTimeout(() => {
+        copyCanvas(canvasBack, canvasFront);
+        canvasBack.getContext('2d').clearRect(0, 0, canvasBack.width, canvasBack.height);
+
         flipper.style.visibility = 'hidden';
         flipper.style.transition = 'none';
         flipper.style.transform  = 'rotateY(0deg)';
