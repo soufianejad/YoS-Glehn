@@ -46,22 +46,75 @@
                     <div class="card-body">
                          <div class="mb-3">
                             <label for="cover_image" class="form-label">{{ __('Image de Couverture') }}</label>
-                             @if($book->cover_image_url) <img src="{{ $book->cover_image_url }}" alt="{{ __('Current Cover') }}" class="img-thumbnail mb-2" width="150"> @endif
+                             @if($book->cover_image) <img src="{{ asset('storage/' . $book->cover_image) }}" alt="{{ __('Current Cover') }}" class="img-thumbnail mb-2" width="150"> @endif
                             <input type="file" class="form-control @error('cover_image') is-invalid @enderror" id="cover_image" name="cover_image">
                             @error('cover_image')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
+                        
                         <div class="mb-3">
-                            <label for="pdf_file" class="form-label">{{ __('Fichier PDF') }}</label>
+                            <label for="pdf_file" class="form-label">{{ __('Fichier PDF Principal') }}</label>
                             @if($book->pdf_file) <p><a href="{{ Storage::url($book->pdf_file) }}" target="_blank">{{ __('PDF Actuel') }}</a></p> @endif
-                            <input type="file" class="form-control @error('pdf_file') is-invalid @enderror" id="pdf_file" name="pdf_file">
+                            <input type="file" class="form-control @error('pdf_file') is-invalid @enderror" id="pdf_file" name="pdf_file" accept="application/pdf">
                             @error('pdf_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="mb-3">
-                            <label for="audio_file" class="form-label">{{ __('Fichier Audio (optionnel)') }}</label>
+                            <label for="audio_file" class="form-label">{{ __('Fichier Audio Principal (optionnel)') }}</label>
                              @if($book->audio_file) <p><a href="{{ Storage::url($book->audio_file) }}" target="_blank">{{ __('Audio Actuel') }}</a></p> @endif
-                            <input type="file" class="form-control @error('audio_file') is-invalid @enderror" id="audio_file" name="audio_file">
+                            <input type="file" class="form-control @error('audio_file') is-invalid @enderror" id="audio_file" name="audio_file" accept="audio/*">
                             @error('audio_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
+
+                        <!-- Dynamic File Uploads for PDF and Audio -->
+                        <div id="book-files-container">
+                            <h6 class="mt-4 mb-3">{{ __('Fichiers Multilingues (PDF & Audio)') }}</h6>
+                            @foreach($book->files as $index => $file)
+                                <div class="book-file-entry border p-3 mb-3 rounded" data-file-id="{{ $file->id }}">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">{{ __('Langue') }}</label>
+                                            <select name="existing_files[{{ $file->id }}][language]" class="form-select language-select" required>
+                                                <option value="">{{ __('Sélectionner une langue') }}</option>
+                                                @foreach($languages as $lang)
+                                                    <option value="{{ $lang['code'] }}" {{ $file->language == $lang['code'] ? 'selected' : '' }}>{{ $lang['name'] }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error("existing_files.{$file->id}.language")<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">{{ __('Fichier PDF (optionnel)') }}</label>
+                                            @if($file->file_type == 'pdf' && $file->path)
+                                                <p><a href="{{ Storage::url($file->path) }}" target="_blank">{{ __('PDF Actuel') }}</a></p>
+                                            @endif
+                                            <input type="file" name="existing_files[{{ $file->id }}][pdf_file]" class="form-control pdf-file-input" accept="application/pdf">
+                                            @error("existing_files.{$file->id}.pdf_file")<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                            <div class="mt-2">
+                                                <label class="form-label">{{ __('Nbre de Pages (PDF)') }}</label>
+                                                <input type="number" name="existing_files[{{ $file->id }}][pdf_pages]" class="form-control pdf-pages-input" min="1" value="{{ $file->file_type == 'pdf' ? $file->pages : '' }}">
+                                                @error("existing_files.{$file->id}.pdf_pages")<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">{{ __('Fichier Audio (optionnel)') }}</label>
+                                            @if($file->file_type == 'audio' && $file->path)
+                                                <p><a href="{{ Storage::url($file->path) }}" target="_blank">{{ __('Audio Actuel') }}</a></p>
+                                            @endif
+                                            <input type="file" name="existing_files[{{ $file->id }}][audio_file]" class="form-control audio-file-input" accept="audio/*">
+                                            @error("existing_files.{$file->id}.audio_file")<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                            <div class="mt-2">
+                                                <label class="form-label">{{ __('Durée Audio (secondes)') }}</label>
+                                                <input type="number" name="existing_files[{{ $file->id }}][audio_duration]" class="form-control audio-duration-input" min="1" value="{{ $file->file_type == 'audio' ? $file->duration : '' }}">
+                                                @error("existing_files.{$file->id}.audio_duration")<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-danger btn-sm remove-file-entry mt-2" data-file-id="{{ $file->id }}">{{ __('Supprimer ce fichier') }}</button>
+                                </div>
+                            @endforeach
+                            <div id="new-book-files-container">
+                                <!-- New file entries will be added here -->
+                            </div>
+                        </div>
+                        <button type="button" id="add-file-entry" class="btn btn-secondary mt-3">{{ __('Ajouter un autre fichier') }}</button>
                     </div>
                 </div>
             </div>
@@ -115,21 +168,6 @@
                             <input type="number" class="form-control @error('published_year') is-invalid @enderror" id="published_year" name="published_year" value="{{ old('published_year', $book->published_year) }}">
                             @error('published_year')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
-                         <div class="mb-3">
-                            <label for="language" class="form-label">{{ __('Langue') }}</label>
-                            <input type="text" class="form-control @error('language') is-invalid @enderror" id="language" name="language" value="{{ old('language', $book->language) }}">
-                            @error('language')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-                         <div class="mb-3">
-                            <label for="pdf_pages" class="form-label">{{ __('Nbre de Pages (PDF)') }}</label>
-                            <input type="number" class="form-control @error('pdf_pages') is-invalid @enderror" id="pdf_pages" name="pdf_pages" value="{{ old('pdf_pages', $book->pdf_pages) }}">
-                            @error('pdf_pages')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-                        <div class="mb-3">
-                            <label for="audio_duration" class="form-label">{{ __('Durée Audio (secondes)') }}</label>
-                            <input type="number" class="form-control @error('audio_duration') is-invalid @enderror" id="audio_duration" name="audio_duration" value="{{ old('audio_duration', $book->audio_duration) }}">
-                            @error('audio_duration')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
                     </div>
                 </div>
 
@@ -163,3 +201,122 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let fileEntryIndex = {{ count($book->files) }}; // Start index after existing files
+
+        function initializeFileEntry(entryElement) {
+            const pdfInput = entryElement.querySelector('.pdf-file-input');
+            const pdfPagesInput = entryElement.querySelector('.pdf-pages-input');
+            const audioInput = entryElement.querySelector('.audio-file-input');
+            const audioDurationInput = entryElement.querySelector('.audio-duration-input');
+
+            // PDF Page Count
+            if (pdfInput && pdfPagesInput) {
+                pdfInput.addEventListener('change', function (event) {
+                    const file = event.target.files[0];
+                    if (file && file.type === 'application/pdf') {
+                        const fileReader = new FileReader();
+                        fileReader.onload = function () {
+                            const typedarray = new Uint8Array(this.result);
+                            pdfjsLib.getDocument(typedarray).promise.then(function (pdf) {
+                                pdfPagesInput.value = pdf.numPages;
+                            }).catch(function(error) {
+                                console.error('Error parsing PDF:', error);
+                                alert('Could not read the PDF file to count pages.');
+                            });
+                        };
+                        fileReader.readAsArrayBuffer(file);
+                    } else {
+                        pdfPagesInput.value = ''; // Clear if not a PDF
+                    }
+                });
+            }
+
+            // Audio Duration
+            if (audioInput && audioDurationInput) {
+                audioInput.addEventListener('change', function (event) {
+                    const file = event.target.files[0];
+                    if (file && file.type.startsWith('audio/')) {
+                        const audio = document.createElement('audio');
+                        audio.src = URL.createObjectURL(file);
+                        audio.addEventListener('loadedmetadata', function () {
+                            audioDurationInput.value = Math.round(audio.duration);
+                            URL.revokeObjectURL(audio.src); // Clean up memory
+                        });
+                        audio.addEventListener('error', function() {
+                            console.error('Error loading audio file.');
+                            alert('Could not read the audio file to get its duration.');
+                        });
+                    } else {
+                        audioDurationInput.value = ''; // Clear if not audio
+                    }
+                });
+            }
+
+            // Remove entry
+            const removeButton = entryElement.querySelector('.remove-file-entry');
+            if (removeButton) {
+                removeButton.addEventListener('click', function () {
+                    const fileId = this.dataset.fileId;
+                    if (fileId) {
+                        // If it's an existing file, mark for deletion (send to server)
+                        const deleteInput = document.createElement('input');
+                        deleteInput.type = 'hidden';
+                        deleteInput.name = `deleted_files[]`;
+                        deleteInput.value = fileId;
+                        entryElement.appendChild(deleteInput);
+                    }
+                    entryElement.remove();
+                });
+            }
+        }
+
+        // Initialize existing entries
+        document.querySelectorAll('.book-file-entry').forEach(initializeFileEntry);
+
+        // Add new file entry
+        document.getElementById('add-file-entry').addEventListener('click', function () {
+            const container = document.getElementById('new-book-files-container');
+            const newEntry = document.createElement('div');
+            newEntry.classList.add('book-file-entry', 'border', 'p-3', 'mb-3', 'rounded');
+            newEntry.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ __('Langue') }}</label>
+                        <select name="new_files[${fileEntryIndex}][language]" class="form-select language-select" required>
+                            <option value="">{{ __('Sélectionner une langue') }}</option>
+                            @foreach($languages as $lang)
+                                <option value="{{ $lang['code'] }}">{{ $lang['name'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ __('Fichier PDF (optionnel)') }}</label>
+                        <input type="file" name="new_files[${fileEntryIndex}][pdf_file]" class="form-control pdf-file-input" accept="application/pdf">
+                        <div class="mt-2">
+                            <label class="form-label">{{ __('Nbre de Pages (PDF)') }}</label>
+                            <input type="number" name="new_files[${fileEntryIndex}][pdf_pages]" class="form-control pdf-pages-input" min="1">
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ __('Fichier Audio (optionnel)') }}</label>
+                        <input type="file" name="new_files[${fileEntryIndex}][audio_file]" class="form-control audio-file-input" accept="audio/*">
+                        <div class="mt-2">
+                            <label class="form-label">{{ __('Durée Audio (secondes)') }}</label>
+                            <input type="number" name="new_files[${fileEntryIndex}][audio_duration]" class="form-control audio-duration-input" min="1">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-danger btn-sm remove-file-entry mt-2">{{ __('Supprimer') }}</button>
+            `;
+            container.appendChild(newEntry);
+            initializeFileEntry(newEntry);
+            fileEntryIndex++;
+        });
+    });
+</script>
+@endpush

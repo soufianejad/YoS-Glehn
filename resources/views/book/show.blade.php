@@ -129,21 +129,43 @@
                         </form>
 
                         <!-- PDF Access -->
-                        @if($book->pdf_file)
+                        @if($book->pdf_file || $book->files->where('file_type', 'pdf')->count() > 0)
                             <div class="mb-4">
                                 <h5 class="mb-3 text-primary">
                                     <i class="fas fa-file-pdf me-2"></i> {{ __('Accès au PDF') }}
                                 </h5>
 
+                                @php
+                                    $pdfFiles = $book->files->where('file_type', 'pdf');
+                                    $hasDefaultPdf = !empty($book->pdf_file);
+                                @endphp
+
+                                @if($hasDefaultPdf || $pdfFiles->count() > 0)
+                                    <div class="mb-3">
+                                        <label for="pdf_language_select" class="form-label">{{ __('Sélectionner la langue du PDF') }}</label>
+                                        <select class="form-select" id="pdf_language_select" data-book-id="{{ $book->id }}">
+                                            @if($hasDefaultPdf)
+                                                <option value="default" data-file-id="default" data-path="{{ Storage::url($book->pdf_file) }}" data-pages="{{ $book->pdf_pages ?? 0 }}">{{ $book->language ? $book->language . ' (Original)' : 'Original' }}</option>
+                                            @endif
+                                            @foreach($pdfFiles as $file)
+                                                @php
+                                                    $langName = collect($availableLanguages)->firstWhere('code', $file->language)['name'] ?? $file->language;
+                                                @endphp
+                                                <option value="{{ $file->language }}" data-file-id="{{ $file->id }}" data-path="{{ Storage::url($file->path) }}" data-pages="{{ $file->pages ?? 0 }}">{{ $langName }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @endif
+
                                 @if($hasPurchasedBook)
                                     <div class="d-grid gap-2">
                                         <a href="{{ route('read.book', $book) }}"
-                                           class="btn btn-primary btn-lg hover-shadow">
+                                           class="btn btn-primary btn-lg hover-shadow" id="read_pdf_link">
                                             <i class="fas fa-book-open me-2"></i> {{ __('Lire maintenant') }}
                                         </a>
                                         @if($book->is_downloadable)
                                             <a href="{{ route('book.secure_download', $book) }}"
-                                               class="btn btn-outline-info btn-lg hover-shadow">
+                                               class="btn btn-outline-info btn-lg hover-shadow" id="download_pdf_link">
                                                 <i class="fas fa-download me-2"></i> {{ __('Télécharger le PDF') }}
                                             </a>
                                         @endif
@@ -152,7 +174,7 @@
                                 @elseif($hasActiveSubscription)
                                     <div class="d-grid gap-2">
                                         <a href="{{ route('read.book', $book) }}"
-                                           class="btn btn-success btn-lg hover-shadow">
+                                           class="btn btn-success btn-lg hover-shadow" id="read_pdf_link">
                                             <i class="fas fa-book-open me-2"></i> {{ __('Lire avec votre abonnement') }}
                                         </a>
                                     </div>
@@ -164,8 +186,9 @@
                                                 <del class="text-muted me-2">{{ number_format($book->pdf_price, 0) }} XOF</del>
                                                 <span class="fw-bold text-success fs-4">{{ number_format($finalPdfPrice, 0) }} XOF</span>
                                             </p>
-                                            <form action="{{ route('purchase.pdf', $book) }}" method="POST">
+                                            <form action="{{ route('purchase.pdf', $book) }}" method="POST" id="purchase_pdf_form">
                                                 @csrf
+                                                <input type="hidden" name="book_file_id" id="purchase_pdf_file_id">
                                                 <button type="submit" class="btn btn-info w-100 hover-shadow">
                                                     <i class="fas fa-download me-2"></i> Télécharger ({{ number_format($finalPdfPrice, 0) }} XOF)
                                                 </button>
@@ -177,8 +200,9 @@
                                     <div class="border rounded-3 p-4 text-center bg-light">
                                         <h5 class="mb-2">{{ __('Acheter le PDF') }}</h5>
                                         <p class="fs-4 fw-bold text-primary mb-3">{{ number_format($finalPdfPrice, 0) }} XOF</p>
-                                        <form action="{{ route('purchase.pdf', $book) }}" method="POST">
+                                        <form action="{{ route('purchase.pdf', $book) }}" method="POST" id="purchase_pdf_form">
                                             @csrf
+                                            <input type="hidden" name="book_file_id" id="purchase_pdf_file_id">
                                             <button type="submit" class="btn btn-primary w-100 btn-lg hover-shadow">
                                                 <i class="fas fa-shopping-cart me-2"></i> {{ __('Acheter maintenant') }}
                                             </button>
@@ -189,21 +213,45 @@
                         @endif
 
                         <!-- Audio Access -->
-                        @if($book->audio_file)
+                        @if($book->audio_file || $book->files->where('file_type', 'audio')->count() > 0)
                             <div class="mb-4 pt-3 border-top">
                                 <h5 class="mb-3 text-success">
                                     <i class="fas fa-headphones me-2"></i> {{ __('Écoute audio') }}
                                 </h5>
+
+                                @php
+                                    $audioFiles = $book->files->where('file_type', 'audio');
+                                    $hasDefaultAudio = !empty($book->audio_file);
+                                @endphp
+
+                                @if($hasDefaultAudio || $audioFiles->count() > 0)
+                                    <div class="mb-3">
+                                        <label for="audio_language_select" class="form-label">{{ __('Sélectionner la langue de l\'audio') }}</label>
+                                        <select class="form-select" id="audio_language_select" data-book-id="{{ $book->id }}">
+                                            @if($hasDefaultAudio)
+                                                <option value="default" data-file-id="default" data-path="{{ Storage::url($book->audio_file) }}" data-duration="{{ $book->audio_duration ?? 0 }}">{{ $book->language ? $book->language . ' (Original)' : 'Original' }}</option>
+                                            @endif
+                                            @foreach($audioFiles as $file)
+                                                @php
+                                                    $langName = collect($availableLanguages)->firstWhere('code', $file->language)['name'] ?? $file->language;
+                                                @endphp
+                                                <option value="{{ $file->language }}" data-file-id="{{ $file->id }}" data-path="{{ Storage::url($file->path) }}" data-duration="{{ $file->duration ?? 0 }}">{{ $langName }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @endif
+
                                 @if(auth()->user()->hasAccessToBook($book))
                                     <a href="{{ route('listen.book', $book) }}"
-                                       class="btn btn-success btn-lg w-100 hover-shadow">
+                                       class="btn btn-success btn-lg w-100 hover-shadow" id="listen_audio_link">
                                         <i class="fas fa-play me-2"></i> {{ __('Écouter maintenant') }}
                                     </a>
                                 @else
                                     <div class="text-center p-3 border rounded-3 bg-light">
                                         <p class="fs-5 fw-bold text-success mb-3">{{ number_format($book->audio_price, 0) }} XOF</p>
-                                        <form action="{{ route('purchase.audio', $book) }}" method="POST">
+                                        <form action="{{ route('purchase.audio', $book) }}" method="POST" id="purchase_audio_form">
                                             @csrf
+                                            <input type="hidden" name="book_file_id" id="purchase_audio_file_id">
                                             <button type="submit" class="btn btn-outline-success w-100 hover-shadow">
                                                 <i class="fas fa-shopping-cart me-2"></i> {{ __("Acheter l'audio") }}
                                             </button>
@@ -341,25 +389,21 @@
                         <span>{{ $book->published_year ?? '—' }}</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between py-3">
-                        <span class="fw-semibold text-muted">{{ __('Langue') }}</span>
+                        <span class="fw-semibold text-muted">{{ __('Langue (Original)') }}</span>
                         <span>{{ $book->language ?? '—' }}</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between py-3">
                         <span class="fw-semibold text-muted">{{ __('ISBN') }}</span>
                         <span>{{ $book->isbn ?? '—' }}</span>
                     </li>
-                    @if($book->pdf_file)
-                        <li class="list-group-item d-flex justify-content-between py-3">
-                            <span class="fw-semibold text-muted">{{ __('Pages') }}</span>
-                            <span><strong>{{ $book->pdf_pages }}</strong> {{ __('pages') }}</span>
-                        </li>
-                    @endif
-                    @if($book->audio_file)
-                        <li class="list-group-item d-flex justify-content-between py-3">
-                            <span class="fw-semibold text-muted">{{ __('Durée audio') }}</span>
-                            <span><strong>{{ $book->audio_duration }}</strong> {{ __('min') }}</span>
-                        </li>
-                    @endif
+                    <li class="list-group-item d-flex justify-content-between py-3">
+                        <span class="fw-semibold text-muted">{{ __('Pages (Original PDF)') }}</span>
+                        <span id="display_pdf_pages">{{ $book->pdf_pages ?? '—' }} {{ __('pages') }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between py-3">
+                        <span class="fw-semibold text-muted">{{ __('Durée audio (Original)') }}</span>
+                        <span id="display_audio_duration">{{ $book->audio_duration ? $book->audio_duration . ' min' : '—' }}</span>
+                    </li>
                 </ul>
             </div>
 
@@ -455,29 +499,80 @@
 
 @push('scripts')
 <script>
-    // Étoiles interactives
-    document.querySelectorAll('.star-rating input').forEach(input => {
-        input.addEventListener('change', () => {
-            const value = input.value;
-            const labels = input.closest('.star-rating').querySelectorAll('label');
-            labels.forEach((label, idx) => {
-                const starIndex = 5 - idx;
-                const icon = label.querySelector('i');
-                if (starIndex <= value) {
-                    label.classList.add('text-warning');
-                    icon.classList.replace('far', 'fas');
-                } else {
-                    label.classList.remove('text-warning');
-                    icon.classList.replace('fas', 'far');
-                }
-            });
-        });
-    });
+    document.addEventListener('DOMContentLoaded', function () {
+        // Function to update PDF links based on selected language
+        function updatePdfLinks() {
+            const select = document.getElementById('pdf_language_select');
+            if (!select) return;
 
-    // Tooltips
-    document.addEventListener('DOMContentLoaded', () => {
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-        tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+            const selectedOption = select.options[select.selectedIndex];
+            const fileId = selectedOption.dataset.fileId;
+            const pdfPages = selectedOption.dataset.pages;
+
+            const readPdfLink = document.getElementById('read_pdf_link');
+            const downloadPdfLink = document.getElementById('download_pdf_link');
+            const purchasePdfForm = document.getElementById('purchase_pdf_form');
+            const purchasePdfFileIdInput = document.getElementById('purchase_pdf_file_id');
+            const displayPdfPages = document.getElementById('display_pdf_pages');
+
+            if (readPdfLink) {
+                let url = `{{ route('read.book', $book) }}`;
+                if (fileId !== 'default') {
+                    url += `?file_id=${fileId}`;
+                }
+                readPdfLink.href = url;
+            }
+            if (downloadPdfLink) {
+                let url = `{{ route('book.secure_download', $book) }}`;
+                if (fileId !== 'default') {
+                    url += `?file_id=${fileId}`;
+                }
+                downloadPdfLink.href = url;
+            }
+            if (purchasePdfForm && purchasePdfFileIdInput) {
+                purchasePdfFileIdInput.value = (fileId !== 'default') ? fileId : '';
+            }
+            if (displayPdfPages) {
+                displayPdfPages.textContent = `${pdfPages} {{ __('pages') }}`;
+            }
+        }
+
+        // Function to update Audio links based on selected language
+        function updateAudioLinks() {
+            const select = document.getElementById('audio_language_select');
+            if (!select) return;
+
+            const selectedOption = select.options[select.selectedIndex];
+            const fileId = selectedOption.dataset.fileId;
+            const audioDuration = selectedOption.dataset.duration;
+
+            const listenAudioLink = document.getElementById('listen_audio_link');
+            const purchaseAudioForm = document.getElementById('purchase_audio_form');
+            const purchaseAudioFileIdInput = document.getElementById('purchase_audio_file_id');
+            const displayAudioDuration = document.getElementById('display_audio_duration');
+
+            if (listenAudioLink) {
+                let url = `{{ route('listen.book', $book) }}`;
+                if (fileId !== 'default') {
+                    url += `?file_id=${fileId}`;
+                }
+                listenAudioLink.href = url;
+            }
+            if (purchaseAudioForm && purchaseAudioFileIdInput) {
+                purchaseAudioFileIdInput.value = (fileId !== 'default') ? fileId : '';
+            }
+            if (displayAudioDuration) {
+                displayAudioDuration.textContent = `${audioDuration} {{ __('min') }}`;
+            }
+        }
+
+        // Event listeners for language selection changes
+        document.getElementById('pdf_language_select')?.addEventListener('change', updatePdfLinks);
+        document.getElementById('audio_language_select')?.addEventListener('change', updateAudioLinks);
+
+        // Initial update when the page loads
+        updatePdfLinks();
+        updateAudioLinks();
     });
 </script>
 @endpush

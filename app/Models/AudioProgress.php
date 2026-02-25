@@ -14,6 +14,7 @@ class AudioProgress extends Model
     protected $fillable = [
         'user_id',
         'book_id',
+        'book_file_id',
         'current_position',
         'total_duration',
         'progress_percentage',

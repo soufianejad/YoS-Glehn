@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Author;
 
 use App\Http\Controllers\Controller;
 use App\Models\Book;
+use App\Models\BookFile;
 use App\Models\Category;
+use App\Models\Setting;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -36,8 +38,10 @@ class BookController extends Controller
     public function create()
     {
         $categories = Category::all();
+        $languagesSetting = Setting::where('key', 'platform.available_languages')->first();
+        $languages = $languagesSetting ? json_decode($languagesSetting->value, true) : [];
 
-        return view('author.books.create', compact('categories'));
+        return view('author.books.create', compact('categories', 'languages'));
     }
 
     public function store(Request $request)
@@ -47,36 +51,62 @@ class BookController extends Controller
             'description' => 'required|string',
             'category_id' => 'required|exists:categories,id',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'pdf_file' => 'nullable|mimes:pdf|max:10000',
-            'audio_file' => 'nullable|mimes:mp3,wav,ogg|max:20000',
-            'pdf_pages' => 'nullable|integer|min:1',
-            'audio_duration' => 'nullable|integer|min:1',
             'isbn' => 'nullable|string|max:255|unique:books',
             'published_year' => 'nullable|integer|min:1000|max:'.(date('Y') + 1),
-            'language' => 'nullable|string|max:255',
             'space' => 'required|string|in:public,educational,adult',
             'content_type' => 'required|string|in:free,premium',
             'pdf_price' => 'nullable|numeric|min:0',
             'audio_price' => 'nullable|numeric|min:0',
             'status' => 'required|string|in:draft,pending,published,archived',
+            'files.*.language' => 'required|string|max:255',
+            'files.*.pdf_file' => 'nullable|mimes:pdf|max:10000',
+            'files.*.audio_file' => 'nullable|mimes:mp3,wav,ogg|max:20000',
+            'files.*.pdf_pages' => 'nullable|integer|min:1',
+            'files.*.audio_duration' => 'nullable|integer|min:1',
         ]);
 
-        $bookData = $request->except(['cover_image', 'pdf_file', 'audio_file']);
+        $bookData = $request->except([
+            'cover_image',
+            'pdf_file',
+            'audio_file',
+            'pdf_pages',
+            'audio_duration',
+            'language',
+            'files' // Exclude the files array from direct bookData
+        ]);
         $bookData['author_id'] = auth()->id();
 
         if ($request->hasFile('cover_image')) {
             $bookData['cover_image'] = $request->file('cover_image')->store('books/covers', 'public');
         }
-        if ($request->hasFile('pdf_file')) {
-            $bookData['pdf_file'] = $request->file('pdf_file')->store('books/pdfs');
-        }
-        if ($request->hasFile('audio_file')) {
-            $bookData['audio_file'] = $request->file('audio_file')->store('books/audios', 'public');
-        }
 
         $bookData['slug'] = Str::slug($request->title);
 
-        Book::create($bookData);
+        $book = Book::create($bookData);
+
+        // Handle multi-language files
+        if ($request->has('files')) {
+            foreach ($request->file('files') as $fileEntry) {
+                if (isset($fileEntry['pdf_file']) && $fileEntry['pdf_file']->isValid()) {
+                    $path = $fileEntry['pdf_file']->store('books/pdfs');
+                    $book->files()->create([
+                        'language' => $fileEntry['language'],
+                        'file_type' => 'pdf',
+                        'path' => $path,
+                        'pages' => $fileEntry['pdf_pages'] ?? null,
+                    ]);
+                }
+                if (isset($fileEntry['audio_file']) && $fileEntry['audio_file']->isValid()) {
+                    $path = $fileEntry['audio_file']->store('books/audios', 'public');
+                    $book->files()->create([
+                        'language' => $fileEntry['language'],
+                        'file_type' => 'audio',
+                        'path' => $path,
+                        'duration' => $fileEntry['audio_duration'] ?? null,
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('author.books.index')->with('success', 'Book created successfully.');
     }
@@ -105,8 +135,11 @@ class BookController extends Controller
     {
         $this->authorize('update', $book); // Assuming a policy for Book exists
         $categories = Category::all();
+        $languagesSetting = Setting::where('key', 'platform.available_languages')->first();
+        $languages = $languagesSetting ? json_decode($languagesSetting->value, true) : [];
+        $book->load('files'); // Eager load existing book files
 
-        return view('author.books.edit', compact('book', 'categories'));
+        return view('author.books.edit', compact('book', 'categories', 'languages'));
     }
 
     public function update(Request $request, Book $book)
@@ -118,21 +151,39 @@ class BookController extends Controller
             'description' => 'required|string',
             'category_id' => 'required|exists:categories,id',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'pdf_file' => 'nullable|mimes:pdf|max:10000',
-            'audio_file' => 'nullable|mimes:mp3,wav,ogg|max:20000',
-            'pdf_pages' => 'nullable|integer|min:1',
-            'audio_duration' => 'nullable|integer|min:1',
+            'pdf_file' => 'nullable|mimes:pdf|max:10000', // Keep validation for default PDF
+            'audio_file' => 'nullable|mimes:mp3,wav,ogg|max:20000', // Keep validation for default Audio
             'isbn' => 'nullable|string|max:255|unique:books,isbn,'.$book->id,
             'published_year' => 'nullable|integer|min:1000|max:'.(date('Y') + 1),
-            'language' => 'nullable|string|max:255',
             'space' => 'required|string|in:public,educational,adult',
             'content_type' => 'required|string|in:free,premium',
             'pdf_price' => 'nullable|numeric|min:0',
             'audio_price' => 'nullable|numeric|min:0',
             'status' => 'required|string|in:draft,pending,published,archived',
+            'existing_files.*.language' => 'required|string|max:255',
+            'existing_files.*.pdf_file' => 'nullable|mimes:pdf|max:10000',
+            'existing_files.*.audio_file' => 'nullable|mimes:mp3,wav,ogg|max:20000',
+            'existing_files.*.pdf_pages' => 'nullable|integer|min:1',
+            'existing_files.*.audio_duration' => 'nullable|integer|min:1',
+            'new_files.*.language' => 'required|string|max:255',
+            'new_files.*.pdf_file' => 'nullable|mimes:pdf|max:10000',
+            'new_files.*.audio_file' => 'nullable|mimes:mp3,wav,ogg|max:20000',
+            'new_files.*.pdf_pages' => 'nullable|integer|min:1',
+            'new_files.*.audio_duration' => 'nullable|integer|min:1',
         ]);
 
-        $bookData = $request->except(['cover_image', 'pdf_file', 'audio_file']);
+        $bookData = $request->except([
+            'cover_image',
+            'existing_files',
+            'new_files',
+            'deleted_files',
+            // Keep pdf_file, audio_file for the main book record as per user request
+            // 'pdf_file',
+            // 'audio_file',
+            // 'pdf_pages',
+            // 'audio_duration',
+            // 'language',
+        ]);
 
         if ($request->hasFile('cover_image')) {
             if ($book->cover_image) {
@@ -140,12 +191,14 @@ class BookController extends Controller
             }
             $bookData['cover_image'] = $request->file('cover_image')->store('books/covers', 'public');
         }
+        // Handle main PDF file
         if ($request->hasFile('pdf_file')) {
             if ($book->pdf_file) {
                 Storage::delete($book->pdf_file);
             }
             $bookData['pdf_file'] = $request->file('pdf_file')->store('books/pdfs');
         }
+        // Handle main Audio file
         if ($request->hasFile('audio_file')) {
             if ($book->audio_file) {
                 Storage::disk('public')->delete($book->audio_file);
@@ -153,9 +206,72 @@ class BookController extends Controller
             $bookData['audio_file'] = $request->file('audio_file')->store('books/audios', 'public');
         }
 
+
         $bookData['slug'] = Str::slug($request->title);
 
         $book->update($bookData);
+
+        // Handle deleted files
+        if ($request->has('deleted_files')) {
+            foreach ($request->input('deleted_files') as $fileId) {
+                $bookFile = $book->files()->find($fileId);
+                if ($bookFile) {
+                    Storage::delete($bookFile->path);
+                    $bookFile->delete();
+                }
+            }
+        }
+
+        // Handle existing multi-language files
+        if ($request->has('existing_files')) {
+            foreach ($request->input('existing_files') as $fileId => $fileData) {
+                $bookFile = $book->files()->find($fileId);
+                if ($bookFile) {
+                    $bookFile->language = $fileData['language'];
+
+                    if (isset($fileData['pdf_file']) && $fileData['pdf_file']->isValid()) {
+                        Storage::delete($bookFile->path); // Delete old file
+                        $path = $fileData['pdf_file']->store('books/pdfs');
+                        $bookFile->file_type = 'pdf';
+                        $bookFile->path = $path;
+                        $bookFile->pages = $fileData['pdf_pages'] ?? null;
+                        $bookFile->duration = null;
+                    } elseif (isset($fileData['audio_file']) && $fileData['audio_file']->isValid()) {
+                        Storage::delete($bookFile->path); // Delete old file
+                        $path = $fileData['audio_file']->store('books/audios', 'public');
+                        $bookFile->file_type = 'audio';
+                        $bookFile->path = $path;
+                        $bookFile->duration = $fileData['audio_duration'] ?? null;
+                        $bookFile->pages = null;
+                    }
+                    $bookFile->save();
+                }
+            }
+        }
+
+        // Handle new multi-language files
+        if ($request->has('new_files')) {
+            foreach ($request->file('new_files') as $fileEntry) {
+                if (isset($fileEntry['pdf_file']) && $fileEntry['pdf_file']->isValid()) {
+                    $path = $fileEntry['pdf_file']->store('books/pdfs');
+                    $book->files()->create([
+                        'language' => $fileEntry['language'],
+                        'file_type' => 'pdf',
+                        'path' => $path,
+                        'pages' => $fileEntry['pdf_pages'] ?? null,
+                    ]);
+                }
+                if (isset($fileEntry['audio_file']) && $fileEntry['audio_file']->isValid()) {
+                    $path = $fileEntry['audio_file']->store('books/audios', 'public');
+                    $book->files()->create([
+                        'language' => $fileEntry['language'],
+                        'file_type' => 'audio',
+                        'path' => $path,
+                        'duration' => $fileEntry['audio_duration'] ?? null,
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('author.books.index')->with('success', 'Book updated successfully.');
     }
@@ -172,6 +288,12 @@ class BookController extends Controller
         }
         if ($book->audio_file) {
             Storage::disk('public')->delete($book->audio_file);
+        }
+
+        // Delete associated multi-language files
+        foreach ($book->files as $bookFile) {
+            Storage::delete($bookFile->path);
+            $bookFile->delete();
         }
 
         $book->delete();

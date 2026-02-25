@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\AudioProgress;
 use App\Models\Book;
+use App\Models\BookFile;
 use App\Models\Payment;
 use App\Models\Purchase;
 use App\Models\ReadingProgress;
 use App\Models\Review;
+use App\Models\Setting;
 use App\Models\Subscription;
 use App\Services\BadgeService;
 use App\Services\NotificationService;
@@ -43,6 +45,10 @@ class BookController extends Controller
         $discountedPdfPrice = null;
         $hasPurchasedBook = false;
         $hasActiveSubscription = false;
+
+        $book->load('files'); // Eager load multi-language files
+        $languagesSetting = Setting::where('key', 'platform.available_languages')->first();
+        $availableLanguages = $languagesSetting ? json_decode($languagesSetting->value, true) : [];
 
         if (auth()->check()) {
             $user = auth()->user();
@@ -85,7 +91,8 @@ class BookController extends Controller
             'discountedPdfPrice',
             'hasPurchasedBook',
             'hasActiveSubscription',
-            'relatedBooks'
+            'relatedBooks',
+            'availableLanguages'
         ));
     }
 
@@ -108,9 +115,24 @@ class BookController extends Controller
         return $user->hasAccessToBook($book);
     }
 
-    public function read(Book $book)
+    public function read(Book $book, Request $request)
     {
-        if (! $book->pdf_file) {
+        $bookFile = null;
+        if ($request->has('file_id') && $request->file_id !== 'default') {
+            $bookFile = BookFile::where('book_id', $book->id)
+                                ->where('id', $request->file_id)
+                                ->where('file_type', 'pdf')
+                                ->first();
+            if (!$bookFile) {
+                abort(404, 'Version PDF non disponible pour ce livre dans la langue sélectionnée.');
+            }
+        }
+
+        // Determine which PDF file and page count to use
+        $pdfPath = $bookFile ? $bookFile->path : $book->pdf_file;
+        $pdfPages = $bookFile ? $bookFile->pages : $book->pdf_pages;
+
+        if (! $pdfPath) {
             abort(404, 'PDF non disponible pour ce livre.');
         }
 
@@ -141,7 +163,7 @@ class BookController extends Controller
         $token = Str::random(40);
         session(['pdf_access_token' => $token]);
 
-        return view('book.read', compact('book', 'initialPage', 'token', 'canDownload', 'relatedBooks'));
+        return view('book.read', compact('book', 'initialPage', 'token', 'canDownload', 'relatedBooks', 'bookFile'));
     }
 
     public function servePdfContent(Request $request, Book $book)
@@ -157,21 +179,34 @@ class BookController extends Controller
         // Invalidate the token to prevent reuse (commented out to prevent issues with range requests)
         // $request->session()->forget('pdf_access_token');
 
-        if (! $book->pdf_file) {
-            abort(404, 'PDF non disponible pour ce livre.');
-        }
-
         if (! $this->hasPdfAccess($book)) {
             abort(403, 'Accès non autorisé.');
         }
 
         $filePath = null;
+        $fileToServe = null;
+
+        if ($request->has('file_id') && $request->file_id !== 'default') {
+            $bookFile = BookFile::where('book_id', $book->id)
+                                ->where('id', $request->file_id)
+                                ->where('file_type', 'pdf')
+                                ->first();
+            if ($bookFile) {
+                $fileToServe = $bookFile->path;
+            }
+        } else {
+            $fileToServe = $book->pdf_file;
+        }
+
+        if (! $fileToServe) {
+            abort(404, 'PDF non disponible pour ce livre.');
+        }
 
         // Check the private disk first, then the public disk as a fallback.
-        if (Storage::disk('local')->exists($book->pdf_file)) {
-            $filePath = Storage::disk('local')->path($book->pdf_file);
-        } elseif (Storage::disk('public')->exists($book->pdf_file)) {
-            $filePath = Storage::disk('public')->path($book->pdf_file);
+        if (Storage::disk('local')->exists($fileToServe)) {
+            $filePath = Storage::disk('local')->path($fileToServe);
+        } elseif (Storage::disk('public')->exists($fileToServe)) {
+            $filePath = Storage::disk('public')->path($fileToServe);
         } else {
             abort(404, 'Fichier non trouvé sur le serveur.');
         }
@@ -188,17 +223,27 @@ class BookController extends Controller
             'total_pages' => 'required|integer|min:1',
             'current_page' => 'required|integer|min:0|lte:total_pages',
             'time_spent' => 'nullable|integer|min:0',
+            'book_file_id' => 'nullable|integer|exists:book_files,id',
         ]);
 
         $user = auth()->user();
+        $bookFile = null;
+        $pdfPages = $book->pdf_pages;
+
+        if ($request->has('book_file_id')) {
+            $bookFile = BookFile::find($request->book_file_id);
+            if ($bookFile && $bookFile->file_type === 'pdf') {
+                $pdfPages = $bookFile->pages;
+            }
+        }
 
         $progress = ReadingProgress::firstOrCreate(
-            ['user_id' => $user->id, 'book_id' => $book->id],
-            ['current_page' => 0, 'total_pages' => $book->pdf_pages ?? $request->total_pages, 'progress_percentage' => 0, 'time_spent' => 0]
+            ['user_id' => $user->id, 'book_id' => $book->id, 'book_file_id' => $request->book_file_id],
+            ['current_page' => 0, 'total_pages' => $pdfPages ?? $request->total_pages, 'progress_percentage' => 0, 'time_spent' => 0]
         );
 
         $progress->current_page = $request->current_page;
-        $progress->total_pages = $book->pdf_pages ?? $request->total_pages;
+        $progress->total_pages = $pdfPages ?? $request->total_pages;
         $progress->progress_percentage = ($request->current_page / $progress->total_pages) * 100;
         $progress->time_spent += $request->time_spent ?? 0;
         $progress->last_read_at = now();
@@ -233,10 +278,32 @@ class BookController extends Controller
     }
     */
 
-    public function listen(Book $book)
+    public function listen(Book $book, Request $request)
     {
-        if (! $book->audio_file) {
-            abort(404, 'Audio not available for this book.');
+        $bookFile = null;
+        if ($request->has('file_id') && $request->file_id !== 'default') {
+            $bookFile = BookFile::where('book_id', $book->id)
+                                ->where('id', $request->file_id)
+                                ->where('file_type', 'audio')
+                                ->first();
+            if (!$bookFile) {
+                abort(404, 'Version audio non disponible pour ce livre dans la langue sélectionnée.');
+            }
+        }
+
+        // Determine which audio file and duration to use
+        $audioPath = $bookFile ? $bookFile->path : $book->audio_file;
+        $audioDuration = $bookFile ? $bookFile->duration : $book->audio_duration;
+
+        if (! $audioPath) {
+            abort(404, 'Audio non disponible pour ce livre.');
+        }
+
+        // Check for access (assuming hasPdfAccess check is sufficient for audio for now or create a new hasAudioAccess)
+        // If a separate access control for audio is needed, implement it here.
+        // For simplicity, we'll reuse hasPdfAccess or ensure it covers both if logic allows.
+        if (! $this->hasPdfAccess($book)) { // Reusing for now, but ideally would be hasAudioAccess
+             abort(403, 'Accès non autorisé. Vous devez acheter cet audio ou avoir un abonnement actif.');
         }
 
         $initialPosition = 0;
@@ -248,7 +315,7 @@ class BookController extends Controller
             $initialPosition = $audioProgress ? $audioProgress->current_position : 0;
         }
 
-        return view('book.listen', compact('book', 'initialPosition'));
+        return view('book.listen', compact('book', 'initialPosition', 'bookFile', 'audioPath', 'audioDuration'));
     }
 
     public function updateAudioProgress(Request $request, Book $book)
@@ -257,17 +324,27 @@ class BookController extends Controller
             'total_duration' => 'required|integer|min:1',
             'current_position' => 'required|integer|min:0|lte:total_duration',
             'playback_speed' => 'nullable|numeric|min:0.5|max:3',
+            'book_file_id' => 'nullable|integer|exists:book_files,id',
         ]);
 
         $user = auth()->user();
+        $bookFile = null;
+        $audioDuration = $book->audio_duration;
+
+        if ($request->has('book_file_id')) {
+            $bookFile = BookFile::find($request->book_file_id);
+            if ($bookFile && $bookFile->file_type === 'audio') {
+                $audioDuration = $bookFile->duration;
+            }
+        }
 
         $progress = AudioProgress::firstOrCreate(
-            ['user_id' => $user->id, 'book_id' => $book->id],
-            ['current_position' => 0, 'total_duration' => $book->audio_duration ?? $request->total_duration, 'progress_percentage' => 0, 'playback_speed' => 1.0]
+            ['user_id' => $user->id, 'book_id' => $book->id, 'book_file_id' => $request->book_file_id],
+            ['current_position' => 0, 'total_duration' => $audioDuration ?? $request->total_duration, 'progress_percentage' => 0, 'playback_speed' => 1.0]
         );
 
         $progress->current_position = $request->current_position;
-        $progress->total_duration = $book->audio_duration ?? $request->total_duration;
+        $progress->total_duration = $audioDuration ?? $request->total_duration;
         $progress->progress_percentage = ($request->current_position / $progress->total_duration) * 100;
         $progress->playback_speed = $request->playback_speed ?? 1.0;
         $progress->last_listened_at = now();
@@ -353,13 +430,17 @@ class BookController extends Controller
         return back()->with('success', 'Review deleted successfully!');
     }
 
-    public function purchasePdf(Book $book)
+    public function purchasePdf(Book $book, Request $request)
     {
+        $request->validate([
+            'book_file_id' => 'nullable|integer|exists:book_files,id',
+        ]);
+
         $user = auth()->user();
 
         $purchaseType = $book->is_downloadable ? 'pdf_download' : 'pdf';
 
-        // Check if the user has already purchased this PDF
+        // Check if the user has already purchased this PDF (for the specific book, not necessarily specific file)
         $existingPurchase = Purchase::where('user_id', $user->id)
             ->where('book_id', $book->id)
             ->whereIn('purchase_type', ['pdf', 'pdf_download'])
@@ -396,6 +477,7 @@ class BookController extends Controller
         Purchase::create([
             'user_id' => $user->id,
             'book_id' => $book->id,
+            'book_file_id' => $request->book_file_id, // Store the specific book_file_id if provided
             'payment_id' => $payment->id,
             'purchase_type' => $purchaseType,
             'price' => $amount,
@@ -426,10 +508,29 @@ class BookController extends Controller
         return back()->with('success', 'Your purchase is complete! You can now download the book.');
     }
 
-    public function secureDownload(Book $book)
+    public function secureDownload(Book $book, Request $request)
     {
-        if (! $book->is_downloadable || ! $book->pdf_file) {
-            abort(404, 'Ce livre n\'est pas disponible au téléchargement ou le fichier PDF est manquant.');
+        if (! $book->is_downloadable) {
+            abort(404, 'Ce livre n\'est pas disponible au téléchargement.');
+        }
+
+        $fileToDownload = null;
+        $bookFile = null;
+
+        if ($request->has('file_id') && $request->file_id !== 'default') {
+            $bookFile = BookFile::where('book_id', $book->id)
+                                ->where('id', $request->file_id)
+                                ->where('file_type', 'pdf')
+                                ->first();
+            if ($bookFile) {
+                $fileToDownload = $bookFile->path;
+            }
+        } else {
+            $fileToDownload = $book->pdf_file;
+        }
+
+        if (! $fileToDownload) {
+            abort(404, 'Le fichier PDF n\'est pas disponible pour ce livre.');
         }
 
         $user = auth()->user();
@@ -445,7 +546,7 @@ class BookController extends Controller
             abort(403, 'Accès non autorisé. Vous devez acheter ce livre pour le télécharger.');
         }
 
-        $filePath = storage_path('app/'.$book->pdf_file);
+        $filePath = storage_path('app/'.$fileToDownload);
 
         if (! file_exists($filePath)) {
             abort(404, 'Fichier non trouvé.');
@@ -454,11 +555,15 @@ class BookController extends Controller
         return response()->download($filePath, Str::slug($book->title).'.pdf');
     }
 
-    public function purchaseAudio(Book $book)
+    public function purchaseAudio(Book $book, Request $request)
     {
+        $request->validate([
+            'book_file_id' => 'nullable|integer|exists:book_files,id',
+        ]);
+
         $user = auth()->user();
 
-        // Check if the user has already purchased this audio book
+        // Check if the user has already purchased this audio book (for the specific book, not necessarily specific file)
         $existingPurchase = Purchase::where('user_id', $user->id)
             ->where('book_id', $book->id)
             ->where('purchase_type', 'audio')
@@ -485,6 +590,7 @@ class BookController extends Controller
         Purchase::create([
             'user_id' => $user->id,
             'book_id' => $book->id,
+            'book_file_id' => $request->book_file_id, // Store the specific book_file_id if provided
             'payment_id' => $payment->id,
             'purchase_type' => 'audio',
             'price' => $book->audio_price,

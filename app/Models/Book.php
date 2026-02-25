@@ -145,6 +145,14 @@ class Book extends Model
     }
 
     /**
+     * Additional files for the book (PDF, audio) in different languages.
+     */
+    public function files(): HasMany
+    {
+        return $this->hasMany(BookFile::class);
+    }
+
+    /**
      * Nombre total de lectures
      */
     public function getReadsCountAttribute()

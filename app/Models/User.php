@@ -333,6 +333,10 @@ class User extends Authenticatable
         // Si achat individuel
         return $this->purchases()
             ->where('book_id', $book->id)
+            ->where(function ($query) {
+                $query->whereNull('book_file_id') // Purchased the main book
+                    ->orWhereNotNull('book_file_id'); // Purchased a specific language file
+            })
             ->where('is_active', true)
             ->exists();
     }
@@ -347,6 +351,10 @@ class User extends Authenticatable
         return $this->purchases()
             ->where('book_id', $book->id)
             ->where('purchase_type', 'pdf_download')
+            ->where(function ($query) {
+                $query->whereNull('book_file_id') // Purchased the main downloadable PDF
+                    ->orWhereNotNull('book_file_id'); // Purchased a specific language downloadable PDF
+            })
             ->where('is_active', true)
             ->exists();
     }
@@ -398,9 +406,17 @@ class User extends Authenticatable
     /**
      * Get the reading progress for a specific book.
      */
-    public function getReadingProgressFor(Book $book): ?ReadingProgress
+    public function getReadingProgressFor(Book $book, ?int $bookFileId = null): ?ReadingProgress
     {
-        return $this->readingProgress()->where('book_id', $book->id)->first();
+        return $this->readingProgress()
+            ->where('book_id', $book->id)
+            ->when(!is_null($bookFileId), function ($query) use ($bookFileId) {
+                $query->where('book_file_id', $bookFileId);
+            })
+            ->when(is_null($bookFileId), function ($query) {
+                $query->whereNull('book_file_id');
+            })
+            ->first();
     }
 
     /**
