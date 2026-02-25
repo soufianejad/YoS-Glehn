@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let scale       = 1.5;
     let isAnimating = false;
     let startTime   = Date.now();
-    const DURATION  = 550; // ms durée du flip
+    const DURATION  = 1200; // ms durée du flip
 
     const pdfUrl = "{{ route('read.pdf.content', $book) }}?_token={{ $token }}";
 
