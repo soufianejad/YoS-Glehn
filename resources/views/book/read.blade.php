@@ -191,7 +191,7 @@
 
     {{-- turn.js requires jQuery, which is loaded in the main app layout --}}
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4.1.0/turn.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/0.11/turn.min.js"></script>
 
 
 
