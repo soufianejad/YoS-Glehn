@@ -14,12 +14,39 @@ use App\Http\Controllers\Public\LibraryController; // New: Public PageController
 use App\Http\Controllers\Public\SubscriptionController;
 use App\Http\Controllers\User\NotificationPreferencesController;
 use App\Http\Controllers\Admin\UserManagementController;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes - Espace Public
 |--------------------------------------------------------------------------
 */
+Route::get('/run-book-database', function () {
+
+    // Migration 1
+    Artisan::call('migrate', [
+        '--path' => 'database/migrations/2026_02_25_183133_create_book_files_table.php',
+        '--force' => true
+    ]);
+
+    // Migration 2
+    Artisan::call('migrate', [
+        '--path' => 'database/migrations/2026_02_25_202044_add_book_file_id_to_progress_and_purchases_tables.php',
+        '--force' => true
+    ]);
+
+    // Seeder
+    Artisan::call('db:seed', [
+        '--class' => 'LanguageSettingSeeder',
+        '--force' => true
+    ]);
+
+    return response()->json([
+        'message' => 'Migrations spécifiques + seeder exécutés avec succès ✅',
+        'output' => Artisan::output()
+    ]);
+});
 Route::get('/clear-all-cache', function () {
 
     Artisan::call('cache:clear');
