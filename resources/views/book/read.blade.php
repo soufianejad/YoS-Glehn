@@ -428,51 +428,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ── Animation de flip ─────────────────────────────── */
     async function goToPage(target, dir) {
-        if (isAnimating || !pdfDoc) return;
-        if (target < 1 || target > totalPages) return;
-        isAnimating = true;
+    if (isAnimating || !pdfDoc) return;
+    if (target < 1 || target > totalPages) return;
+    isAnimating = true;
 
-        /* 1. Préparer les trois couches :
-              canvas-back  = page cible (visible derrière)
-              flipFront    = page courante (face avant de la feuille qui part)
-              flipBack     = page cible miroir (face arrière, révélée à mi-chemin) */
-        await renderToCanvas(canvasBack, target);
-        copyCanvas(canvasFront, flipFront);
-        copyCanvas(canvasBack,  flipBack);
+    /* 1. Préparer la face avant du flipper = page courante */
+    copyCanvas(canvasFront, flipFront);
 
-        /* 2. Positionner le flipper selon la direction */
-        if (dir === 'next') {
-            /* tourne de gauche → droite (sort vers la droite) */
-            flipper.style.transformOrigin = 'left center';
-        } else {
-            /* tourne de droite → gauche */
-            flipper.style.transformOrigin = 'right center';
-        }
+    /* 2. Rendre la page cible sur la face arrière du flipper */
+    await renderToCanvas(flipBack, target);
+    /* Même taille pour canvas-back (sera copié à la fin) */
+    canvasBack.width  = flipBack.width;
+    canvasBack.height = flipBack.height;
 
-        /* Reset avant animation */
+    /* 3. Masquer canvas-front : le flipper le remplace visuellement */
+    canvasFront.style.visibility = 'hidden';
+    /* canvas-back reste vide/blanc pendant l'anim */
+    canvasBack.getContext('2d').clearRect(0, 0, canvasBack.width, canvasBack.height);
+
+    /* 4. Origin selon direction */
+    flipper.style.transformOrigin = dir === 'next' ? 'left center' : 'right center';
+    flipper.style.transition = 'none';
+    flipper.style.transform  = 'rotateY(0deg)';
+    flipper.style.visibility = 'visible';
+
+    /* 5. Reflow puis animation */
+    flipper.getBoundingClientRect();
+    flipper.style.transition = `transform ${DURATION}ms cubic-bezier(0.645, 0.045, 0.355, 1.000)`;
+    flipper.style.transform  = dir === 'next' ? 'rotateY(-180deg)' : 'rotateY(180deg)';
+
+    /* 6. Fin */
+    setTimeout(() => {
+        /* Afficher la nouvelle page sur canvas-front */
+        copyCanvas(flipBack, canvasFront);
+        canvasFront.style.visibility = 'visible';
+
+        /* Cacher le flipper */
+        flipper.style.visibility = 'hidden';
         flipper.style.transition = 'none';
-        flipper.style.transform  = dir === 'next' ? 'rotateY(0deg)' : 'rotateY(0deg)';
-        flipper.style.visibility = 'visible';
+        flipper.style.transform  = 'rotateY(0deg)';
 
-        /* 3. Forcer reflow puis lancer */
-        flipper.getBoundingClientRect();
-        flipper.style.transition = `transform ${DURATION}ms cubic-bezier(0.645, 0.045, 0.355, 1.000)`;
-        flipper.style.transform  = dir === 'next' ? 'rotateY(-180deg)' : 'rotateY(180deg)';
-
-        /* 4. Fin d'animation */
-        setTimeout(async () => {
-            /* Afficher la nouvelle page sur le canvas front */
-            copyCanvas(canvasBack, canvasFront);
-            flipper.style.visibility = 'hidden';
-            flipper.style.transition = 'none';
-            flipper.style.transform  = 'rotateY(0deg)';
-
-            currentPage = target;
-            updateUI();
-            sendProgressUpdate();
-            isAnimating = false;
-        }, DURATION);
-    }
+        currentPage = target;
+        updateUI();
+        sendProgressUpdate();
+        isAnimating = false;
+    }, DURATION);
+}
 
     /* ── UI ────────────────────────────────────────────── */
     function updateUI() {
