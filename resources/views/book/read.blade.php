@@ -176,11 +176,13 @@
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
+    z-index: 1;  /* tout en bas */
 }
 #canvas-front {
     position: relative;
-    z-index: 2;
+    z-index: 2;  /* au-dessus de back */
 }
+
 
 /* ── Feuille 3D ──────────────────────────────────────── */
 #page-flipper {
@@ -192,6 +194,8 @@
     transform-origin: left center;
     pointer-events: none;
     /* caché par défaut */
+        z-index: 3;  /* au-dessus de tout */
+
     visibility: hidden;
 }
 
@@ -427,32 +431,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ── Animation de flip ─────────────────────────────── */
-    async function goToPage(target, dir) {
+   async function goToPage(target, dir) {
     if (isAnimating || !pdfDoc) return;
     if (target < 1 || target > totalPages) return;
     isAnimating = true;
 
-    /* 1. Copier la page courante dans le flipper (face avant = ce qui part) */
+    /* 1. Copier page courante dans flipFront (face avant de la feuille qui part) */
     copyCanvas(canvasFront, flipFront);
 
-    /* 2. Rendre la nouvelle page sur canvas-BACK (en dessous, invisible sous le flipper) */
+    /* 2. Rendre nouvelle page dans canvas-back (z-index 1, en dessous) */
     await renderToCanvas(canvasBack, target);
 
-    /* 3. Le flipper couvre tout, canvas-front reste intact */
+    /* 3. Cacher canvas-front : canvas-back + flipper prennent le relais */
+    canvasFront.style.visibility = 'hidden';
+
+    /* 4. Positionner et rendre visible le flipper (z-index 3) */
     flipper.style.transformOrigin = dir === 'next' ? 'left center' : 'right center';
     flipper.style.transition = 'none';
     flipper.style.transform  = 'rotateY(0deg)';
     flipper.style.visibility = 'visible';
 
+    /* 5. Reflow puis lancer l'animation */
     flipper.getBoundingClientRect();
     flipper.style.transition = `transform ${DURATION}ms cubic-bezier(0.645, 0.045, 0.355, 1.000)`;
     flipper.style.transform  = dir === 'next' ? 'rotateY(-180deg)' : 'rotateY(180deg)';
 
-    /* 4. Fin : copier canvas-back sur canvas-front, tout cacher */
+    /* 6. Fin d'animation */
     setTimeout(() => {
+        /* Copier canvas-back dans canvas-front atomiquement */
         copyCanvas(canvasBack, canvasFront);
+        canvasFront.style.visibility = 'visible';
+
+        /* Nettoyer canvas-back */
         canvasBack.getContext('2d').clearRect(0, 0, canvasBack.width, canvasBack.height);
 
+        /* Cacher le flipper */
         flipper.style.visibility = 'hidden';
         flipper.style.transition = 'none';
         flipper.style.transform  = 'rotateY(0deg)';
