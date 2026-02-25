@@ -296,70 +296,46 @@
 
 
         function initializeFlipbook() {
+    // 1. Pré-créer toutes les pages dans le DOM avant d'init turn.js
+    for (let i = 1; i <= totalPages; i++) {
+        flipbook.append(`<div id="page-container-${i}" class="page"></div>`);
+    }
 
-            flipbook.turn({
+    // 2. Rendre les deux premières pages immédiatement
+    renderPageInto(1);
+    if (totalPages > 1) renderPageInto(2);
 
-                width: 922,
-
-                height: 600,
-
-                elevation: 50,
-
-                gradients: true,
-
-                autoCenter: true,
-
-                page: {{ $initialPage > 1 ? $initialPage : 1 }},
-
-                pages: totalPages,
-
-                when: {
-
-                    turning: function(event, page, view) {
-
-                        for (let i = 0; i < view.length; i++) {
-
-                            if (view[i] !== 0) {
-
-                                renderPageInto(view[i]);
-
-                            }
-
-                        }
-
-                    },
-
-                    turned: function(event, page, view) {
-
-                        currentPage = page;
-
-                        pageNumSpan.textContent = page;
-
-                        updateProgressBar();
-
-                        sendProgressUpdate();
-
+    // 3. Initialiser turn.js
+    flipbook.turn({
+        width: 922,
+        height: 600,
+        elevation: 50,
+        gradients: true,
+        autoCenter: true,
+        page: {{ $initialPage > 1 ? $initialPage : 1 }},
+        when: {
+            turning: function(event, page, view) {
+                for (let i = 0; i < view.length; i++) {
+                    if (view[i] !== 0) {
+                        renderPageInto(view[i]);
                     }
-
                 }
-
-            });
-
-
-
-            for (let i = 1; i <= totalPages; i++) {
-
-                const pageElement = $(`<div id="page-container-${i}" />`);
-
-                flipbook.turn('addPage', pageElement, i);
-
+            },
+            turned: function(event, page, view) {
+                currentPage = page;
+                pageNumSpan.textContent = page;
+                updateProgressBar();
+                sendProgressUpdate();
             }
-
-
-
-            loadBookmarks();
-
         }
+    });
+
+    // 4. Activer les boutons nav
+    prevBtn.disabled = false;
+    nextBtn.disabled = false;
+
+    loadBookmarks();
+}
 
 
 
