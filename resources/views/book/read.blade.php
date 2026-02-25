@@ -432,38 +432,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (target < 1 || target > totalPages) return;
     isAnimating = true;
 
-    /* 1. Préparer la face avant du flipper = page courante */
+    /* 1. Sauvegarder la page courante dans le flipper (face avant) */
     copyCanvas(canvasFront, flipFront);
 
-    /* 2. Rendre la page cible sur la face arrière du flipper */
-    await renderToCanvas(flipBack, target);
-    /* Même taille pour canvas-back (sera copié à la fin) */
-    canvasBack.width  = flipBack.width;
-    canvasBack.height = flipBack.height;
+    /* 2. Afficher IMMÉDIATEMENT la nouvelle page sur canvas-front */
+    await renderToCanvas(canvasFront, target);
 
-    /* 3. Masquer canvas-front : le flipper le remplace visuellement */
-    canvasFront.style.visibility = 'hidden';
-    /* canvas-back reste vide/blanc pendant l'anim */
-    canvasBack.getContext('2d').clearRect(0, 0, canvasBack.width, canvasBack.height);
-
-    /* 4. Origin selon direction */
+    /* 3. Positionner le flipper par-dessus (il cache temporairement la nouvelle page) */
     flipper.style.transformOrigin = dir === 'next' ? 'left center' : 'right center';
     flipper.style.transition = 'none';
     flipper.style.transform  = 'rotateY(0deg)';
     flipper.style.visibility = 'visible';
 
-    /* 5. Reflow puis animation */
+    /* 4. Reflow puis animer : l'ancienne page "part" */
     flipper.getBoundingClientRect();
     flipper.style.transition = `transform ${DURATION}ms cubic-bezier(0.645, 0.045, 0.355, 1.000)`;
     flipper.style.transform  = dir === 'next' ? 'rotateY(-180deg)' : 'rotateY(180deg)';
 
-    /* 6. Fin */
+    /* 5. Fin : cacher le flipper, la nouvelle page est déjà là */
     setTimeout(() => {
-        /* Afficher la nouvelle page sur canvas-front */
-        copyCanvas(flipBack, canvasFront);
-        canvasFront.style.visibility = 'visible';
-
-        /* Cacher le flipper */
         flipper.style.visibility = 'hidden';
         flipper.style.transition = 'none';
         flipper.style.transform  = 'rotateY(0deg)';
