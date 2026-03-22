@@ -106,8 +106,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Lecture de livres
     Route::prefix('read')->name('read.')->group(function () {
-        Route::get('/{book:slug}/{file_id?}', [BookController::class, 'read'])->name('book');
         Route::get('/secure-pdf/{book:slug}', [BookController::class, 'servePdfContent'])->name('pdf.content');
+        Route::get('/{book:slug}/{file_id?}', [BookController::class, 'read'])->name('book');
         Route::post('/{book}/progress', [BookController::class, 'updateReadingProgress'])->name('progress');
         // Route::post('/{book}/download', [BookController::class, 'download'])->name('download');
     });
@@ -124,8 +124,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Écoute audio
     Route::prefix('listen')->name('listen.')->group(function () {
-        Route::get('/{book:slug}/{file_id?}', [BookController::class, 'listen'])->name('book');
         Route::get('/secure-audio/{book:slug}', [BookController::class, 'serveAudioContent'])->name('audio.content');
+        Route::get('/{book:slug}/{file_id?}', [BookController::class, 'listen'])->name('book');
         Route::post('/{book}/progress', [BookController::class, 'updateAudioProgress'])->name('progress');
     });
 
