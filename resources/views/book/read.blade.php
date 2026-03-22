@@ -29,12 +29,31 @@
         </div>
 
         <!-- Titre -->
-        <div class="row mb-3">
-            <div class="col-12">
+        <div class="row mb-3 align-items-center">
+            <div class="col-md-8">
                 <h1 class="h3 fw-bold text-primary mb-0">{{ $book->title }}</h1>
                 @if ($book->author)
                     <p class="text-muted small mb-0">par {{ $book->author->name }}</p>
                 @endif
+            </div>
+            <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                <form action="{{ route('read.book', $book->slug) }}" method="GET" id="language-form">
+                    <div class="input-group input-group-sm">
+                        <label class="input-group-text bg-primary text-white border-primary" for="file_id">
+                            <i class="fas fa-language me-1"></i> {{ __('Langue') }}
+                        </label>
+                        <select name="file_id" id="file_id" class="form-select border-primary" onchange="this.form.submit()">
+                            <option value="default" {{ $fileId == 'default' ? 'selected' : '' }}>
+                                {{ __('Par défaut') }}
+                            </option>
+                            @foreach($book->files->where('file_type', 'pdf') as $file)
+                                <option value="{{ $file->id }}" {{ $fileId == $file->id ? 'selected' : '' }}>
+                                    {{ strtoupper($file->language) }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </form>
             </div>
         </div>
 

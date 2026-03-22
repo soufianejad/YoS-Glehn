@@ -19,6 +19,32 @@
                         <p class="text-muted">par {{ $book->author->name }}</p>
                     </div>
 
+                    @if($book->files->where('file_type', 'audio')->count() > 0 || $book->audio_file)
+                        <div class="row justify-content-center mb-4">
+                            <div class="col-md-6">
+                                <form action="{{ route('listen.book', $book->slug) }}" method="GET" id="language-form">
+                                    <div class="input-group input-group-sm">
+                                        <label class="input-group-text bg-primary text-white border-primary" for="file_id">
+                                            <i class="fas fa-language me-1"></i> {{ __('Langue Audio') }}
+                                        </label>
+                                        <select name="file_id" id="file_id" class="form-select border-primary text-center" onchange="this.form.submit()">
+                                            @if($book->audio_file)
+                                                <option value="default" {{ $fileId == 'default' ? 'selected' : '' }}>
+                                                    {{ __('Par défaut') }}
+                                                </option>
+                                            @endif
+                                            @foreach($book->files->where('file_type', 'audio') as $file)
+                                                <option value="{{ $file->id }}" {{ $fileId == $file->id ? 'selected' : '' }}>
+                                                    {{ strtoupper($file->language) }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    @endif
+
                     @if($audioPath)
                         <audio id="audioPlayer" controls class="w-100" controlsList="nodownload">
                             <source src="{{ route('listen.audio.content', $book) }}?file_id={{ $fileId }}" type="audio/mpeg">
