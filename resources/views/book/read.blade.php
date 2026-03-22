@@ -20,7 +20,7 @@
                         </button>
                     </form>
                     @if($canDownload)
-                        <a href="{{ asset('storage/' . $pdfPath) }}" download="{{ $book->slug }}.pdf" class="btn btn-success btn-sm">
+                        <a href="{{ route('read.pdf.content', $book) }}?file_id={{ $fileId }}&download=1" class="btn btn-success btn-sm">
                             <i class="bi bi-download me-1"></i> {{ __('Télécharger le PDF') }}
                         </a>
                     @endif

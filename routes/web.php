@@ -106,7 +106,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Lecture de livres
     Route::prefix('read')->name('read.')->group(function () {
-        Route::get('/secure-pdf/{book:slug}', [BookController::class, 'servePdfContent'])->name('pdf.content');
+        Route::get('/pdf-content/{book:slug}', [BookController::class, 'servePdfContent'])->name('pdf.content');
         Route::get('/{book:slug}/{file_id?}', [BookController::class, 'read'])->name('book');
         Route::post('/{book}/progress', [BookController::class, 'updateReadingProgress'])->name('progress');
         // Route::post('/{book}/download', [BookController::class, 'download'])->name('download');

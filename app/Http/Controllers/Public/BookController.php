@@ -176,9 +176,11 @@ class BookController extends Controller
             abort(404, 'Fichier PDF introuvable.');
         }
 
+        $disposition = $request->query('download') ? 'attachment' : 'inline';
+
         return response()->file($path, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline'
+            'Content-Disposition' => $disposition . '; filename="' . $book->slug . '.pdf"'
         ]);
     }
 
