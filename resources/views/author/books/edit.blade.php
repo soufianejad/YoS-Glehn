@@ -67,6 +67,12 @@
                         <!-- Dynamic File Uploads for PDF and Audio -->
                         <div id="book-files-container">
                             <h6 class="mt-4 mb-3">{{ __('Fichiers Multilingues (PDF & Audio)') }}</h6>
+                            @if(empty($languages))
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    {{ __('Aucune langue n\'est configurée sur la plateforme. Veuillez contacter l\'administrateur pour ajouter des langues.') }}
+                                </div>
+                            @endif
                             @foreach($book->files as $index => $file)
                                 <div class="book-file-entry border p-3 mb-3 rounded" data-file-id="{{ $file->id }}">
                                     <div class="row">

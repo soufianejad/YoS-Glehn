@@ -74,6 +74,13 @@
                         <!-- Dynamic File Uploads for PDF and Audio -->
                         <div id="book-files-container">
                             <h6 class="mt-4 mb-3">{{ __('Fichiers Multilingues (PDF & Audio)') }}</h6>
+                            @if(empty($languages))
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    {{ __('Aucune langue n\'est configurée sur la plateforme.') }}
+                                    <a href="{{ route('admin.settings.languages') }}" class="alert-link">{{ __('Cliquez ici pour ajouter des langues.') }}</a>
+                                </div>
+                            @endif
                             <div class="book-file-entry border p-3 mb-3 rounded">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">

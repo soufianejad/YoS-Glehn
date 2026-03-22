@@ -127,8 +127,11 @@
             {{ __('System') }}
         </a>
         <ul class="p-0 collapse {{ request()->routeIs('admin.settings*') ? 'show' : '' }}" id="systemSubmenu">
-            <li style="display:block" class="nav-item {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
-                <a class="nav-link " href="{{ route('admin.settings.general') }}"><i class="fas fa-cog"></i> {{ __('Settings') }}</a>
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.settings.general') ? 'active' : '' }}">
+                <a class="nav-link " href="{{ route('admin.settings.general') }}"><i class="fas fa-cog"></i> {{ __('General Settings') }}</a>
+            </li>
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.settings.languages') ? 'active' : '' }}">
+                <a class="nav-link " href="{{ route('admin.settings.languages') }}"><i class="fas fa-language"></i> {{ __('Languages') }}</a>
             </li>
         </ul>
     </li>
