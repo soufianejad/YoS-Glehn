@@ -145,7 +145,7 @@ class BookController extends Controller
             ->take(4)
             ->get();
             
-        return view('book.read', compact('book', 'initialPage', 'canDownload', 'relatedBooks', 'bookFile', 'fileId', 'pdfPages'));
+        return view('book.read', compact('book', 'initialPage', 'canDownload', 'relatedBooks', 'bookFile', 'fileId', 'pdfPages', 'pdfPath'));
     }
 
     public function servePdfContent(Book $book, Request $request)
