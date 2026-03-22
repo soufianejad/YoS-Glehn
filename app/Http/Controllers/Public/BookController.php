@@ -3,79 +3,91 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use App\Models\AudioProgress;
 use App\Models\Book;
 use App\Models\BookFile;
-use App\Models\Payment;
-use App\Models\Purchase;
+use App\Models\Category;
 use App\Models\ReadingProgress;
+use App\Models\AudioProgress;
+use App\Models\Purchase;
 use App\Models\Review;
 use App\Models\Setting;
-use App\Models\Subscription;
 use App\Services\BadgeService;
-use App\Services\NotificationService;
-use App\Services\RevenueCalculatorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class BookController extends Controller
 {
-    protected $revenueCalculator;
-
-    protected $notificationService;
-
     protected $badgeService;
 
-    public function __construct(
-        RevenueCalculatorService $revenueCalculator,
-        NotificationService $notificationService,
-        BadgeService $badgeService
-    ) {
-        $this->revenueCalculator = $revenueCalculator;
-        $this->notificationService = $notificationService;
+    public function __construct(BadgeService $badgeService)
+    {
         $this->badgeService = $badgeService;
+    }
+
+    public function index(Request $request)
+    {
+        $search = $request->input('search');
+        $categoryId = $request->input('category');
+        $space = $request->input('space', 'public');
+
+        $query = Book::with(['author', 'category'])
+            ->where('status', 'published')
+            ->where('space', $space);
+
+        if ($search) {
+            $query->where('title', 'like', "%{$search}%");
+        }
+
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+
+        $books = $query->latest()->paginate(12)->withQueryString();
+        $categories = Category::all();
+
+        return view('book.index', compact('books', 'categories', 'search', 'categoryId', 'space'));
     }
 
     public function show(Book $book)
     {
+        $book->load(['author', 'category', 'reviews.user', 'files']);
+        
         $readingProgress = null;
         $audioProgress = null;
-        $finalPdfPrice = $book->pdf_price;
-        $discountedPdfPrice = null;
-        $hasPurchasedBook = false;
-        $hasActiveSubscription = false;
-
-        $book->load('files'); // Eager load multi-language files
-        $languagesSetting = Setting::where('key', 'platform.available_languages')->first();
-        $availableLanguages = $languagesSetting ? json_decode($languagesSetting->value, true) : [];
 
         if (auth()->check()) {
-            $user = auth()->user();
-            $readingProgress = $user->getReadingProgressFor($book);
-            $audioProgress = AudioProgress::where('user_id', $user->id)->where('book_id', $book->id)->first();
-
-            // Vérifier si l'utilisateur a un abonnement actif
-            $hasActiveSubscription = $user->hasActiveSubscription();
-
-            // Vérifier si l'utilisateur a déjà acheté le livre (lecture en ligne ou téléchargement)
-            $hasPurchasedBook = Purchase::where('user_id', $user->id)
+            $readingProgress = ReadingProgress::where('user_id', auth()->id())
                 ->where('book_id', $book->id)
-                ->whereIn('purchase_type', ['pdf', 'pdf_download'])
-                ->where('is_active', true)
-                ->exists();
-
-            // Appliquer la réduction pour les abonnés qui n'ont pas encore acheté le livre et si le livre est téléchargeable
-            if ($hasActiveSubscription && $book->is_downloadable && ! $hasPurchasedBook) {
-                $discountPercentage = config('plateform.downloads.subscription_discount_percentage', 0);
-                if ($discountPercentage > 0) {
-                    $discountedPdfPrice = $book->pdf_price * (1 - ($discountPercentage / 100));
-                    $finalPdfPrice = $discountedPdfPrice;
-                }
-            }
+                ->first();
+            
+            $audioProgress = AudioProgress::where('user_id', auth()->id())
+                ->where('book_id', $book->id)
+                ->first();
         }
 
-        // Fetch related books from the same category
+        // Available languages for this book (from book_files)
+        $availableLanguages = $book->files->pluck('language')->unique();
+
+        // Calculate prices with any potential discounts
+        $finalPdfPrice = $book->pdf_price;
+        $finalAudioPrice = $book->audio_price;
+
+        // Check if user has purchased the book
+        $hasPurchasedBook = false;
+        if (auth()->check()) {
+            $hasPurchasedBook = Purchase::where('user_id', auth()->id())
+                ->where('book_id', $book->id)
+                ->exists();
+        }
+
+        // Check if user has active subscription (if applicable)
+        $hasActiveSubscription = false;
+        if (auth()->check()) {
+             $hasActiveSubscription = auth()->user()->subscriptions()->where('status', 'active')->exists();
+        }
+
+        // Related books
         $relatedBooks = Book::where('category_id', $book->category_id)
             ->where('id', '!=', $book->id)
             ->where('status', 'published')
@@ -88,7 +100,6 @@ class BookController extends Controller
             'readingProgress',
             'audioProgress',
             'finalPdfPrice',
-            'discountedPdfPrice',
             'hasPurchasedBook',
             'hasActiveSubscription',
             'relatedBooks',
@@ -96,36 +107,16 @@ class BookController extends Controller
         ));
     }
 
-    public function incrementViews(Book $book)
-    {
-        $book->increment('views'); // Assuming a 'views' column exists in the books table
-
-        return response()->json(['views' => $book->views]);
-    }
-
-    private function hasPdfAccess(Book $book): bool
-    {
-        if (! auth()->check()) {
-            return false;
-        }
-
-        $user = auth()->user();
-
-        // Utilise la méthode centralisée dans le modèle User
-        return $user->hasAccessToBook($book);
-    }
-
     public function read(Book $book, Request $request)
     {
         $bookFile = null;
-        if ($request->has('file_id') && $request->file_id !== 'default') {
+        $fileId = $request->query('file_id', 'default');
+        
+        if ($fileId !== 'default') {
             $bookFile = BookFile::where('book_id', $book->id)
-                                ->where('id', $request->file_id)
+                                ->where('id', $fileId)
                                 ->where('file_type', 'pdf')
                                 ->first();
-            if (!$bookFile) {
-                abort(404, 'Version PDF non disponible pour ce livre dans la langue sélectionnée.');
-            }
         }
 
         // Determine which PDF file and page count to use
@@ -136,11 +127,8 @@ class BookController extends Controller
             abort(404, 'PDF non disponible pour ce livre.');
         }
 
-        if (! $this->hasPdfAccess($book)) {
-            abort(403, 'Accès non autorisé. Vous devez acheter ce livre ou avoir un abonnement actif.');
-        }
-
-        $this->badgeService->checkAndAwardBadges(auth()->user());
+        // Simple direct URL to the PDF on public storage
+        $pdfUrl = asset('storage/' . $pdfPath);
 
         $initialPage = 0;
         $canDownload = false;
@@ -150,7 +138,7 @@ class BookController extends Controller
                 ->where('book_id', $book->id)
                 ->first();
             $initialPage = $readingProgress ? $readingProgress->current_page : 0;
-            $canDownload = $user->canDownloadBook($book);
+            $canDownload = $book->is_downloadable;
         }
 
         $relatedBooks = Book::where('category_id', $book->category_id)
@@ -159,65 +147,42 @@ class BookController extends Controller
             ->inRandomOrder()
             ->take(4)
             ->get();
-
-        $fileId = $request->query('file_id', 'default');
             
-        $token = Str::random(40);
-        session(['pdf_access_token_'.$book->id => $token]);
-
-        return view('book.read', compact('book', 'initialPage', 'token', 'canDownload', 'relatedBooks', 'bookFile', 'fileId'));
+        return view('book.read', compact('book', 'initialPage', 'canDownload', 'relatedBooks', 'bookFile', 'fileId', 'pdfUrl', 'pdfPages'));
     }
 
-    public function servePdfContent(Request $request, Book $book)
+    public function listen(Book $book, Request $request)
     {
-        // Validate the single-use token
-        $token = $request->query('_token');
-        $sessionToken = session('pdf_access_token_'.$book->id);
-
-        if (! $token || ! $sessionToken || ! hash_equals($sessionToken, $token)) {
-            abort(403, 'Jeton d\'accès invalide ou expiré.');
-        }
-
-        // Invalidate the token to prevent reuse (commented out to prevent issues with range requests)
-        // $request->session()->forget('pdf_access_token');
-
-        if (! $this->hasPdfAccess($book)) {
-            abort(403, 'Accès non autorisé.');
-        }
-
-        $filePath = null;
-        $fileToServe = null;
+        $bookFile = null;
         $fileId = $request->query('file_id', 'default');
 
         if ($fileId !== 'default') {
             $bookFile = BookFile::where('book_id', $book->id)
                                 ->where('id', $fileId)
-                                ->where('file_type', 'pdf')
+                                ->where('file_type', 'audio')
                                 ->first();
-            if ($bookFile) {
-                $fileToServe = $bookFile->path;
-            }
-        } else {
-            $fileToServe = $book->pdf_file;
         }
 
-        if (! $fileToServe) {
-            abort(404, 'PDF non disponible pour ce livre.');
+        // Determine which audio file to use
+        $audioPath = $bookFile ? $bookFile->path : $book->audio_file;
+
+        if (! $audioPath) {
+            abort(404, 'Audio non disponible pour ce livre.');
         }
 
-        // Check the private disk first, then the public disk as a fallback.
-        if (Storage::disk('local')->exists($fileToServe)) {
-            $filePath = Storage::disk('local')->path($fileToServe);
-        } elseif (Storage::disk('public')->exists($fileToServe)) {
-            $filePath = Storage::disk('public')->path($fileToServe);
-        } else {
-            abort(404, 'Fichier non trouvé sur le serveur.');
+        // Simple direct URL to the Audio on public storage
+        $audioUrl = asset('storage/' . $audioPath);
+
+        $initialPosition = 0;
+        if (auth()->check()) {
+            $user = auth()->user();
+            $audioProgress = AudioProgress::where('user_id', $user->id)
+                ->where('book_id', $book->id)
+                ->first();
+            $initialPosition = $audioProgress ? $audioProgress->current_position : 0;
         }
 
-        // Award badges for reading the book
-        $this->badgeService->checkAndAwardBadges(auth()->user());
-
-        return response()->file($filePath);
+        return view('book.listen', compact('book', 'initialPosition', 'bookFile', 'audioPath', 'audioUrl', 'fileId'));
     }
 
     public function updateReadingProgress(Request $request, Book $book)
@@ -262,111 +227,6 @@ class BookController extends Controller
         return response()->json(['message' => 'Reading progress updated.', 'progress' => $progress]);
     }
 
-    /*
-    public function download(Book $book)
-    {
-        // Implement logic to check if user has purchased or subscribed
-        // For now, assuming direct download if pdf_file exists
-        if (!$book->pdf_file) {
-            abort(404, 'PDF not available for this book.');
-        }
-
-        $filePath = storage_path('app/public/' . $book->pdf_file);
-
-        if (!file_exists($filePath)) {
-            abort(404, 'File not found.');
-        }
-
-        return response()->download($filePath, $book->slug . '.pdf');
-    }
-    */
-
-    public function listen(Book $book, Request $request)
-    {
-        $bookFile = null;
-        $fileId = $request->query('file_id', 'default');
-
-        if ($fileId !== 'default') {
-            $bookFile = BookFile::where('book_id', $book->id)
-                                ->where('id', $fileId)
-                                ->where('file_type', 'audio')
-                                ->first();
-            if (!$bookFile) {
-                abort(404, 'Version audio non disponible pour ce livre dans la langue sélectionnée.');
-            }
-        }
-
-        // Determine which audio file and duration to use
-        $audioPath = $bookFile ? $bookFile->path : $book->audio_file;
-        $audioDuration = $bookFile ? $bookFile->duration : $book->audio_duration;
-
-        if (! $audioPath) {
-            abort(404, 'Audio non disponible pour ce livre.');
-        }
-
-        // Check for access
-        if (! $this->hasPdfAccess($book)) {
-             abort(403, 'Accès non autorisé. Vous devez acheter cet audio ou avoir un abonnement actif.');
-        }
-
-        $initialPosition = 0;
-        if (auth()->check()) {
-            $user = auth()->user();
-            $audioProgress = AudioProgress::where('user_id', $user->id)
-                ->where('book_id', $book->id)
-                ->first();
-            $initialPosition = $audioProgress ? $audioProgress->current_position : 0;
-        }
-
-        $token = Str::random(40);
-        session(['audio_access_token_'.$book->id => $token]);
-
-        return view('book.listen', compact('book', 'initialPosition', 'bookFile', 'audioPath', 'audioDuration', 'token', 'fileId'));
-    }
-
-    public function serveAudioContent(Request $request, Book $book)
-    {
-        $token = $request->query('_token');
-        $sessionToken = session('audio_access_token_'.$book->id);
-
-        if (! $token || ! $sessionToken || ! hash_equals($sessionToken, $token)) {
-            abort(403, 'Jeton d\'accès invalide ou expiré.');
-        }
-
-        $fileId = $request->query('file_id', 'default');
-        $fileToServe = null;
-
-        if ($fileId !== 'default') {
-            $bookFile = BookFile::where('book_id', $book->id)
-                                ->where('id', $fileId)
-                                ->where('file_type', 'audio')
-                                ->first();
-            if ($bookFile) {
-                $fileToServe = $bookFile->path;
-            }
-        } else {
-            $fileToServe = $book->audio_file;
-        }
-
-        if (! $fileToServe) {
-            abort(404, 'Audio non disponible pour ce livre.');
-        }
-
-        $filePath = null;
-        if (Storage::disk('public')->exists($fileToServe)) {
-            $filePath = Storage::disk('public')->path($fileToServe);
-        } elseif (Storage::disk('local')->exists($fileToServe)) {
-            $filePath = Storage::disk('local')->path($fileToServe);
-        } else {
-            abort(404, 'Fichier audio non trouvé sur le serveur.');
-        }
-
-        return response()->file($filePath, [
-            'Content-Type' => 'audio/mpeg',
-            'Accept-Ranges' => 'bytes'
-        ]);
-    }
-
     public function updateAudioProgress(Request $request, Book $book)
     {
         $request->validate([
@@ -398,263 +258,102 @@ class BookController extends Controller
         $progress->playback_speed = $request->playback_speed ?? 1.0;
         $progress->last_listened_at = now();
 
-        if ($progress->current_position >= $progress->total_duration) {
-            $progress->completed_at = now();
-        }
-
         $progress->save();
-
+        
         $this->badgeService->checkAndAwardBadges($user);
 
         return response()->json(['message' => 'Audio progress updated.', 'progress' => $progress]);
     }
 
-    public function addToFavorites(Book $book)
-    {
-        $user = auth()->user();
-        $user->favorites()->firstOrCreate(['book_id' => $book->id]);
-
-        return back()->with('success', 'Book added to favorites!');
-    }
-
-    public function removeFromFavorites(Book $book)
-    {
-        $user = auth()->user();
-        $user->favorites()->where('book_id', $book->id)->delete();
-
-        return back()->with('success', 'Book removed from favorites.');
-    }
-
     public function storeReview(Request $request, Book $book)
     {
         $request->validate([
-            'rating' => [
-                'required',
-                'integer',
-                'min:1',
-                'max:5',
-                function ($attribute, $value, $fail) use ($book) {
-                    $exists = $book->reviews()->where('user_id', auth()->id())->exists();
-                    if ($exists) {
-                        $fail('You have already reviewed this book.');
-                    }
-                },
-            ],
-            'comment' => 'nullable|string|max:1000',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'required|string|min:10',
         ]);
 
-        $review = $book->reviews()->create([
-            'user_id' => auth()->id(),
-            'rating' => $request->rating,
-            'comment' => $request->comment,
-            'is_approved' => false, // New reviews require admin approval
-        ]);
+        $review = new Review();
+        $review->user_id = auth()->id();
+        $review->book_id = $book->id;
+        $review->rating = $request->rating;
+        $review->comment = $request->comment;
+        $review->status = 'pending'; // Requires admin approval
+        $review->save();
 
-        return back()->with('success', 'Review submitted successfully and is pending approval.');
+        return back()->with('success', 'Votre avis a été soumis et sera publié après validation.');
     }
 
     public function updateReview(Request $request, Review $review)
     {
-        $this->authorize('update', $review); // Assuming a policy for Review exists
+        $this->authorize('update', $review);
 
         $request->validate([
             'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string|max:1000',
+            'comment' => 'required|string|min:10',
         ]);
 
         $review->update([
             'rating' => $request->rating,
             'comment' => $request->comment,
+            'status' => 'pending', // Re-validate on update
         ]);
 
-        return back()->with('success', 'Review updated successfully!');
+        return back()->with('success', 'Votre avis a été mis à jour et sera republié après validation.');
     }
 
     public function deleteReview(Review $review)
     {
-        $this->authorize('delete', $review); // Assuming a policy for Review exists
-
+        $this->authorize('delete', $review);
         $review->delete();
 
-        return back()->with('success', 'Review deleted successfully!');
+        return back()->with('success', 'Votre avis a été supprimé.');
     }
 
-    public function purchasePdf(Book $book, Request $request)
+    public function purchasePdf(Book $book)
     {
-        $request->validate([
-            'book_file_id' => 'nullable|integer|exists:book_files,id',
-        ]);
-
-        $user = auth()->user();
-
-        $purchaseType = $book->is_downloadable ? 'pdf_download' : 'pdf';
-
-        // Check if the user has already purchased this PDF (for the specific book, not necessarily specific file)
-        $existingPurchase = Purchase::where('user_id', $user->id)
-            ->where('book_id', $book->id)
-            ->whereIn('purchase_type', ['pdf', 'pdf_download'])
-            ->first();
-
-        if ($existingPurchase) {
-            return back()->with('error', __('You have already purchased this item.'));
-        }
-
-        $amount = $book->pdf_price;
-
-        // Apply discount if user has active subscription and book is downloadable
-        if ($user->hasActiveSubscription() && $book->is_downloadable) {
-            $discountPercentage = config('plateform.downloads.subscription_discount_percentage', 0);
-            if ($discountPercentage > 0) {
-                $amount = $book->pdf_price * (1 - ($discountPercentage / 100));
-            }
-        }
-
-        // Create a dummy payment record with completed status
-        $payment = Payment::create([
-            'user_id' => $user->id,
-            'book_id' => $book->id,
-            'transaction_id' => 'TRX-'.uniqid(),
-            'payment_type' => $purchaseType,
-            'amount' => $amount,
-            'currency' => 'XOF',
-            'payment_method' => 'simulated',
-            'payment_provider' => 'simulated',
-            'status' => 'completed', // Simulate a successful payment
-        ]);
-
-        // Create an active purchase record
+        // Simple purchase logic (should integrate with payment gateway)
         Purchase::create([
-            'user_id' => $user->id,
+            'user_id' => auth()->id(),
             'book_id' => $book->id,
-            'book_file_id' => $request->book_file_id, // Store the specific book_file_id if provided
-            'payment_id' => $payment->id,
-            'purchase_type' => $purchaseType,
-            'price' => $amount,
-            'is_active' => true, // The purchase is active immediately
+            'type' => 'pdf',
+            'amount' => $book->pdf_price,
+            'status' => 'completed',
         ]);
 
-        // Send notification
-        $this->notificationService->sendNotification(
-            $user,
-            'Achat confirmé',
-            "Merci pour votre achat du livre '{$book->title}'. Vous pouvez y accéder dès maintenant.",
-            route('reader.library'),
-            'success'
-        );
-
-        // Check for first-ever sale and notify author
-        $totalSales = Purchase::where('book_id', $book->id)->count();
-        if ($totalSales === 1 && $book->author) {
-            $this->notificationService->sendNotification(
-                $book->author,
-                'Première vente !',
-                "Félicitations ! Votre livre '{$book->title}' vient d'enregistrer sa toute première vente !",
-                route('author.dashboard'), // Or a more specific stats page
-                'success'
-            );
-        }
-
-        return back()->with('success', 'Your purchase is complete! You can now download the book.');
+        return back()->with('success', 'Merci pour votre achat ! Vous pouvez maintenant lire le PDF.');
     }
 
-    public function secureDownload(Book $book, Request $request)
+    public function purchaseAudio(Book $book)
     {
-        if (! $book->is_downloadable) {
-            abort(404, 'Ce livre n\'est pas disponible au téléchargement.');
-        }
-
-        $fileToDownload = null;
-        $bookFile = null;
-
-        if ($request->has('file_id') && $request->file_id !== 'default') {
-            $bookFile = BookFile::where('book_id', $book->id)
-                                ->where('id', $request->file_id)
-                                ->where('file_type', 'pdf')
-                                ->first();
-            if ($bookFile) {
-                $fileToDownload = $bookFile->path;
-            }
-        } else {
-            $fileToDownload = $book->pdf_file;
-        }
-
-        if (! $fileToDownload) {
-            abort(404, 'Le fichier PDF n\'est pas disponible pour ce livre.');
-        }
-
-        $user = auth()->user();
-
-        // Check if the user has purchased the downloadable PDF
-        $hasPurchasedDownload = Purchase::where('user_id', $user->id)
-            ->where('book_id', $book->id)
-            ->where('purchase_type', 'pdf_download')
-            ->where('is_active', true)
-            ->exists();
-
-        if (! $hasPurchasedDownload) {
-            abort(403, 'Accès non autorisé. Vous devez acheter ce livre pour le télécharger.');
-        }
-
-        $filePath = storage_path('app/'.$fileToDownload);
-
-        if (! file_exists($filePath)) {
-            abort(404, 'Fichier non trouvé.');
-        }
-
-        return response()->download($filePath, Str::slug($book->title).'.pdf');
-    }
-
-    public function purchaseAudio(Book $book, Request $request)
-    {
-        $request->validate([
-            'book_file_id' => 'nullable|integer|exists:book_files,id',
-        ]);
-
-        $user = auth()->user();
-
-        // Check if the user has already purchased this audio book (for the specific book, not necessarily specific file)
-        $existingPurchase = Purchase::where('user_id', $user->id)
-            ->where('book_id', $book->id)
-            ->where('purchase_type', 'audio')
-            ->first();
-
-        if ($existingPurchase) {
-            return back()->with('error', __('You have already purchased this item.'));
-        }
-
-        // Create a dummy payment record with completed status
-        $payment = Payment::create([
-            'user_id' => $user->id,
+        Purchase::create([
+            'user_id' => auth()->id(),
             'book_id' => $book->id,
-            'transaction_id' => 'TRX-'.uniqid(),
-            'payment_type' => 'book_audio',
+            'type' => 'audio',
             'amount' => $book->audio_price,
-            'currency' => 'XOF',
-            'payment_method' => 'simulated',
-            'payment_provider' => 'simulated',
-            'status' => 'completed', // Simulate a successful payment
+            'status' => 'completed',
         ]);
 
-        // Create an active purchase record
-        Purchase::create([
-            'user_id' => $user->id,
-            'book_id' => $book->id,
-            'book_file_id' => $request->book_file_id, // Store the specific book_file_id if provided
-            'payment_id' => $payment->id,
-            'purchase_type' => 'audio',
-            'price' => $book->audio_price,
-            'is_active' => true, // The purchase is active immediately
-        ]);
+        return back()->with('success', 'Merci pour votre achat ! Vous pouvez maintenant écouter le livre.');
+    }
 
-        // Send notification
-        $this->notificationService->sendNotification(
-            $user,
-            'Achat confirmé',
-            "Merci pour votre achat de la version audio de '{$book->title}'. Vous pouvez y accéder dès maintenant.",
-            route('reader.library'),
-            'success'
-        );
+    public function secureDownload(Book $book)
+    {
+        if (!auth()->user()->hasAccessToBook($book)) {
+            abort(403);
+        }
 
-        return back()->with('success', __('Your purchase is complete! You can now listen to the book.'));
+        $pdfPath = $book->pdf_file;
+        if (!$pdfPath) {
+            abort(404);
+        }
+
+        // Ensure we check the correct disk
+        if (Storage::disk('public')->exists($pdfPath)) {
+            return Storage::disk('public')->download($pdfPath, $book->slug . '.pdf');
+        } elseif (Storage::exists($pdfPath)) {
+            return Storage::download($pdfPath, $book->slug . '.pdf');
+        }
+
+        abort(404, 'Fichier introuvable.');
     }
 }

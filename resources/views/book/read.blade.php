@@ -390,10 +390,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let startTime   = Date.now();
     const DURATION  = 1200; // ms durée du flip
 
-    const pdfUrl = "{{ route('read.pdf.content', $book) }}?_token={{ $token }}&file_id={{ $fileId }}";
+    const pdfUrl = "{{ $pdfUrl }}";
 
     /* ── Chargement PDF ────────────────────────────────── */
-    fetch(pdfUrl, { headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
+    fetch(pdfUrl)
         .then(r => { if (!r.ok) throw new Error(); return r.arrayBuffer(); })
         .then(d  => pdfjsLib.getDocument({ data: d }).promise)
         .then(async pdf => {

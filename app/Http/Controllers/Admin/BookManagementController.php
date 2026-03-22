@@ -118,6 +118,14 @@ class BookManagementController extends Controller
             $bookData['cover_image'] = $request->file('cover_image')->store('books/covers', 'public');
         }
 
+        if ($request->hasFile('pdf_file')) {
+            $bookData['pdf_file'] = $request->file('pdf_file')->store('books/pdfs', 'public');
+        }
+
+        if ($request->hasFile('audio_file')) {
+            $bookData['audio_file'] = $request->file('audio_file')->store('books/audios', 'public');
+        }
+
         $bookData['slug'] = Str::slug($request->title);
 
         $book = Book::create($bookData);
@@ -126,7 +134,7 @@ class BookManagementController extends Controller
         if ($request->has('files')) {
             foreach ($request->file('files') as $fileEntry) {
                 if (isset($fileEntry['pdf_file']) && $fileEntry['pdf_file']->isValid()) {
-                    $path = $fileEntry['pdf_file']->store('books/pdfs');
+                    $path = $fileEntry['pdf_file']->store('books/pdfs', 'public');
                     $book->files()->create([
                         'language' => $fileEntry['language'],
                         'file_type' => 'pdf',
@@ -217,9 +225,9 @@ class BookManagementController extends Controller
         // Handle main PDF file
         if ($request->hasFile('pdf_file')) {
             if ($book->pdf_file) {
-                Storage::delete($book->pdf_file);
+                Storage::disk('public')->delete($book->pdf_file);
             }
-            $bookData['pdf_file'] = $request->file('pdf_file')->store('books/pdfs');
+            $bookData['pdf_file'] = $request->file('pdf_file')->store('books/pdfs', 'public');
         }
         // Handle main Audio file
         if ($request->hasFile('audio_file')) {
@@ -239,7 +247,7 @@ class BookManagementController extends Controller
             foreach ($request->input('deleted_files') as $fileId) {
                 $bookFile = $book->files()->find($fileId);
                 if ($bookFile) {
-                    Storage::delete($bookFile->path);
+                    Storage::disk('public')->delete($bookFile->path);
                     $bookFile->delete();
                 }
             }
@@ -256,14 +264,14 @@ class BookManagementController extends Controller
                     $hasNewAudio = $request->hasFile("existing_files.{$fileId}.audio_file");
 
                     if ($hasNewPdf) {
-                        Storage::delete($bookFile->path); // Delete old file
-                        $path = $request->file("existing_files.{$fileId}.pdf_file")->store('books/pdfs');
+                        Storage::disk('public')->delete($bookFile->path); // Delete old file
+                        $path = $request->file("existing_files.{$fileId}.pdf_file")->store('books/pdfs', 'public');
                         $bookFile->file_type = 'pdf';
                         $bookFile->path = $path;
                         $bookFile->pages = $fileData['pdf_pages'] ?? null;
                         $bookFile->duration = null;
                     } elseif ($hasNewAudio) {
-                        Storage::delete($bookFile->path); // Delete old file
+                        Storage::disk('public')->delete($bookFile->path); // Delete old file
                         $path = $request->file("existing_files.{$fileId}.audio_file")->store('books/audios', 'public');
                         $bookFile->file_type = 'audio';
                         $bookFile->path = $path;
@@ -279,7 +287,7 @@ class BookManagementController extends Controller
         if ($request->has('new_files')) {
             foreach ($request->file('new_files') as $index => $fileEntry) {
                 if (isset($fileEntry['pdf_file']) && $fileEntry['pdf_file']->isValid()) {
-                    $path = $fileEntry['pdf_file']->store('books/pdfs');
+                    $path = $fileEntry['pdf_file']->store('books/pdfs', 'public');
                     $book->files()->create([
                         'language' => $request->input("new_files.{$index}.language"),
                         'file_type' => 'pdf',
