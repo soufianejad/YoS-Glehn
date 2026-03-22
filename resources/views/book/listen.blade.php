@@ -19,9 +19,9 @@
                         <p class="text-muted">par {{ $book->author->name }}</p>
                     </div>
 
-                    @if($book->audio_file)
+                    @if($audioPath)
                         <audio id="audioPlayer" controls class="w-100" controlsList="nodownload">
-                            <source src="{{ asset('storage/' . $book->audio_file) }}" type="audio/mpeg">
+                            <source src="{{ route('listen.audio.content', $book) }}?_token={{ $token }}&file_id={{ $fileId }}" type="audio/mpeg">
                             {{ __("Votre navigateur ne supporte pas l'élément audio.") }}
                         </audio>
                     @else

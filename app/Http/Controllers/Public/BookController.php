@@ -159,18 +159,20 @@ class BookController extends Controller
             ->inRandomOrder()
             ->take(4)
             ->get();
+
+        $fileId = $request->query('file_id', 'default');
             
         $token = Str::random(40);
-        session(['pdf_access_token' => $token]);
+        session(['pdf_access_token_'.$book->id => $token]);
 
-        return view('book.read', compact('book', 'initialPage', 'token', 'canDownload', 'relatedBooks', 'bookFile'));
+        return view('book.read', compact('book', 'initialPage', 'token', 'canDownload', 'relatedBooks', 'bookFile', 'fileId'));
     }
 
     public function servePdfContent(Request $request, Book $book)
     {
         // Validate the single-use token
         $token = $request->query('_token');
-        $sessionToken = session('pdf_access_token');
+        $sessionToken = session('pdf_access_token_'.$book->id);
 
         if (! $token || ! $sessionToken || ! hash_equals($sessionToken, $token)) {
             abort(403, 'Jeton d\'accès invalide ou expiré.');
@@ -185,10 +187,11 @@ class BookController extends Controller
 
         $filePath = null;
         $fileToServe = null;
+        $fileId = $request->query('file_id', 'default');
 
-        if ($request->has('file_id') && $request->file_id !== 'default') {
+        if ($fileId !== 'default') {
             $bookFile = BookFile::where('book_id', $book->id)
-                                ->where('id', $request->file_id)
+                                ->where('id', $fileId)
                                 ->where('file_type', 'pdf')
                                 ->first();
             if ($bookFile) {
@@ -281,9 +284,11 @@ class BookController extends Controller
     public function listen(Book $book, Request $request)
     {
         $bookFile = null;
-        if ($request->has('file_id') && $request->file_id !== 'default') {
+        $fileId = $request->query('file_id', 'default');
+
+        if ($fileId !== 'default') {
             $bookFile = BookFile::where('book_id', $book->id)
-                                ->where('id', $request->file_id)
+                                ->where('id', $fileId)
                                 ->where('file_type', 'audio')
                                 ->first();
             if (!$bookFile) {
@@ -299,10 +304,8 @@ class BookController extends Controller
             abort(404, 'Audio non disponible pour ce livre.');
         }
 
-        // Check for access (assuming hasPdfAccess check is sufficient for audio for now or create a new hasAudioAccess)
-        // If a separate access control for audio is needed, implement it here.
-        // For simplicity, we'll reuse hasPdfAccess or ensure it covers both if logic allows.
-        if (! $this->hasPdfAccess($book)) { // Reusing for now, but ideally would be hasAudioAccess
+        // Check for access
+        if (! $this->hasPdfAccess($book)) {
              abort(403, 'Accès non autorisé. Vous devez acheter cet audio ou avoir un abonnement actif.');
         }
 
@@ -315,7 +318,53 @@ class BookController extends Controller
             $initialPosition = $audioProgress ? $audioProgress->current_position : 0;
         }
 
-        return view('book.listen', compact('book', 'initialPosition', 'bookFile', 'audioPath', 'audioDuration'));
+        $token = Str::random(40);
+        session(['audio_access_token_'.$book->id => $token]);
+
+        return view('book.listen', compact('book', 'initialPosition', 'bookFile', 'audioPath', 'audioDuration', 'token', 'fileId'));
+    }
+
+    public function serveAudioContent(Request $request, Book $book)
+    {
+        $token = $request->query('_token');
+        $sessionToken = session('audio_access_token_'.$book->id);
+
+        if (! $token || ! $sessionToken || ! hash_equals($sessionToken, $token)) {
+            abort(403, 'Jeton d\'accès invalide ou expiré.');
+        }
+
+        $fileId = $request->query('file_id', 'default');
+        $fileToServe = null;
+
+        if ($fileId !== 'default') {
+            $bookFile = BookFile::where('book_id', $book->id)
+                                ->where('id', $fileId)
+                                ->where('file_type', 'audio')
+                                ->first();
+            if ($bookFile) {
+                $fileToServe = $bookFile->path;
+            }
+        } else {
+            $fileToServe = $book->audio_file;
+        }
+
+        if (! $fileToServe) {
+            abort(404, 'Audio non disponible pour ce livre.');
+        }
+
+        $filePath = null;
+        if (Storage::disk('public')->exists($fileToServe)) {
+            $filePath = Storage::disk('public')->path($fileToServe);
+        } elseif (Storage::disk('local')->exists($fileToServe)) {
+            $filePath = Storage::disk('local')->path($fileToServe);
+        } else {
+            abort(404, 'Fichier audio non trouvé sur le serveur.');
+        }
+
+        return response()->file($filePath, [
+            'Content-Type' => 'audio/mpeg',
+            'Accept-Ranges' => 'bytes'
+        ]);
     }
 
     public function updateAudioProgress(Request $request, Book $book)

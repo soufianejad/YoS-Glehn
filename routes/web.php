@@ -125,6 +125,7 @@ Route::middleware(['auth'])->group(function () {
     // Écoute audio
     Route::prefix('listen')->name('listen.')->group(function () {
         Route::get('/{book:slug}/{file_id?}', [BookController::class, 'listen'])->name('book');
+        Route::get('/secure-audio/{book:slug}', [BookController::class, 'serveAudioContent'])->name('audio.content');
         Route::post('/{book}/progress', [BookController::class, 'updateAudioProgress'])->name('progress');
     });
 
