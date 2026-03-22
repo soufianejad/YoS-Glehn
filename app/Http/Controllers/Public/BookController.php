@@ -395,24 +395,40 @@ class BookController extends Controller
 
         return back()->with('success', 'Merci pour votre achat !');
     }
-
-    public function secureDownload(Book $book)
-    {
-        if (!auth()->user()->hasAccessToBook($book)) {
-            abort(403);
-        }
-
-        $pdfPath = $book->pdf_file;
-        if (!$pdfPath) {
-            abort(404);
-        }
-
-        if (Storage::disk('public')->exists($pdfPath)) {
-            return Storage::disk('public')->download($pdfPath, $book->slug . '.pdf');
-        } elseif (Storage::exists($pdfPath)) {
-            return Storage::download($pdfPath, $book->slug . '.pdf');
-        }
-
-        abort(404);
+public function secureDownload(Book $book, Request $request)
+{
+    if (!auth()->user()->hasAccessToBook($book)) {
+        abort(403);
     }
+
+    $fileId = $request->query('file_id', 'default');
+    $pdfPath = null;
+    $fileName = $book->slug;
+
+    if ($fileId !== 'default') {
+        $bookFile = BookFile::where('book_id', $book->id)
+                            ->where('id', $fileId)
+                            ->where('file_type', 'pdf')
+                            ->first();
+        if ($bookFile) {
+            $pdfPath = $bookFile->path;
+            $fileName .= '_' . $bookFile->language;
+        }
+    } else {
+        $pdfPath = $book->pdf_file;
+    }
+
+    if (!$pdfPath) {
+        abort(404, 'Fichier PDF introuvable.');
+    }
+
+    // Ensure we check the correct disk
+    if (Storage::disk('public')->exists($pdfPath)) {
+        return Storage::disk('public')->download($pdfPath, $fileName . '.pdf');
+    } elseif (Storage::exists($pdfPath)) {
+        return Storage::download($pdfPath, $fileName . '.pdf');
+    }
+
+    abort(404, 'Fichier introuvable sur le serveur.');
+}
 }
