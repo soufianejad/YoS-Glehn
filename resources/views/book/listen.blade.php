@@ -21,7 +21,7 @@
 
                     @if($audioPath)
                         <audio id="audioPlayer" controls class="w-100" controlsList="nodownload">
-                            <source src="{{ route('listen.audio.content', $book) }}?_token={{ $token }}&file_id={{ $fileId }}" type="audio/mpeg">
+                            <source src="{{ route('listen.audio.content', $book) }}?file_id={{ $fileId }}" type="audio/mpeg">
                             {{ __("Votre navigateur ne supporte pas l'élément audio.") }}
                         </audio>
                     @else

@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let startTime   = Date.now();
     const DURATION  = 1200; // ms durée du flip
 
-    const pdfUrl = "{{ route('read.pdf.content', $book) }}?_token={{ $token }}&file_id={{ $fileId }}";
+    const pdfUrl = "{{ route('read.pdf.content', $book) }}?file_id={{ $fileId }}";
 
     /* ── Chargement PDF ────────────────────────────────── */
     fetch(pdfUrl, { headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })

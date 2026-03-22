@@ -127,11 +127,6 @@ class BookController extends Controller
             abort(404, 'PDF non disponible pour ce livre.');
         }
 
-        // Generate a simple token for the session to prevent direct link sharing 
-        // while still using a controller to serve the content to avoid 403/404 public disk issues
-        $token = Str::random(32);
-        session(['pdf_token_' . $book->id => $token]);
-
         $initialPage = 0;
         $canDownload = false;
         if (auth()->check()) {
@@ -150,16 +145,11 @@ class BookController extends Controller
             ->take(4)
             ->get();
             
-        return view('book.read', compact('book', 'initialPage', 'canDownload', 'relatedBooks', 'bookFile', 'fileId', 'pdfPages', 'token'));
+        return view('book.read', compact('book', 'initialPage', 'canDownload', 'relatedBooks', 'bookFile', 'fileId', 'pdfPages'));
     }
 
     public function servePdfContent(Book $book, Request $request)
     {
-        $token = $request->query('_token');
-        if (!$token || $token !== session('pdf_token_' . $book->id)) {
-            abort(403, 'Accès non autorisé.');
-        }
-
         $fileId = $request->query('file_id', 'default');
         $pdfPath = null;
 
@@ -211,9 +201,6 @@ class BookController extends Controller
             abort(404, 'Audio non disponible pour ce livre.');
         }
 
-        $token = Str::random(32);
-        session(['audio_token_' . $book->id => $token]);
-
         $initialPosition = 0;
         if (auth()->check()) {
             $user = auth()->user();
@@ -223,16 +210,11 @@ class BookController extends Controller
             $initialPosition = $audioProgress ? $audioProgress->current_position : 0;
         }
 
-        return view('book.listen', compact('book', 'initialPosition', 'bookFile', 'audioPath', 'fileId', 'token'));
+        return view('book.listen', compact('book', 'initialPosition', 'bookFile', 'audioPath', 'fileId'));
     }
 
     public function serveAudioContent(Book $book, Request $request)
     {
-        $token = $request->query('_token');
-        if (!$token || $token !== session('audio_token_' . $book->id)) {
-            abort(403, 'Accès non autorisé.');
-        }
-
         $fileId = $request->query('file_id', 'default');
         $audioPath = null;
 
