@@ -7,13 +7,13 @@
 <div class="container-fluid">
     <div class="card shadow-sm">
         <div class="card-header">
-            <h6 class="m-0 font-weight-bold text-primary">Toutes vos tentatives de quiz, regroupées par livre.</h6>
+            <h6 class="m-0 font-weight-bold text-primary">{{ __('Toutes vos tentatives de quiz, regroupées par livre.') }}</h6>
         </div>
         <div class="card-body">
             @if($groupedAttempts->isEmpty())
                 <div class="text-center py-5">
                     <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">Vous n'avez encore tenté aucun quiz.</p>
+                    <p class="text-muted">{{ __("Vous n'avez encore tenté aucun quiz.") }}</p>
                 </div>
             @else
                 <div class="accordion" id="quizAccordion">
@@ -31,11 +31,11 @@
                                         <table class="table table-sm table-hover">
                                             <thead>
                                                 <tr>
-                                                    <th>Quiz</th>
-                                                    <th>Date</th>
-                                                    <th class="text-center">Score</th>
-                                                    <th class="text-center">Statut</th>
-                                                    <th class="text-center">Actions</th>
+                                                    <th>{{ __('Quiz') }}</th>
+                                                    <th>{{ __('Date') }}</th>
+                                                    <th class="text-center">{{ __('Score') }}</th>
+                                                    <th class="text-center">{{ __('Statut') }}</th>
+                                                    <th class="text-center">{{ __('Actions') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -46,13 +46,13 @@
                                                         <td class="text-center">{{ round($attempt->percentage) }}%</td>
                                                         <td class="text-center">
                                                             @if($attempt->is_passed)
-                                                                <span class="badge bg-success">Réussi</span>
+                                                                <span class="badge bg-success">{{ __('Réussi') }}</span>
                                                             @else
-                                                                <span class="badge bg-danger">Échoué</span>
+                                                                <span class="badge bg-danger">{{ __('Échoué') }}</span>
                                                             @endif
                                                         </td>
                                                         <td class="text-center">
-                                                            <a href="{{ route('student.quiz.results', $attempt) }}" class="btn btn-sm btn-info">Voir les détails</a>
+                                                            <a href="{{ route('student.quiz.results', $attempt) }}" class="btn btn-sm btn-info">{{ __('Voir les détails') }}</a>
                                                         </td>
                                                     </tr>
                                                 @endforeach

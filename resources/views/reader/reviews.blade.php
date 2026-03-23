@@ -7,20 +7,20 @@
 <div class="container-fluid">
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Avis que j'ai laissés</h6>
+            <h6 class="m-0 font-weight-bold text-primary">{{ __("Avis que j'ai laissés") }}</h6>
         </div>
         <div class="card-body">
             @if($reviews->isEmpty())
-                <p class="text-center text-muted py-4">Vous n'avez laissé aucun avis pour le moment.</p>
+                <p class="text-center text-muted py-4">{{ __("Vous n'avez laissé aucun avis pour le moment.") }}</p>
             @else
                 <div class="table-responsive">
                     <table class="table table-hover" width="100%" cellspacing="0">
                         <thead>
                             <tr>
-                                <th>Livre</th>
-                                <th>Note</th>
-                                <th>Commentaire</th>
-                                <th>Date</th>
+                                <th>{{ __('Livre') }}</th>
+                                <th>{{ __('Note') }}</th>
+                                <th>{{ __('Commentaire') }}</th>
+                                <th>{{ __('Date') }}</th>
                             </tr>
                         </thead>
                         <tbody>

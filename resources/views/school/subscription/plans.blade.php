@@ -14,7 +14,7 @@
                     </div>
                     <div class="card-body d-flex flex-column">
                         <h1 class="card-title pricing-card-title">$
-{{ number_format($plan->price, 2) }} <small class="text-muted fw-light">/ an</small></h1>
+{{ number_format($plan->price, 2) }} <small class="text-muted fw-light">{{ __('/ an') }}</small></h1>
                         <p>{{ $plan->description }}</p>
                         <ul class="list-unstyled mt-3 mb-4">
                             <li><i class="fas fa-users me-2"></i> {{ __('Up to') }} {{ $plan->max_students }} {{ __('students') }}</li>

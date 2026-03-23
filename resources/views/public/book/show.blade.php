@@ -49,12 +49,12 @@
                             @if(auth()->user()->hasAccessToBook($book))
                                 @if($book->hasPdf())
                                     <a href="{{ route('read.book', $book->slug) }}" class="btn btn-primary">
-                                        <i class="bi bi-book-half"></i> Lire (PDF)
+                                        {{ __('Lire (PDF)') }}
                                     </a>
                                 @endif
                                 @if($book->hasAudio())
                                     <a href="{{ route('listen.book', $book->slug) }}" class="btn btn-success">
-                                        <i class="bi bi-headphones"></i> Écouter (Audio)
+                                        {{ __('Écouter (Audio)') }}
                                     </a>
                                 @endif
                                 @if($book->hasPdf())
@@ -292,7 +292,7 @@
                                         </div>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Commentaire (optionnel)</label>
+                                        <label class="form-label">{{ __('Commentaire (optionnel)') }}</label>
                                         <textarea name="comment" class="form-control" rows="3" placeholder="{{ __('Partagez votre avis sur ce livre...') }}"></textarea>
                                     </div>
                                     <button type="submit" class="btn btn-primary">

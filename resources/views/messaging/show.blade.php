@@ -61,7 +61,7 @@
                             <div class="input-group">
                                 <select name="user_id" class="form-control" id="add-participant-select"></select>
                                 <div class="input-group-append">
-                                    <button type="submit" class="btn btn-primary">Add</button>
+                                    {{ __('Add') }}</button>
                                 </div>
                             </div>
                         </form>

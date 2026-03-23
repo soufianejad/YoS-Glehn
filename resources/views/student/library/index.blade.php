@@ -26,7 +26,7 @@
             <form action="{{ route('student.library.index') }}" method="GET" class="row g-3 align-items-end">
                 <div class="col-md-6">
                     <label for="search" class="form-label font-weight-bold">{{ __('Rechercher') }}</label>
-                    <input type="text" class="form-control" id="search" name="search" value="{{ $search ?? '' }}" placeholder="Titre, auteur...">
+                    <input type="text" class="form-control" id="search" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('Titre, auteur...') }}">
                 </div>
                 <div class="col-md-4">
                     <label for="category" class="form-label font-weight-bold">{{ __('Catégorie') }}</label>

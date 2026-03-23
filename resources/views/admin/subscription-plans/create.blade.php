@@ -45,7 +45,7 @@
         </div>
 
         <div class="mb-3">
-            <label for="duration_days" class="form-label">Duration (Days)</label>
+            <label for="duration_days" class="form-label">{{ __('Duration (Days)') }}</label>
             <input type="number" class="form-control @error('duration_days') is-invalid @enderror" id="duration_days" name="duration_days" value="{{ old('duration_days') }}" required>
             @error('duration_days')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -53,7 +53,7 @@
         </div>
 
         <div class="mb-3">
-            <label for="max_students" class="form-label">Max Students (for School plans)</label>
+            <label for="max_students" class="form-label">{{ __('Max Students (for School plans)') }}</label>
             <input type="number" class="form-control @error('max_students') is-invalid @enderror" id="max_students" name="max_students" value="{{ old('max_students') }}">
             @error('max_students')
                 <div class="invalid-feedback">{{ $message }}</div>

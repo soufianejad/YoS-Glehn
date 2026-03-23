@@ -139,7 +139,7 @@
             @if(session()->has('impersonating'))
                 <div class="alert alert-warning mb-0 text-center">
                     You are currently impersonating a user. 
-                    <a href="{{ route('users.stop-impersonating') }}">Stop Impersonating</a>
+                    <a href="{{ route('users.stop-impersonating') }}">{{ __('Stop Impersonating') }}</a>
                 </div>
             @endif
             <nav class="navbar navbar-expand-lg navbar-light">

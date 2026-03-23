@@ -46,7 +46,7 @@
                             <div class="mb-3">
                                 <label for="payment_method" class="form-label">{{ __('Méthode de paiement') }}</label>
                                 <select class="form-select" id="payment_method" name="payment_method" required>
-                                    <option value="mobile_money">Mobile Money (Orange, Moov, etc.)</option>
+                                    <option value="mobile_money">{{ __('Mobile Money (Orange, Moov, etc.)') }}</option>
                                     <option value="bank_transfer">{{ __('Virement Bancaire') }}</option>
                                 </select>
                             </div>
@@ -54,7 +54,7 @@
                             <div class="mb-3">
                                 <label for="payment_details" class="form-label">{{ __('Détails du paiement') }}</label>
                                 <input type="text" class="form-control" id="payment_details" name="payment_details" placeholder="{{ __('Numéro de téléphone ou détails du compte') }}" required>
-                                <div class="form-text">Indiquez le numéro de téléphone pour Mobile Money ou vos coordonnées bancaires (RIB) pour un virement.</div>
+                                <div class="form-text">{{ __('Indiquez le numéro de téléphone pour Mobile Money ou vos coordonnées bancaires (RIB) pour un virement.') }}</div>
                             </div>
 
                             <div class="d-grid">

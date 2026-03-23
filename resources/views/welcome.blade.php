@@ -55,7 +55,7 @@
                 <div class="search-bar-container shadow-sm">
                     <form action="{{ route('library.search') }}" method="GET" class="form-inline justify-content-center">
                         <div class="input-group input-group-lg w-100">
-                            <input type="text" class="form-control" name="search" placeholder="{{ __('Rechercher par titre, auteur ou mot-clé...') }}" aria-label="Search">
+                            <input type="text" class="form-control" name="search" placeholder="{{ __('Rechercher par titre, auteur ou mot-clé...') }}" aria-label="{{ __('Search') }}">
                             <div class="input-group-append">
                                 <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> {{__('Rechercher')}}</button>
                             </div>
@@ -186,9 +186,9 @@
                     <div class="card testimonial-card h-100 border-0 shadow-sm">
                         <div class="card-body">
                             <div class="d-flex align-items-center mb-3">
-                                <img src="https://i.pravatar.cc/60?img=1" class="rounded-circle" alt="Avatar">
+                                <img src="https://i.pravatar.cc/60?img=1" class="rounded-circle" alt="{{ __('Avatar') }}">
                                 <div class="ml-3">
-                                    <h6 class="mb-0 font-weight-bold">Aïssatou Diallo</h6>
+                                    <h6 class="mb-0 font-weight-bold">{{ __('Aïssatou Diallo') }}</h6>
                                     <div class="star-rating">
                                         <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
                                     </div>
@@ -202,9 +202,9 @@
                     <div class="card testimonial-card h-100 border-0 shadow-sm">
                         <div class="card-body">
                             <div class="d-flex align-items-center mb-3">
-                                <img src="https://i.pravatar.cc/60?img=2" class="rounded-circle" alt="Avatar">
+                                <img src="https://i.pravatar.cc/60?img=2" class="rounded-circle" alt="{{ __('Avatar') }}">
                                 <div class="ml-3">
-                                    <h6 class="mb-0 font-weight-bold">Koffi Annan</h6>
+                                    <h6 class="mb-0 font-weight-bold">{{ __('Koffi Annan') }}</h6>
                                      <div class="star-rating">
                                         <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
                                     </div>

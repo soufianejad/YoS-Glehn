@@ -7,14 +7,13 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0 text-gray-800">Bienvenue, {{ Auth::user()->first_name }}!</h1>
         <a href="{{ route('adult.library.index') }}" class="btn btn-primary shadow-sm">
-            <i class="fas fa-book-reader fa-sm text-white-50 me-2"></i>
-            Explorer la Bibliothèque Adulte
+            {{ __('Explorer la Bibliothèque Adulte') }}
         </a>
     </div>
 
     <!-- Recently Accessed Books -->
     <div class="mb-5">
-        <h2 class="h5 mb-4 text-gray-800">Continuer la lecture</h2>
+        <h2 class="h5 mb-4 text-gray-800">{{ __('Continuer la lecture') }}</h2>
         @if($recentlyAccessedBooks->isEmpty())
             <div class="alert alert-light">
                 Vous n'avez commencé aucun livre de cette section.
@@ -47,7 +46,7 @@
 
     <!-- Newest Additions -->
     <div>
-        <h2 class="h5 mb-4 text-gray-800">Nouveautés</h2>
+        <h2 class="h5 mb-4 text-gray-800">{{ __('Nouveautés') }}</h2>
         @if($newAdultBooks->isEmpty())
             <div class="alert alert-light">
                 Aucun nouveau livre pour le moment.
@@ -61,7 +60,7 @@
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title text-truncate" title="{{ $book->title }}">{{ $book->title }}</h5>
                                 <p class="card-text small text-muted flex-grow-1">par {{ $book->author->name ?? 'N/A' }}</p>
-                                <a href="{{ route('adult.library.show', $book->slug) }}" class="btn btn-outline-primary btn-sm mt-auto stretched-link">Découvrir</a>
+                                <a href="{{ route('adult.library.show', $book->slug) }}" class="btn btn-outline-primary btn-sm mt-auto stretched-link">{{ __('Découvrir') }}</a>
                             </div>
                         </div>
                     </div>

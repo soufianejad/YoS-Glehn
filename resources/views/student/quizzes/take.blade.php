@@ -65,8 +65,7 @@
         @endforeach
 
         <div class="text-center">
-            <button type="submit" class="btn btn-primary btn-lg">
-                <i class="fas fa-check-circle me-2"></i> Soumettre mes réponses
+            {{ __('Soumettre mes réponses') }}
             </button>
         </div>
     </form>

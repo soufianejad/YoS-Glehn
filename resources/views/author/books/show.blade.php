@@ -33,13 +33,13 @@
                     <p class="text-muted">{{ $book->category->name ?? 'N/A' }}</p>
                     <div class="mt-3">
                         <a href="{{ route('author.books.edit', $book) }}" class="btn btn-warning">
-                            <i class="fas fa-pencil-alt me-1"></i> Modifier le livre
+                            {{ __('Modifier le livre') }}
                         </a>
                         <a href="{{ route('author.books.statistics', $book) }}" class="btn btn-primary">
-                            <i class="fas fa-chart-line me-1"></i> Voir les statistiques détaillées
+                            {{ __('Voir les statistiques détaillées') }}
                         </a>
                         <a href="{{ route('author.books.index') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-1"></i> Retour
+                            {{ __('Retour') }}
                         </a>
                     </div>
                 </div>
@@ -51,19 +51,19 @@
     <div class="row">
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card h-100 border-left-primary shadow py-2">
-                <div class="card-body"><div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Revenus</div>
+                <div class="card-body"><div class="text-xs font-weight-bold text-primary text-uppercase mb-1">{{ __('Revenus') }}</div>
                 <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($stats['revenue'], 2) }} €</div></div>
             </div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card h-100 border-left-success shadow py-2">
-                <div class="card-body"><div class="text-xs font-weight-bold text-success text-uppercase mb-1">Ventes</div>
+                <div class="card-body"><div class="text-xs font-weight-bold text-success text-uppercase mb-1">{{ __('Ventes') }}</div>
                 <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['sales'] }}</div></div>
             </div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card h-100 border-left-info shadow py-2">
-                <div class="card-body"><div class="text-xs font-weight-bold text-info text-uppercase mb-1">Note Moyenne</div>
+                <div class="card-body"><div class="text-xs font-weight-bold text-info text-uppercase mb-1">{{ __('Note Moyenne') }}</div>
                 <div class="h5 mb-0 font-weight-bold text-gray-800 d-flex align-items-center">
                     {{ number_format($stats['avg_rating'], 2) }} <span class="ms-2">{!! render_stars($stats['avg_rating']) !!}</span>
                 </div></div>
@@ -71,7 +71,7 @@
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card h-100 border-left-warning shadow py-2">
-                <div class="card-body"><div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Total Avis</div>
+                <div class="card-body"><div class="text-xs font-weight-bold text-warning text-uppercase mb-1">{{ __('Total Avis') }}</div>
                 <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['reviews_count'] }}</div></div>
             </div>
         </div>
@@ -81,13 +81,13 @@
     <div class="row">
         <div class="col-lg-7">
             <div class="card shadow-sm mb-4">
-                <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Description</h6></div>
+                <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">{{ __('Description') }}</h6></div>
                 <div class="card-body">
                     <p>{{ $book->description }}</p>
                 </div>
             </div>
              <div class="card shadow-sm">
-                <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Métadonnées</h6></div>
+                <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">{{ __('Métadonnées') }}</h6></div>
                 <div class="card-body">
                     <p><strong>ISBN:</strong> {{ $book->isbn ?? 'N/A' }}</p>
                     <p><strong>Année de Publication:</strong> {{ $book->published_year ?? 'N/A' }}</p>
@@ -98,7 +98,7 @@
         </div>
         <div class="col-lg-5">
             <div class="card shadow-sm">
-                <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Derniers Avis</h6></div>
+                <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">{{ __('Derniers Avis') }}</h6></div>
                 <div class="card-body">
                     @forelse($recentReviews as $review)
                         <div class="d-flex mb-3 @if(!$loop->last) border-bottom pb-3 @endif">
@@ -110,11 +110,11 @@
                             </div>
                         </div>
                     @empty
-                        <p class="text-muted text-center">Aucun avis pour ce livre pour le moment.</p>
+                        <p class="text-muted text-center">{{ __('Aucun avis pour ce livre pour le moment.') }}</p>
                     @endforelse
                 </div>
                 <div class="card-footer text-center">
-                    <a href="{{ route('author.reviews') }}">Voir tous les avis</a>
+                    <a href="{{ route('author.reviews') }}">{{ __('Voir tous les avis') }}</a>
                 </div>
             </div>
         </div>

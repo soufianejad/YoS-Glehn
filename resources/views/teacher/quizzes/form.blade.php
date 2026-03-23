@@ -16,33 +16,33 @@
             <!-- Left Column: Quiz Details -->
             <div class="col-lg-4">
                 <div class="card shadow-sm mb-4" style="position: sticky; top: 1rem;">
-                    <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Détails du Quiz</h6></div>
+                    <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">{{ __('Détails du Quiz') }}</h6></div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label for="title" class="form-label">Titre du Quiz*</label>
+                            <label for="title" class="form-label">{{ __('Titre du Quiz*') }}</label>
                             <input type="text" id="title" name="title" class="form-control" value="{{ old('title', $quiz->title ?? 'Quiz pour ' . $book->title) }}" required>
                         </div>
                         <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
+                            <label for="description" class="form-label">{{ __('Description') }}</label>
                             <textarea id="description" name="description" class="form-control" rows="3">{{ old('description', $quiz->description ?? '') }}</textarea>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="pass_score" class="form-label">Score pour réussir (%)*</label>
+                                <label for="pass_score" class="form-label">{{ __('Score pour réussir (%)*') }}</label>
                                 <input type="number" id="pass_score" name="pass_score" class="form-control" value="{{ old('pass_score', $quiz->pass_score ?? 50) }}" min="0" max="100" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="time_limit" class="form-label">Temps imparti (minutes)</label>
+                                <label for="time_limit" class="form-label">{{ __('Temps imparti (minutes)') }}</label>
                                 <input type="number" id="time_limit" name="time_limit" class="form-control" value="{{ old('time_limit', $quiz->time_limit ?? '') }}" min="1">
                             </div>
                         </div>
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" role="switch" id="is_active" name="is_active" value="1" @if(old('is_active', $quiz->is_active ?? true)) checked @endif>
-                            <label class="form-check-label" for="is_active">Activer le quiz immédiatement</label>
+                            <label class="form-check-label" for="is_active">{{ __('Activer le quiz immédiatement') }}</label>
                         </div>
                     </div>
                      <div class="card-footer text-end">
-                        <a href="{{ Auth::user()->isAdmin() ? route('admin.quiz.index') : route('teacher.quizzes.select-book') }}" class="btn btn-secondary">Annuler</a>
+                        <a href="{{ Auth::user()->isAdmin() ? route('admin.quiz.index') : route('teacher.quizzes.select-book') }}" class="btn btn-secondary">{{ __('Annuler') }}</a>
                         <button type="submit" class="btn btn-primary">{{ isset($quiz) ? 'Mettre à jour' : 'Créer le Quiz' }}</button>
                     </div>
                 </div>
@@ -52,9 +52,8 @@
             <div class="col-lg-8">
                 <div class="card shadow-sm">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold text-primary">Questions</h6>
-                        <button type="button" id="add-question" class="btn btn-sm btn-primary">
-                            <i class="fas fa-plus me-1"></i> Ajouter une question
+                        <h6 class="m-0 font-weight-bold text-primary">{{ __('Questions') }}</h6>
+                        {{ __('Ajouter une question') }}
                         </button>
                     </div>
                     <div class="card-body" id="questions-container">
@@ -64,15 +63,15 @@
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <h6 class="font-weight-bold question-title">Question {{ $loop->iteration }}</h6>
                                         <div>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary move-up" title="Monter"><i class="fas fa-arrow-up"></i></button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary move-down" title="Descendre"><i class="fas fa-arrow-down"></i></button>
-                                            <button type="button" class="btn btn-sm btn-danger remove-question" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary move-up" title="{{ __('Monter') }}"><i class="fas fa-arrow-up"></i></button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary move-down" title="{{ __('Descendre') }}"><i class="fas fa-arrow-down"></i></button>
+                                            <button type="button" class="btn btn-sm btn-danger remove-question" title="{{ __('Supprimer') }}"><i class="fas fa-trash"></i></button>
                                         </div>
                                     </div>
                                     <input type="hidden" class="question-id" name="questions[{{ $question->id }}][id]" value="{{ $question->id }}">
                                     <input type="hidden" class="question-order" name="questions[{{ $question->id }}][order]" value="{{ $question->order }}">
                                     <div class="mb-3">
-                                        <label for="question_text_{{ $question->id }}" class="form-label">Texte de la question*</label>
+                                        <label for="question_text_{{ $question->id }}" class="form-label">{{ __('Texte de la question*') }}</label>
                                         <input type="text" id="question_text_{{ $question->id }}" name="questions[{{ $question->id }}][question_text]" class="form-control" value="{{ $question->question_text }}" required>
                                     </div>
                                     <div class="row">
@@ -89,11 +88,11 @@
                                     </div>
                                     <div class="row mt-2">
                                         <div class="col-md-4">
-                                            <label for="points_{{ $question->id }}" class="form-label">Points*</label>
+                                            <label for="points_{{ $question->id }}" class="form-label">{{ __('Points*') }}</label>
                                             <input type="number" id="points_{{ $question->id }}" name="questions[{{ $question->id }}][points]" class="form-control" value="{{ $question->points }}" min="1" required>
                                         </div>
                                         <div class="col-md-8">
-                                            <label for="explanation_{{ $question->id }}" class="form-label">Explication (optionnel)</label>
+                                            <label for="explanation_{{ $question->id }}" class="form-label">{{ __('Explication (optionnel)') }}</label>
                                             <input type="text" id="explanation_{{ $question->id }}" name="questions[{{ $question->id }}][explanation]" value="{{ $question->explanation }}" class="form-control">
                                         </div>
                                     </div>
@@ -110,17 +109,17 @@
 <template id="question-template">
     <div class="border rounded p-3 mb-3 question-block bg-light">
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="font-weight-bold question-title">Question</h6>
+            <h6 class="font-weight-bold question-title">{{ __('Question') }}</h6>
             <div>
-                <button type="button" class="btn btn-sm btn-outline-secondary move-up" title="Monter"><i class="fas fa-arrow-up"></i></button>
-                <button type="button" class="btn btn-sm btn-outline-secondary move-down" title="Descendre"><i class="fas fa-arrow-down"></i></button>
-                <button type="button" class="btn btn-sm btn-danger remove-question" title="Supprimer"><i class="fas fa-trash"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-secondary move-up" title="{{ __('Monter') }}"><i class="fas fa-arrow-up"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-secondary move-down" title="{{ __('Descendre') }}"><i class="fas fa-arrow-down"></i></button>
+                <button type="button" class="btn btn-sm btn-danger remove-question" title="{{ __('Supprimer') }}"><i class="fas fa-trash"></i></button>
             </div>
         </div>
         <input type="hidden" class="question-id" name="questions[NEW___INDEX__][id]" value="">
         <input type="hidden" class="question-order" name="questions[NEW___INDEX__][order]" value="">
         <div class="mb-3">
-            <label for="question_text_NEW___INDEX__" class="form-label">Texte de la question*</label>
+            <label for="question_text_NEW___INDEX__" class="form-label">{{ __('Texte de la question*') }}</label>
             <input type="text" id="question_text_NEW___INDEX__" name="questions[NEW___INDEX__][question_text]" class="form-control" required>
         </div>
         <div class="row">
@@ -137,11 +136,11 @@
         </div>
         <div class="row mt-2">
             <div class="col-md-4">
-                 <label for="points_NEW___INDEX__" class="form-label">Points*</label>
+                 <label for="points_NEW___INDEX__" class="form-label">{{ __('Points*') }}</label>
                 <input type="number" id="points_NEW___INDEX__" name="questions[NEW___INDEX__][points]" class="form-control" value="10" min="1" required>
             </div>
             <div class="col-md-8">
-                <label for="explanation_NEW___INDEX__" class="form-label">Explication (optionnel)</label>
+                <label for="explanation_NEW___INDEX__" class="form-label">{{ __('Explication (optionnel)') }}</label>
                 <input type="text" id="explanation_NEW___INDEX__" name="questions[NEW___INDEX__][explanation]" class="form-control">
             </div>
         </div>
@@ -227,34 +226,34 @@ document.addEventListener('DOMContentLoaded', function () {
             <!-- Left Column: Quiz Details -->
             <div class="col-lg-4">
                 <div class="card shadow-sm mb-4" style="position: sticky; top: 1rem;">
-                    <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Détails du Quiz</h6></div>
+                    <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">{{ __('Détails du Quiz') }}</h6></div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label for="title" class="form-label">Titre du Quiz*</label>
+                            <label for="title" class="form-label">{{ __('Titre du Quiz*') }}</label>
                             <input type="text" id="title" name="title" class="form-control" value="{{ old('title', 'Quiz pour ' . $book->title) }}" required>
                         </div>
                         <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
+                            <label for="description" class="form-label">{{ __('Description') }}</label>
                             <textarea id="description" name="description" class="form-control" rows="3">{{ old('description') }}</textarea>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="pass_score" class="form-label">Score pour réussir (%)*</label>
+                                <label for="pass_score" class="form-label">{{ __('Score pour réussir (%)*') }}</label>
                                 <input type="number" id="pass_score" name="pass_score" class="form-control" value="{{ old('pass_score', 50) }}" min="0" max="100" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="time_limit" class="form-label">Temps imparti (minutes)</label>
+                                <label for="time_limit" class="form-label">{{ __('Temps imparti (minutes)') }}</label>
                                 <input type="number" id="time_limit" name="time_limit" class="form-control" value="{{ old('time_limit') }}" min="1">
                             </div>
                         </div>
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" role="switch" id="is_active" name="is_active" value="1" checked>
-                            <label class="form-check-label" for="is_active">Activer le quiz immédiatement</label>
+                            <label class="form-check-label" for="is_active">{{ __('Activer le quiz immédiatement') }}</label>
                         </div>
                     </div>
                      <div class="card-footer text-end">
-                        <a href="{{ Auth::user()->isAdmin() ? route('admin.books.index') : route('teacher.quizzes.select-book') }}" class="btn btn-secondary">Annuler</a>
-                        <button type="submit" class="btn btn-primary">Créer le Quiz</button>
+                        <a href="{{ Auth::user()->isAdmin() ? route('admin.books.index') : route('teacher.quizzes.select-book') }}" class="btn btn-secondary">{{ __('Annuler') }}</a>
+                        {{ __('Créer le Quiz') }}</button>
                     </div>
                 </div>
             </div>
@@ -263,9 +262,8 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="col-lg-8">
                 <div class="card shadow-sm">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold text-primary">Questions</h6>
-                        <button type="button" id="add-question" class="btn btn-sm btn-primary">
-                            <i class="fas fa-plus me-1"></i> Ajouter une question
+                        <h6 class="m-0 font-weight-bold text-primary">{{ __('Questions') }}</h6>
+                        {{ __('Ajouter une question') }}
                         </button>
                     </div>
                     <div class="card-body" id="questions-container">
@@ -280,22 +278,22 @@ document.addEventListener('DOMContentLoaded', function () {
 <template id="question-template">
     <div class="border rounded p-3 mb-3 question-block bg-light">
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="font-weight-bold question-title">Question</h6>
+            <h6 class="font-weight-bold question-title">{{ __('Question') }}</h6>
             <div>
-                <button type="button" class="btn btn-sm btn-outline-secondary move-up" title="Monter">
+                <button type="button" class="btn btn-sm btn-outline-secondary move-up" title="{{ __('Monter') }}">
                     <i class="fas fa-arrow-up"></i>
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-secondary move-down" title="Descendre">
+                <button type="button" class="btn btn-sm btn-outline-secondary move-down" title="{{ __('Descendre') }}">
                     <i class="fas fa-arrow-down"></i>
                 </button>
-                <button type="button" class="btn btn-sm btn-danger remove-question" title="Supprimer">
+                <button type="button" class="btn btn-sm btn-danger remove-question" title="{{ __('Supprimer') }}">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
         </div>
         <input type="hidden" class="question-order" name="questions[__INDEX__][order]" value="">
         <div class="mb-3">
-            <label for="question_text___INDEX__" class="form-label">Texte de la question*</label>
+            <label for="question_text___INDEX__" class="form-label">{{ __('Texte de la question*') }}</label>
             <input type="text" id="question_text___INDEX__" name="questions[__INDEX__][question_text]" class="form-control" required>
         </div>
         <div class="row">
@@ -312,11 +310,11 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
         <div class="row mt-2">
             <div class="col-md-4">
-                 <label for="points___INDEX__" class="form-label">Points*</label>
+                 <label for="points___INDEX__" class="form-label">{{ __('Points*') }}</label>
                 <input type="number" id="points___INDEX__" name="questions[__INDEX__][points]" class="form-control" value="10" min="1" required>
             </div>
             <div class="col-md-8">
-                <label for="explanation___INDEX__" class="form-label">Explication (optionnel)</label>
+                <label for="explanation___INDEX__" class="form-label">{{ __('Explication (optionnel)') }}</label>
                 <input type="text" id="explanation___INDEX__" name="questions[__INDEX__][explanation]" class="form-control">
             </div>
         </div>

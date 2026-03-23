@@ -16,7 +16,7 @@
                         <input type="number" step="0.01" class="form-control" id="total_amount" name="total_amount" value="{{ old('total_amount', $revenue->total_amount) }}" required>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="author_percentage" class="form-label">Author Percentage (%)</label>
+                        <label for="author_percentage" class="form-label">{{ __('Author Percentage (%)') }}</label>
                         <input type="number" class="form-control" id="author_percentage" name="author_percentage" value="{{ old('author_percentage', $revenue->author_percentage) }}" required>
                     </div>
                 </div>

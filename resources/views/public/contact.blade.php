@@ -66,21 +66,21 @@
                     <li class="d-flex align-items-start mb-4">
                         <i class="fas fa-map-marker-alt text-primary mt-1"></i>
                         <div>
-                            <h6 class="font-weight-bold">Adresse</h6>
-                            <p class="text-muted">123 Rue de l'Exemple, 75000 Paris, France</p>
+                            <h6 class="font-weight-bold">{{ __('Adresse') }}</h6>
+                            <p class="text-muted">{{ __("123 Rue de l'Exemple, 75000 Paris, France") }}</p>
                         </div>
                     </li>
                     <li class="d-flex align-items-start mb-4">
                         <i class="fas fa-envelope text-primary mt-1"></i>
                          <div>
-                            <h6 class="font-weight-bold">Email</h6>
+                            <h6 class="font-weight-bold">{{ __('Email') }}</h6>
                             <p class="text-muted"><a href="mailto:contact@yosglehn.com">contact@yosglehn.com</a></p>
                         </div>
                     </li>
                     <li class="d-flex align-items-start mb-4">
                         <i class="fas fa-phone-alt text-primary mt-1"></i>
                          <div>
-                            <h6 class="font-weight-bold">Téléphone</h6>
+                            <h6 class="font-weight-bold">{{ __('Téléphone') }}</h6>
                             <p class="text-muted">+33 1 23 45 67 89</p>
                         </div>
                     </li>

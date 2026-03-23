@@ -11,11 +11,11 @@
     <table class="table">
         <thead>
             <tr>
-                <th>ID</th>
+                <th>{{ __('ID') }}</th>
                 <th>{{ __('Name') }}</th>
                 <th>{{ __('Type') }}</th>
                 <th>{{ __('Price') }}</th>
-                <th>Duration (Days)</th>
+                <th>{{ __('Duration (Days)') }}</th>
                 <th>{{ __('Active') }}</th>
                 <th>{{ __('Actions') }}</th>
             </tr>

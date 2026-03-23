@@ -20,7 +20,7 @@
 
             <div class="mb-4">
                 <h1 class="h3">Résultats de {{ $attempt->user->name }}</h1>
-                <p class="text-muted">Quiz : <strong>{{ $attempt->quiz->title }}</strong> pour le livre <em>{{ $attempt->quiz->book->title }}</em></p>
+                <p class="text-muted">{{ __('Quiz :') }} <strong>{{ $attempt->quiz->title }}</strong> {{ __('pour le livre') }} <em>{{ $attempt->quiz->book->title }}</em></p>
             </div>
 
             <!-- Result Header -->
@@ -33,24 +33,24 @@
 
             <!-- Stats Summary -->
             <div class="card shadow-sm mb-4">
-                <div class="card-header"><h5 class="mb-0">Résumé de la performance</h5></div>
+                <div class="card-header"><h5 class="mb-0">{{ __('Résumé de la performance') }}</h5></div>
                 <div class="card-body">
                     <div class="row text-center">
                         <div class="col-md-3 col-6">
                             <div class="h5 font-weight-bold">{{ number_format($attempt->percentage, 1) }}%</div>
-                            <div class="text-xs text-muted text-uppercase">Pourcentage</div>
+                            <div class="text-xs text-muted text-uppercase">{{ __('Pourcentage') }}</div>
                         </div>
                         <div class="col-md-3 col-6">
                             <div class="h5 font-weight-bold">{{ $attempt->score }}</div>
-                            <div class="text-xs text-muted text-uppercase">Score</div>
+                            <div class="text-xs text-muted text-uppercase">{{ __('Score') }}</div>
                         </div>
                         <div class="col-md-3 col-6 mt-3 mt-md-0">
                             <div class="h5 font-weight-bold">{{ $attempt->correct_answers }} / {{ $attempt->total_questions }}</div>
-                            <div class="text-xs text-muted text-uppercase">Réponses Correctes</div>
+                            <div class="text-xs text-muted text-uppercase">{{ __('Réponses Correctes') }}</div>
                         </div>
                         <div class="col-md-3 col-6 mt-3 mt-md-0">
                             <div class="h5 font-weight-bold">{{ format_seconds($attempt->time_spent) }}</div>
-                            <div class="text-xs text-muted text-uppercase">Temps Passé</div>
+                            <div class="text-xs text-muted text-uppercase">{{ __('Temps Passé') }}</div>
                         </div>
                     </div>
                 </div>
@@ -59,7 +59,7 @@
             <!-- Answer Review -->
             @if($attempt->quiz->show_correct_answers)
                 <div class="card shadow-sm">
-                    <div class="card-header"><h5 class="mb-0">Revue des Réponses</h5></div>
+                    <div class="card-header"><h5 class="mb-0">{{ __('Revue des Réponses') }}</h5></div>
                     <div class="card-body">
                         @foreach($attempt->quiz->questions as $question)
                             @php
@@ -103,7 +103,7 @@
 
             <div class="text-center mt-4">
                 {{-- The 'back' link should ideally go back to the specific class progress page --}}
-                <a href="javascript:history.back()" class="btn btn-secondary">Retour</a>
+                <a href="javascript:history.back()" class="btn btn-secondary">{{ __('Retour') }}</a>
             </div>
         </div>
     </div>

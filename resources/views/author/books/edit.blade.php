@@ -135,10 +135,10 @@
                         <div class="mb-3">
                             <label for="status" class="form-label">{{ __('Statut') }}</label>
                             <select class="form-select @error('status') is-invalid @enderror" id="status" name="status" required>
-                                <option value="draft" {{ old('status', $book->status) == 'draft' ? 'selected' : '' }}>Brouillon</option>
-                                <option value="pending" {{ old('status', $book->status) == 'pending' ? 'selected' : '' }}>Soumettre pour validation</option>
-                                <option value="published" {{ old('status', $book->status) == 'published' ? 'selected' : '' }}>Publié</option>
-                                <option value="archived" {{ old('status', $book->status) == 'archived' ? 'selected' : '' }}>Archivé</option>
+                                <option value="draft" {{ old('status', $book->status) == 'draft' ? 'selected' : '' }}>{{ __('Brouillon') }}</option>
+                                <option value="pending" {{ old('status', $book->status) == 'pending' ? 'selected' : '' }}>{{ __('Soumettre pour validation') }}</option>
+                                <option value="published" {{ old('status', $book->status) == 'published' ? 'selected' : '' }}>{{ __('Publié') }}</option>
+                                <option value="archived" {{ old('status', $book->status) == 'archived' ? 'selected' : '' }}>{{ __('Archivé') }}</option>
                             </select>
                             <small class="form-text text-muted">Le statut 'Publié' ne peut être assigné que par un administrateur.</small>
                             @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -146,9 +146,9 @@
                          <div class="mb-3">
                             <label for="space" class="form-label">{{ __('Espace de publication') }}</label>
                             <select class="form-select @error('space') is-invalid @enderror" id="space" name="space" required>
-                                <option value="public" {{ old('space', $book->space) == 'public' ? 'selected' : '' }}>Public</option>
-                                <option value="educational" {{ old('space', $book->space) == 'educational' ? 'selected' : '' }}>Éducatif</option>
-                                <option value="adult" {{ old('space', $book->space) == 'adult' ? 'selected' : '' }}>Adulte</option>
+                                <option value="public" {{ old('space', $book->space) == 'public' ? 'selected' : '' }}>{{ __('Public') }}</option>
+                                <option value="educational" {{ old('space', $book->space) == 'educational' ? 'selected' : '' }}>{{ __('Éducatif') }}</option>
+                                <option value="adult" {{ old('space', $book->space) == 'adult' ? 'selected' : '' }}>{{ __('Adulte') }}</option>
                             </select>
                             @error('space')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
@@ -165,7 +165,7 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label for="isbn" class="form-label">ISBN</label>
+                            <label for="isbn" class="form-label">{{ __('ISBN') }}</label>
                             <input type="text" class="form-control @error('isbn') is-invalid @enderror" id="isbn" name="isbn" value="{{ old('isbn', $book->isbn) }}">
                             @error('isbn')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
@@ -185,8 +185,8 @@
                          <div class="mb-3">
                             <label for="content_type" class="form-label">{{ __('Type de Contenu') }}</label>
                             <select class="form-select @error('content_type') is-invalid @enderror" id="content_type" name="content_type" required>
-                                <option value="free" {{ old('content_type', $book->content_type) == 'free' ? 'selected' : '' }}>Gratuit</option>
-                                <option value="premium" {{ old('content_type', $book->content_type) == 'premium' ? 'selected' : '' }}>Premium</option>
+                                <option value="free" {{ old('content_type', $book->content_type) == 'free' ? 'selected' : '' }}>{{ __('Gratuit') }}</option>
+                                <option value="premium" {{ old('content_type', $book->content_type) == 'premium' ? 'selected' : '' }}>{{ __('Premium') }}</option>
                             </select>
                             @error('content_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>

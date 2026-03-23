@@ -83,9 +83,9 @@
     <!-- Conversations Sidebar -->
     <div class="conversations-sidebar">
         <div class="conversations-header">
-            <h4 class="mb-0">Conversations</h4>
+            <h4 class="mb-0">{{ __('Conversations') }}</h4>
             <div class="mt-3">
-                <input type="text" class="form-control" placeholder="Search conversations...">
+                <input type="text" class="form-control" placeholder="{{ __('Search conversations...') }}">
             </div>
         </div>
         <div class="conversations-list" id="conversations-list"
@@ -117,7 +117,7 @@
                     </div>
                 </div>
             @empty
-                <p class="p-3 text-muted">No conversations yet.</p>
+                <p class="p-3 text-muted">{{ __('No conversations yet.') }}</p>
             @endforelse
         </div>
     </div>
@@ -125,7 +125,7 @@
     <!-- Main Chat Area -->
     <div class="chat-main">
         <div class="chat-header">
-            <h5 class="mb-0" id="conversation-title">Select a conversation</h5>
+            <h5 class="mb-0" id="conversation-title">{{ __('Select a conversation') }}</h5>
         </div>
         <div class="chat-messages" id="messages-container">
             <!-- Messages will be loaded here -->
@@ -133,7 +133,7 @@
         <div class="chat-footer">
             <form action="#" method="post" id="message-form">
                 <div class="input-group">
-                    <input type="text" name="message" placeholder="Type Message ..." class="form-control" id="message-input" disabled>
+                    <input type="text" name="message" placeholder="{{ __('Type Message ...') }}" class="form-control" id="message-input" disabled>
                     <button type="submit" class="btn btn-primary" id="send-button" disabled><i class="fas fa-paper-plane"></i></button>
                 </div>
             </form>

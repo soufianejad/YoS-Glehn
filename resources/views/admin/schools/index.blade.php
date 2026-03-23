@@ -17,10 +17,10 @@
                             <input type="text" name="search" class="form-control" placeholder="{{ __('Rechercher par nom, email...') }}" value="{{ $search ?? '' }}">
                             <select name="status" class="form-select">
                                 <option value="">{{ __('Tous les statuts') }}</option>
-                                <option value="approved" {{ ($status ?? '') == 'approved' ? 'selected' : '' }}>Approuvé</option>
-                                <option value="pending" {{ ($status ?? '') == 'pending' ? 'selected' : '' }}>En attente</option>
-                                <option value="rejected" {{ ($status ?? '') == 'rejected' ? 'selected' : '' }}>Rejeté</option>
-                                <option value="suspended" {{ ($status ?? '') == 'suspended' ? 'selected' : '' }}>Suspendu</option>
+                                <option value="approved" {{ ($status ?? '') == 'approved' ? 'selected' : '' }}>{{ __('Approuvé') }}</option>
+                                <option value="pending" {{ ($status ?? '') == 'pending' ? 'selected' : '' }}>{{ __('En attente') }}</option>
+                                <option value="rejected" {{ ($status ?? '') == 'rejected' ? 'selected' : '' }}>{{ __('Rejeté') }}</option>
+                                <option value="suspended" {{ ($status ?? '') == 'suspended' ? 'selected' : '' }}>{{ __('Suspendu') }}</option>
                             </select>
                             <button class="btn btn-primary" type="submit"><i class="fas fa-search fa-sm"></i></button>
                         </div>

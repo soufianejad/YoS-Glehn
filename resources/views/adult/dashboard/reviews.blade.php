@@ -7,11 +7,11 @@
 <div class="container-fluid">
     <div class="card shadow-sm">
         <div class="card-header">
-            <h6 class="m-0 font-weight-bold text-primary">Avis que j'ai laissés</h6>
+            <h6 class="m-0 font-weight-bold text-primary">{{ __("Avis que j'ai laissés") }}</h6>
         </div>
         <div class="card-body">
             @if($reviews->isEmpty())
-                <p class="text-center text-muted">Vous n'avez laissé aucun avis sur les livres de cette section.</p>
+                <p class="text-center text-muted">{{ __("Vous n'avez laissé aucun avis sur les livres de cette section.") }}</p>
             @else
                 @foreach($reviews as $review)
                     <div class="d-flex mb-3 border-bottom pb-3">

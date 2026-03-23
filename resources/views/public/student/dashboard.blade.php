@@ -109,7 +109,7 @@
                             @endforeach
                         </div>
                         <a href="{{ route('student.library.recommended') }}" class="btn btn-sm btn-outline-primary">
-                            Voir tous les livres recommandés <i class="bi bi-arrow-right"></i>
+                            {{ __('Voir tous les livres recommandés') }}
                         </a>
                     </div>
                 </div>
@@ -134,7 +134,7 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         <small class="text-muted">{{ round($progress->progress_percentage) }}% - Page {{ $progress->current_page }}/{{ $progress->total_pages }}</small>
                                         <a href="{{ route('student.library.read', $progress->book->slug) }}" class="btn btn-sm btn-primary">
-                                            Continuer <i class="bi bi-arrow-right"></i>
+                                            {{ __('Continuer') }}
                                         </a>
                                     </div>
                                 </div>
@@ -163,7 +163,7 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         <small class="text-muted">{{ round($progress->progress_percentage) }}% - {{ gmdate('H:i:s', $progress->current_position) }}</small>
                                         <a href="{{ route('student.library.listen', $progress->book->slug) }}" class="btn btn-sm btn-success">
-                                            Écouter <i class="bi bi-play-fill"></i>
+                                            {{ __('Écouter') }}
                                         </a>
                                     </div>
                                 </div>
@@ -197,7 +197,7 @@
                             </div>
                         @endforeach
                         <a href="{{ route('student.progress.badges') }}" class="btn btn-sm btn-outline-warning w-100">
-                            Voir tous mes badges <i class="bi bi-arrow-right"></i>
+                            {{ __('Voir tous mes badges') }}
                         </a>
                     </div>
                 </div>
@@ -222,7 +222,7 @@
                             </div>
                         @endforeach
                         <a href="{{ route('student.quiz.index') }}" class="btn btn-sm btn-outline-info w-100">
-                            Voir tous les quiz <i class="bi bi-arrow-right"></i>
+                            {{ __('Voir tous les quiz') }}
                         </a>
                     </div>
                 </div>

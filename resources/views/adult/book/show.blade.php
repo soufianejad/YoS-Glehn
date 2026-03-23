@@ -23,7 +23,7 @@
                         @if($book->pdf_file)
                             @if($hasPurchasedPdf)
                                 <a href="{{ route('adult.library.read', $book) }}" class="btn btn-lg btn-primary">
-                                    <i class="fas fa-book-open me-2"></i> Lire (PDF)
+                                    {{ __('Lire (PDF)') }}
                                 </a>
                             @else
                                 <form action="{{ route('adult.purchase.pdf', $book) }}" method="POST">
@@ -38,7 +38,7 @@
                         @if($book->audio_file)
                             @if($hasPurchasedAudio)
                                 <a href="{{ route('adult.library.listen', $book) }}" class="btn btn-lg btn-info">
-                                    <i class="fas fa-headphones me-2"></i> Écouter (Audio)
+                                    {{ __('Écouter (Audio)') }}
                                 </a>
                             @else
                                 <form action="{{ route('adult.purchase.audio', $book) }}" method="POST">
@@ -53,7 +53,7 @@
                     
                     <hr class="my-4">
                     <a href="{{ route('adult.library.index') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-1"></i> Retour à la bibliothèque
+                        {{ __('Retour à la bibliothèque') }}
                     </a>
                 </div>
             </div>
@@ -63,30 +63,30 @@
     <!-- Reviews Section -->
     <div class="card shadow-sm mt-4">
         <div class="card-header">
-            <h4 class="h5 mb-0">Avis des lecteurs</h4>
+            <h4 class="h5 mb-0">{{ __('Avis des lecteurs') }}</h4>
         </div>
         <div class="card-body">
             @auth
                 <div class="mb-4">
-                    <h5>Laisser un avis</h5>
+                    <h5>{{ __('Laisser un avis') }}</h5>
                     {{-- Assuming a route 'adult.review.store' needs to be created --}}
                     <form action="{{ route('adult.library.review.store', $book) }}" method="POST">
                         @csrf
                         <div class="mb-2">
-                            <label for="rating" class="form-label">Note</label>
+                            <label for="rating" class="form-label">{{ __('Note') }}</label>
                             <select class="form-select" style="max-width: 150px;" id="rating" name="rating">
-                                <option value="5">5 étoiles</option>
-                                <option value="4">4 étoiles</option>
-                                <option value="3">3 étoiles</option>
-                                <option value="2">2 étoiles</option>
-                                <option value="1">1 étoile</option>
+                                <option value="5">{{ __('5 étoiles') }}</option>
+                                <option value="4">{{ __('4 étoiles') }}</option>
+                                <option value="3">{{ __('3 étoiles') }}</option>
+                                <option value="2">{{ __('2 étoiles') }}</option>
+                                <option value="1">{{ __('1 étoile') }}</option>
                             </select>
                         </div>
                         <div class="mb-2">
-                            <label for="comment" class="form-label">Commentaire</label>
+                            <label for="comment" class="form-label">{{ __('Commentaire') }}</label>
                             <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Envoyer l'avis</button>
+                        {{ __("Envoyer l'avis") }}</button>
                     </form>
                 </div>
                 <hr>
@@ -107,7 +107,7 @@
                     </div>
                 </div>
             @empty
-                <p>Aucun avis pour le moment.</p>
+                <p>{{ __('Aucun avis pour le moment.') }}</p>
             @endforelse
         </div>
     </div>

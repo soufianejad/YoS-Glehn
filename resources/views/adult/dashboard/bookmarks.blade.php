@@ -7,11 +7,11 @@
 <div class="container-fluid">
     <div class="card shadow-sm">
         <div class="card-header">
-            <h6 class="m-0 font-weight-bold text-primary">Livres mis en favoris</h6>
+            <h6 class="m-0 font-weight-bold text-primary">{{ __('Livres mis en favoris') }}</h6>
         </div>
         <div class="card-body">
             @if($bookmarks->isEmpty())
-                <p class="text-center text-muted">Vous n'avez aucun livre en favori dans cette section.</p>
+                <p class="text-center text-muted">{{ __("Vous n'avez aucun livre en favori dans cette section.") }}</p>
             @else
                 <div class="list-group">
                     @foreach($bookmarks as $bookmark)

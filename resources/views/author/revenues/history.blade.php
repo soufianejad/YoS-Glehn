@@ -9,7 +9,7 @@
     <table class="table">
         <thead>
             <tr>
-                <th>ID</th>
+                <th>{{ __('ID') }}</th>
                 <th>{{ __('Amount') }}</th>
                 <th>{{ __('Status') }}</th>
                 <th>{{ __('Period Start') }}</th>

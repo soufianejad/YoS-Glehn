@@ -7,20 +7,20 @@
 <div class="container-fluid">
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Livres mis en favoris</h6>
+            <h6 class="m-0 font-weight-bold text-primary">{{ __('Livres mis en favoris') }}</h6>
         </div>
         <div class="card-body">
             @if($bookmarks->isEmpty())
-                <p class="text-center text-muted py-4">Vous n'avez aucun livre en favori pour le moment.</p>
+                <p class="text-center text-muted py-4">{{ __("Vous n'avez aucun livre en favori pour le moment.") }}</p>
             @else
                 <div class="table-responsive">
                     <table class="table table-hover" width="100%" cellspacing="0">
                         <thead>
                             <tr>
-                                <th>Livre</th>
-                                <th>Description</th>
-                                <th>Date d'ajout</th>
-                                <th class="text-center">Actions</th>
+                                <th>{{ __('Livre') }}</th>
+                                <th>{{ __('Description') }}</th>
+                                <th>{{ __("Date d'ajout") }}</th>
+                                <th class="text-center">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -38,7 +38,7 @@
                                     <td>{{ Str::limit($bookmark->book->description, 100) }}</td>
                                     <td>{{ $bookmark->created_at->format('d/m/Y') }}</td>
                                     <td class="text-center">
-                                        <a href="{{ route('reader.library.show', $bookmark->book->slug) }}" class="btn btn-info btn-circle btn-sm" title="Voir le livre">
+                                        <a href="{{ route('reader.library.show', $bookmark->book->slug) }}" class="btn btn-info btn-circle btn-sm" title="{{ __('Voir le livre') }}">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         {{-- Assuming a route for deleting bookmarks exists --}}

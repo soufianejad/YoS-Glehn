@@ -38,19 +38,19 @@
                         <label for="status" class="form-label">{{ __('Statut') }}</label>
                         <select name="status" id="status" class="form-select">
                             <option value="">{{ __('Tous') }}</option>
-                            <option value="published" {{ $statusFilter == 'published' ? 'selected' : '' }}>Published</option>
-                            <option value="pending" {{ $statusFilter == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="draft" {{ $statusFilter == 'draft' ? 'selected' : '' }}>Draft</option>
-                             <option value="rejected" {{ $statusFilter == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                            <option value="published" {{ $statusFilter == 'published' ? 'selected' : '' }}>{{ __('Published') }}</option>
+                            <option value="pending" {{ $statusFilter == 'pending' ? 'selected' : '' }}>{{ __('Pending') }}</option>
+                            <option value="draft" {{ $statusFilter == 'draft' ? 'selected' : '' }}>{{ __('Draft') }}</option>
+                             <option value="rejected" {{ $statusFilter == 'rejected' ? 'selected' : '' }}>{{ __('Rejected') }}</option>
                         </select>
                     </div>
                      <div class="col-md-1">
                         <label for="space" class="form-label">{{ __('Espace') }}</label>
                         <select name="space" id="space" class="form-select">
                             <option value="">{{ __('Tous') }}</option>
-                            <option value="public" {{ $spaceFilter == 'public' ? 'selected' : '' }}>Public</option>
-                            <option value="educational" {{ $spaceFilter == 'educational' ? 'selected' : '' }}>Educational</option>
-                            <option value="adult" {{ $spaceFilter == 'adult' ? 'selected' : '' }}>Adult</option>
+                            <option value="public" {{ $spaceFilter == 'public' ? 'selected' : '' }}>{{ __('Public') }}</option>
+                            <option value="educational" {{ $spaceFilter == 'educational' ? 'selected' : '' }}>{{ __('Educational') }}</option>
+                            <option value="adult" {{ $spaceFilter == 'adult' ? 'selected' : '' }}>{{ __('Adult') }}</option>
                         </select>
                     </div>
                     <div class="col-md-2 d-grid">
@@ -109,7 +109,7 @@
                                     <a href="{{ route('admin.books.edit', $book) }}" class="btn btn-warning btn-circle btn-sm" title="{{__('Modifier')}}">
                                         <i class="fas fa-pencil-alt"></i>
                                     </a>
-                                    <a href="{{ route('admin.quiz.create', $book) }}" class="btn btn-primary btn-circle btn-sm" title="Créer un Quiz">
+                                    <a href="{{ route('admin.quiz.create', $book) }}" class="btn btn-primary btn-circle btn-sm" title="{{ __('Créer un Quiz') }}">
                                         <i class="fas fa-plus-square"></i>
                                     </a>
                                     @if($book->status == 'pending')

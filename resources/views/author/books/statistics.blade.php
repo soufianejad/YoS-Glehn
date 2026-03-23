@@ -40,7 +40,7 @@
         <div>
             <h1 class="h3 mb-0">{{ $book->title }}</h1>
             <a href="{{ route('author.books.index') }}" class="btn btn-sm btn-outline-secondary mt-2">
-                <i class="fas fa-arrow-left me-1"></i> Retour à la liste
+                {{ __('Retour à la liste') }}
             </a>
         </div>
     </div>
@@ -49,19 +49,19 @@
     <div class="row">
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card h-100 border-start-primary shadow-sm"><div class="card-body">
-                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Revenus</div>
+                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">{{ __('Revenus') }}</div>
                 <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($stats['revenue'], 2) }} €</div>
             </div></div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card h-100 border-start-success shadow-sm"><div class="card-body">
-                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Ventes</div>
+                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">{{ __('Ventes') }}</div>
                 <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['sales'] }}</div>
             </div></div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card h-100 border-start-info shadow-sm"><div class="card-body">
-                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Note Moyenne</div>
+                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">{{ __('Note Moyenne') }}</div>
                 <div class="h5 mb-0 font-weight-bold text-gray-800 d-flex align-items-center">
                     {{ number_format($stats['avg_rating'], 2) }} <span class="ms-2">{!! render_stars($stats['avg_rating']) !!}</span>
                 </div>
@@ -69,7 +69,7 @@
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card h-100 border-start-warning shadow-sm"><div class="card-body">
-                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Avis</div>
+                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">{{ __('Avis') }}</div>
                 <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['reviews_count'] }}</div>
             </div></div>
         </div>
@@ -79,7 +79,7 @@
     <div class="row">
         <div class="col-12 mb-4">
             <div class="card shadow-sm">
-                <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Ventes des 6 derniers mois</h6></div>
+                <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">{{ __('Ventes des 6 derniers mois') }}</h6></div>
                 <div class="card-body">
                     <canvas id="salesChart"></canvas>
                 </div>
@@ -92,11 +92,11 @@
         <!-- Readers Table -->
         <div class="col-lg-6 mb-4">
             <div class="card shadow-sm">
-                <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Progression des Lecteurs (PDF)</h6></div>
+                <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">{{ __('Progression des Lecteurs (PDF)') }}</h6></div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-sm table-hover">
-                            <thead><tr><th>Lecteur</th><th>Progression</th><th>Temps passé</th></tr></thead>
+                            <thead><tr><th>{{ __('Lecteur') }}</th><th>{{ __('Progression') }}</th><th>{{ __('Temps passé') }}</th></tr></thead>
                             <tbody>
                                 @forelse ($readers as $progress)
                                     <tr>
@@ -109,7 +109,7 @@
                                         <td>{{ format_seconds($progress->time_spent) }}</td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="3" class="text-center text-muted">Aucun lecteur pour le moment.</td></tr>
+                                    <tr><td colspan="3" class="text-center text-muted">{{ __('Aucun lecteur pour le moment.') }}</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -122,11 +122,11 @@
         <!-- Listeners Table -->
         <div class="col-lg-6 mb-4">
             <div class="card shadow-sm">
-                <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Progression des Auditeurs (Audio)</h6></div>
+                <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">{{ __('Progression des Auditeurs (Audio)') }}</h6></div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-sm table-hover">
-                            <thead><tr><th>Auditeur</th><th>Progression</th></tr></thead>
+                            <thead><tr><th>{{ __('Auditeur') }}</th><th>{{ __('Progression') }}</th></tr></thead>
                             <tbody>
                                 @forelse ($listeners as $progress)
                                     <tr>
@@ -139,7 +139,7 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="2" class="text-center text-muted">Aucun auditeur pour le moment.</td></tr>
+                                    <tr><td colspan="2" class="text-center text-muted">{{ __('Aucun auditeur pour le moment.') }}</td></tr>
                                 @endforelse
                             </tbody>
                         </table>

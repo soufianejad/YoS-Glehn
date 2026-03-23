@@ -14,13 +14,13 @@
 
     <div class="card shadow-sm">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Liste des Élèves</h6>
+            <h6 class="m-0 font-weight-bold text-primary">{{ __('Liste des Élèves') }}</h6>
             <div class="btn-group" role="group">
                 <a href="{{ route('teacher.progress.index', $class) }}" class="btn btn-outline-success">
-                    <i class="fas fa-chart-line me-1"></i> Voir la Progression
+                    {{ __('Voir la Progression') }}
                 </a>
                 <a href="{{ route('teacher.assignments.create', $class) }}" class="btn btn-outline-primary">
-                    <i class="fas fa-book-medical me-1"></i> Assigner un livre
+                    {{ __('Assigner un livre') }}
                 </a>
             </div>
         </div>
@@ -28,15 +28,15 @@
             @if($class->students->isEmpty())
                 <div class="text-center py-5">
                     <i class="fas fa-user-graduate fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">Il n'y a aucun élève dans cette classe pour le moment.</p>
+                    <p class="text-muted">{{ __("Il n'y a aucun élève dans cette classe pour le moment.") }}</p>
                 </div>
             @else
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>Nom</th>
-                                <th>Email</th>
+                                <th>{{ __('Nom') }}</th>
+                                <th>{{ __('Email') }}</th>
                             </tr>
                         </thead>
                         <tbody>

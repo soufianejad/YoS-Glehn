@@ -32,29 +32,29 @@
         <div class="card-body">
             <form action="{{ route('adult.library.index') }}" method="GET" class="row g-3 align-items-end">
                 <div class="col-md-4">
-                    <label for="search" class="form-label font-weight-bold">Rechercher par Titre</label>
-                    <input type="text" class="form-control" id="search" name="search" value="{{ request('search') }}" placeholder="e.g., Le Rouge et le Noir">
+                    <label for="search" class="form-label font-weight-bold">{{ __('Rechercher par Titre') }}</label>
+                    <input type="text" class="form-control" id="search" name="search" value="{{ request('search') }}" placeholder="{{ __('e.g., Le Rouge et le Noir') }}">
                 </div>
                 <div class="col-md-3">
-                    <label for="category" class="form-label font-weight-bold">Catégorie</label>
+                    <label for="category" class="form-label font-weight-bold">{{ __('Catégorie') }}</label>
                     <select class="form-select" id="category" name="category">
-                        <option value="">Toutes</option>
+                        <option value="">{{ __('Toutes') }}</option>
                         @foreach($categories as $category)
                             <option value="{{ $category->slug }}" {{ request('category') == $category->slug ? 'selected' : '' }}>{{ $category->name }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label for="reading_status" class="form-label font-weight-bold">Statut</label>
+                    <label for="reading_status" class="form-label font-weight-bold">{{ __('Statut') }}</label>
                     <select class="form-select" id="reading_status" name="reading_status">
-                        <option value="">Tous</option>
-                        <option value="not_started" {{ request('reading_status') == 'not_started' ? 'selected' : '' }}>Non commencé</option>
-                        <option value="in_progress" {{ request('reading_status') == 'in_progress' ? 'selected' : '' }}>En cours</option>
-                        <option value="finished" {{ request('reading_status') == 'finished' ? 'selected' : '' }}>Terminé</option>
+                        <option value="">{{ __('Tous') }}</option>
+                        <option value="not_started" {{ request('reading_status') == 'not_started' ? 'selected' : '' }}>{{ __('Non commencé') }}</option>
+                        <option value="in_progress" {{ request('reading_status') == 'in_progress' ? 'selected' : '' }}>{{ __('En cours') }}</option>
+                        <option value="finished" {{ request('reading_status') == 'finished' ? 'selected' : '' }}>{{ __('Terminé') }}</option>
                     </select>
                 </div>
                 <div class="col-md-2 d-grid">
-                    <button type="submit" class="btn btn-primary">Filtrer</button>
+                    {{ __('Filtrer') }}</button>
                 </div>
             </form>
         </div>
@@ -63,8 +63,8 @@
     @if($books->isEmpty())
         <div class="empty-state bg-white shadow-sm mt-5">
             <i class="fas fa-book-dead mb-4"></i>
-            <h3 class="text-gray-800">Aucun livre ne correspond à votre recherche</h3>
-            <p class="text-muted">Essayez de modifier vos filtres ou explorez toutes les catégories.</p>
+            <h3 class="text-gray-800">{{ __('Aucun livre ne correspond à votre recherche') }}</h3>
+            <p class="text-muted">{{ __('Essayez de modifier vos filtres ou explorez toutes les catégories.') }}</p>
             <a href="{{ route('adult.library.index') }}" class="btn btn-primary mt-3">
                 Réinitialiser les filtres
             </a>

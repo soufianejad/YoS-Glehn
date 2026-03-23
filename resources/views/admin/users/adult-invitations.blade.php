@@ -58,13 +58,13 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="generateInvitationModalLabel">{{ __('Generate New Adult Invitation') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
                 </div>
                 <form action="{{ route('admin.adult.generate-invitation') }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email (Optional)</label>
+                            <label for="email" class="form-label">{{ __('Email (Optional)') }}</label>
                             <input type="email" class="form-control" id="email" name="email">
                             <div class="form-text">{{ __('If provided, this invitation can only be used by this email address.') }}</div>
                         </div>
@@ -73,7 +73,7 @@
                             <input type="number" class="form-control" id="max_uses" name="max_uses" value="1" min="1">
                         </div>
                         <div class="mb-3">
-                            <label for="expires_at" class="form-label">Expires At (Optional)</label>
+                            <label for="expires_at" class="form-label">{{ __('Expires At (Optional)') }}</label>
                             <input type="datetime-local" class="form-control" id="expires_at" name="expires_at">
                         </div>
                     </div>

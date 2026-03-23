@@ -12,7 +12,7 @@
 
                 <!-- Book Selection -->
                 <div class="mb-3">
-                    <label for="book_id" class="form-label">Choisir un livre</label>
+                    <label for="book_id" class="form-label">{{ __('Choisir un livre') }}</label>
                     <select id="book_id" name="book_id" class="form-select @error('book_id') is-invalid @enderror">
                         @foreach($books as $book)
                             <option value="{{ $book->id }}" {{ old('book_id') == $book->id ? 'selected' : '' }}>
@@ -35,9 +35,8 @@
 
                 <!-- Actions -->
                 <div class="mt-4 text-end">
-                    <a href="{{ route('teacher.classes.show', $class) }}" class="btn btn-light me-2">Annuler</a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-check me-1"></i> Assigner le livre
+                    <a href="{{ route('teacher.classes.show', $class) }}" class="btn btn-light me-2">{{ __('Annuler') }}</a>
+                    {{ __('Assigner le livre') }}
                     </button>
                 </div>
             </form>

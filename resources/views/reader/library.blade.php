@@ -33,7 +33,7 @@
             <form action="{{ route('reader.library') }}" method="GET" class="row g-3 align-items-end">
                 <div class="col-md-4">
                     <label for="search" class="form-label font-weight-bold">{{ __('Rechercher par Titre') }}</label>
-                    <input type="text" class="form-control" id="search" name="search" value="{{ request('search') }}" placeholder="e.g., Le Prince">
+                    <input type="text" class="form-control" id="search" name="search" value="{{ request('search') }}" placeholder="{{ __('e.g., Le Prince') }}">
                 </div>
                 <div class="col-md-3">
                     <label for="reading_status" class="form-label font-weight-bold">{{ __('Statut') }}</label>

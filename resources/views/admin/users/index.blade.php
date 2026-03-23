@@ -17,12 +17,12 @@
                             <input type="text" name="search" class="form-control" placeholder="{{ __('Rechercher par nom, email...') }}" value="{{ $search ?? '' }}">
                             <select name="role" class="form-select">
                                 <option value="">{{ __('Tous les rôles') }}</option>
-                                <option value="admin" {{ ($role ?? '') == 'admin' ? 'selected' : '' }}>Admin</option>
-                                <option value="author" {{ ($role ?? '') == 'author' ? 'selected' : '' }}>Auteur</option>
-                                <option value="school" {{ ($role ?? '') == 'school' ? 'selected' : '' }}>École</option>
-                                <option value="student" {{ ($role ?? '') == 'student' ? 'selected' : '' }}>Étudiant</option>
-                                <option value="reader" {{ ($role ?? '') == 'reader' ? 'selected' : '' }}>Lecteur</option>
-                                <option value="adult_reader" {{ ($role ?? '') == 'adult_reader' ? 'selected' : '' }}>Lecteur Adulte</option>
+                                <option value="admin" {{ ($role ?? '') == 'admin' ? 'selected' : '' }}>{{ __('Admin') }}</option>
+                                <option value="author" {{ ($role ?? '') == 'author' ? 'selected' : '' }}>{{ __('Auteur') }}</option>
+                                <option value="school" {{ ($role ?? '') == 'school' ? 'selected' : '' }}>{{ __('École') }}</option>
+                                <option value="student" {{ ($role ?? '') == 'student' ? 'selected' : '' }}>{{ __('Étudiant') }}</option>
+                                <option value="reader" {{ ($role ?? '') == 'reader' ? 'selected' : '' }}>{{ __('Lecteur') }}</option>
+                                <option value="adult_reader" {{ ($role ?? '') == 'adult_reader' ? 'selected' : '' }}>{{ __('Lecteur Adulte') }}</option>
                             </select>
                             <button class="btn btn-primary" type="submit"><i class="fas fa-search fa-sm"></i></button>
                         </div>

@@ -58,12 +58,12 @@
                             <div class="col-md-6 mb-3">
                                 <label for="role" class="form-label">{{ __('Rôle') }}</label>
                                 <select class="form-select @error('role') is-invalid @enderror" id="role" name="role">
-                                    <option value="reader" {{ old('role') == 'reader' ? 'selected' : '' }}>Lecteur</option>
-                                    <option value="student" {{ old('role') == 'student' ? 'selected' : '' }}>Étudiant</option>
-                                    <option value="author" {{ old('role') == 'author' ? 'selected' : '' }}>Auteur</option>
-                                    <option value="school" {{ old('role') == 'school' ? 'selected' : '' }}>École</option>
-                                    <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                                    <option value="adult_reader" {{ old('role') == 'adult_reader' ? 'selected' : '' }}>Lecteur Adulte</option>
+                                    <option value="reader" {{ old('role') == 'reader' ? 'selected' : '' }}>{{ __('Lecteur') }}</option>
+                                    <option value="student" {{ old('role') == 'student' ? 'selected' : '' }}>{{ __('Étudiant') }}</option>
+                                    <option value="author" {{ old('role') == 'author' ? 'selected' : '' }}>{{ __('Auteur') }}</option>
+                                    <option value="school" {{ old('role') == 'school' ? 'selected' : '' }}>{{ __('École') }}</option>
+                                    <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>{{ __('Admin') }}</option>
+                                    <option value="adult_reader" {{ old('role') == 'adult_reader' ? 'selected' : '' }}>{{ __('Lecteur Adulte') }}</option>
                                 </select>
                                 @error('role')
                                     <div class="invalid-feedback">{{ $message }}</div>

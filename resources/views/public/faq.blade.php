@@ -69,7 +69,7 @@
                     <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
                         <div class="accordion-body">
                             <p>{{ __('faq.can_i_read_on_mobile_answer') }}</p>
-                            <p>Oui, notre plateforme est entièrement responsive et accessible depuis n'importe quel appareil mobile ou tablette. Profitez de vos lectures où que vous soyez !</p>
+                            <p>{{ __("Oui, notre plateforme est entièrement responsive et accessible depuis n'importe quel appareil mobile ou tablette. Profitez de vos lectures où que vous soyez !") }}</p>
                         </div>
                     </div>
                 </div>
@@ -95,7 +95,7 @@
                     <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#faqAccordion">
                         <div class="accordion-body">
                             <p>{{ __('faq.how_to_contact_support_answer') }}</p>
-                            <p>Vous pouvez nous contacter via le formulaire sur notre page <a href="{{ route('contact') }}">Contact</a>. Notre équipe de support est disponible pour répondre à toutes vos questions.</p>
+                            <p>{{ __('Vous pouvez nous contacter via le formulaire sur notre page') }} <a href="{{ route('contact') }}">{{ __('Contact') }}</a>{{ __('. Notre équipe de support est disponible pour répondre à toutes vos questions.') }}</p>
                         </div>
                     </div>
                 </div>

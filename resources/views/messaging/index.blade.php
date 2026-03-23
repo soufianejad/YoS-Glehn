@@ -157,13 +157,13 @@
     <div class="conversations-sidebar">
         <div class="conversations-header">
             <div class="d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">Conversations</h4>
+                <h4 class="mb-0">{{ __('Conversations') }}</h4>
                 <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#startConversationModal">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
             <div class="mt-3">
-                <input type="text" class="form-control" placeholder="Search conversations...">
+                <input type="text" class="form-control" placeholder="{{ __('Search conversations...') }}">
             </div>
         </div>
         <div class="conversations-list" id="conversations-list">
@@ -192,7 +192,7 @@
                     </div>
                 </div>
             @empty
-                <p class="p-3 text-muted">No conversations yet.</p>
+                <p class="p-3 text-muted">{{ __('No conversations yet.') }}</p>
             @endforelse
         </div>
     </div>
@@ -219,11 +219,11 @@
         <div class="chat-messages" id="messages-container">
             @if ($recipient && !$activeConversation)
                 <div class="h-100 d-flex align-items-center justify-content-center">
-                    <p class="text-muted">Start the conversation below.</p>
+                    <p class="text-muted">{{ __('Start the conversation below.') }}</p>
                 </div>
             @elseif (!$activeConversation)
                 <div class="h-100 d-flex align-items-center justify-content-center">
-                    <p class="text-muted">Select a conversation to start chatting.</p>
+                    <p class="text-muted">{{ __('Select a conversation to start chatting.') }}</p>
                 </div>
             @endif
         </div>
@@ -234,7 +234,7 @@
                     @csrf
                     <input type="hidden" name="recipient_ids[]" value="{{ $recipient->id }}">
                     <div class="input-group">
-                        <input type="text" name="content" placeholder="Your message..." class="form-control" required>
+                        <input type="text" name="content" placeholder="{{ __('Your message...') }}" class="form-control" required>
                         <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
                     </div>
                 </form>
@@ -243,7 +243,7 @@
                     @csrf
                     <input type="hidden" name="conversation_id" id="conversation_id" value="{{ $activeConversation->id ?? '' }}">
                     <div class="input-group">
-                        <input type="text" name="content" placeholder="Type Message ..." class="form-control" id="message-input">
+                        <input type="text" name="content" placeholder="{{ __('Type Message ...') }}" class="form-control" id="message-input">
                         <button type="submit" class="btn btn-primary" id="send-button">
                             <span id="send-button-text"><i class="fas fa-paper-plane"></i></span>
                             <span id="send-button-spinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
@@ -261,29 +261,29 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">{{ __('Start New Conversation') }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
             </div>
             <form action="{{ route('messaging.start.post') }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Conversation Name (optional)</label>
+                        <label class="form-label">{{ __('Conversation Name (optional)') }}</label>
                         <input type="text" class="form-control" name="name">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Select User(s)</label>
+                        <label class="form-label">{{ __('Select User(s)') }}</label>
                         <select class="form-control" name="recipient_ids[]" required multiple style="height: 120px;">
                             <!-- AJAX content -->
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Message</label>
+                        <label class="form-label">{{ __('Message') }}</label>
                         <textarea class="form-control" name="content" rows="3" required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Start</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}</button>
+                    {{ __('Start') }}</button>
                 </div>
             </form>
         </div>

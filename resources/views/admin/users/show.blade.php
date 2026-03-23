@@ -15,14 +15,14 @@
                     <p class="text-muted">{{ $user->email }}</p>
                     <span class="badge badge-{{ \App\Helpers\StatusHelper::userRoleColor($user->role) }}">{{ ucfirst($user->role) }}</span>
                     @if($user->is_active)
-                        <span class="badge bg-success">Actif</span>
+                        <span class="badge bg-success">{{ __('Actif') }}</span>
                     @else
-                        <span class="badge bg-danger">Inactif</span>
+                        <span class="badge bg-danger">{{ __('Inactif') }}</span>
                     @endif
                 </div>
                 <div class="card-footer">
-                    <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning btn-sm">Modifier</a>
-                    <a href="{{ route('admin.users.impersonate', $user) }}" class="btn btn-info btn-sm">Impersonate</a>
+                    <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning btn-sm">{{ __('Modifier') }}</a>
+                    <a href="{{ route('admin.users.impersonate', $user) }}" class="btn btn-info btn-sm">{{ __('Impersonate') }}</a>
                     <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr ?');">
                         @csrf
                         @method('DELETE')
@@ -37,25 +37,25 @@
             <div class="row">
                 <div class="col-md-6 mb-4">
                     <div class="card border-left-primary shadow h-100 py-2"><div class="card-body">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Dépensé</div>
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">{{ __('Total Dépensé') }}</div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($stats['total_spent'], 2) }} €</div>
                     </div></div>
                 </div>
                 <div class="col-md-6 mb-4">
                     <div class="card border-left-success shadow h-100 py-2"><div class="card-body">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Achats de Livres</div>
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">{{ __('Achats de Livres') }}</div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['purchases_count'] }}</div>
                     </div></div>
                 </div>
                 <div class="col-md-6 mb-4">
                     <div class="card border-left-info shadow h-100 py-2"><div class="card-body">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Quiz Tentés</div>
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">{{ __('Quiz Tentés') }}</div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['quizzes_taken'] }}</div>
                     </div></div>
                 </div>
                 <div class="col-md-6 mb-4">
                     <div class="card border-left-warning shadow h-100 py-2"><div class="card-body">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Score Moyen</div>
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">{{ __('Score Moyen') }}</div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($stats['avg_quiz_score'], 1) }}%</div>
                     </div></div>
                 </div>
@@ -67,9 +67,9 @@
     <div class="card shadow">
         <div class="card-header">
             <ul class="nav nav-tabs card-header-tabs" id="userActivityTab" role="tablist">
-                <li class="nav-item" role="presentation"><button class="nav-link active" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab">Paiements</button></li>
-                <li class="nav-item" role="presentation"><button class="nav-link" id="quizzes-tab" data-bs-toggle="tab" data-bs-target="#quizzes" type="button" role="tab">Tentatives de Quiz</button></li>
-                <li class="nav-item" role="presentation"><button class="nav-link" id="reading-tab" data-bs-toggle="tab" data-bs-target="#reading" type="button" role="tab">Progression Lecture</button></li>
+                <li class="nav-item" role="presentation">{{ __('Paiements') }}</button></li>
+                <li class="nav-item" role="presentation">{{ __('Tentatives de Quiz') }}</button></li>
+                <li class="nav-item" role="presentation">{{ __('Progression Lecture') }}</button></li>
             </ul>
         </div>
         <div class="card-body">
@@ -80,10 +80,10 @@
                         <table class="table table-sm table-hover">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Description</th>
-                                    <th class="text-end">Montant</th>
-                                    <th class="text-center">Statut</th>
+                                    <th>{{ __('Date') }}</th>
+                                    <th>{{ __('Description') }}</th>
+                                    <th class="text-end">{{ __('Montant') }}</th>
+                                    <th class="text-center">{{ __('Statut') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -103,7 +103,7 @@
                                         <td class="text-center"><span class="badge badge-{{ \App\Helpers\StatusHelper::paymentStatusColor($payment->status) }}">{{ ucfirst($payment->status) }}</span></td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="4" class="text-center text-muted">Aucun paiement trouvé.</td></tr>
+                                    <tr><td colspan="4" class="text-center text-muted">{{ __('Aucun paiement trouvé.') }}</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -117,11 +117,11 @@
                         <table class="table table-sm table-hover">
                             <thead>
                                 <tr>
-                                    <th>Quiz</th>
-                                    <th>Date</th>
-                                    <th class="text-center">Score</th>
-                                    <th class="text-center">Statut</th>
-                                    <th class="text-center">Actions</th>
+                                    <th>{{ __('Quiz') }}</th>
+                                    <th>{{ __('Date') }}</th>
+                                    <th class="text-center">{{ __('Score') }}</th>
+                                    <th class="text-center">{{ __('Statut') }}</th>
+                                    <th class="text-center">{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -132,17 +132,17 @@
                                         <td class="text-center align-middle">{{ round($attempt->percentage) }}%</td>
                                         <td class="text-center align-middle">
                                             @if($attempt->is_passed)
-                                                <span class="badge bg-success">Réussi</span>
+                                                <span class="badge bg-success">{{ __('Réussi') }}</span>
                                             @else
-                                                <span class="badge bg-danger">Échoué</span>
+                                                <span class="badge bg-danger">{{ __('Échoué') }}</span>
                                             @endif
                                         </td>
                                         <td class="text-center align-middle">
-                                            <a href="{{ route('teacher.progress.quiz-attempt', $attempt) }}" class="btn btn-sm btn-info">Détails</a>
+                                            <a href="{{ route('teacher.progress.quiz-attempt', $attempt) }}" class="btn btn-sm btn-info">{{ __('Détails') }}</a>
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="5" class="text-center text-muted">Aucune tentative de quiz trouvée.</td></tr>
+                                    <tr><td colspan="5" class="text-center text-muted">{{ __('Aucune tentative de quiz trouvée.') }}</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -156,9 +156,9 @@
                         <table class="table table-sm table-hover">
                             <thead>
                                 <tr>
-                                    <th>Livre</th>
-                                    <th style="width: 40%;">Progression</th>
-                                    <th>Dernière lecture</th>
+                                    <th>{{ __('Livre') }}</th>
+                                    <th style="width: 40%;">{{ __('Progression') }}</th>
+                                    <th>{{ __('Dernière lecture') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -173,7 +173,7 @@
                                         <td>{{ $progress->last_read_at->diffForHumans() }}</td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="3" class="text-center text-muted">Aucune progression de lecture trouvée.</td></tr>
+                                    <tr><td colspan="3" class="text-center text-muted">{{ __('Aucune progression de lecture trouvée.') }}</td></tr>
                                 @endforelse
                             </tbody>
                         </table>

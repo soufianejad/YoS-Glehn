@@ -36,7 +36,7 @@
         </div>
 
         <div class="mb-3">
-            <label for="payment_details" class="form-label">Payment Details (JSON)</label>
+            <label for="payment_details" class="form-label">{{ __('Payment Details (JSON)') }}</label>
             <textarea class="form-control @error('payment_details') is-invalid @enderror" id="payment_details" name="payment_details" rows="3">{{ old('payment_details') }}</textarea>
             @error('payment_details')
                 <div class="invalid-feedback">{{ $message }}</div>

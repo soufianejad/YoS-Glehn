@@ -86,7 +86,7 @@
                                 <small class="text-muted">/ {{ $plan->duration_days }} jours</small>
                             </div>
                             <ul class="feature-list text-left">
-                                <li><i class="fas fa-check-circle"></i> Accès à toute la bibliothèque</li>
+                                <li>{{ __('Accès à toute la bibliothèque') }}</li>
                                 <li><i class="fas {{ $plan->pdf_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> Accès aux PDFs</li>
                                 <li><i class="fas {{ $plan->audio_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> Accès aux Audios</li>
                                 <li><i class="fas {{ $plan->download_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> Téléchargement</li>
@@ -124,8 +124,7 @@
                 <div class="accordion" id="faqAccordion">
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="headingOne">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                Puis-je annuler mon abonnement à tout moment ?
+                            {{ __('Puis-je annuler mon abonnement à tout moment ?') }}
                             </button>
                         </h2>
                         <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
@@ -136,8 +135,7 @@
                     </div>
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="headingTwo">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                Quels sont les moyens de paiement acceptés ?
+                            {{ __('Quels sont les moyens de paiement acceptés ?') }}
                             </button>
                         </h2>
                         <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
@@ -148,8 +146,7 @@
                     </div>
                      <div class="accordion-item">
                         <h2 class="accordion-header" id="headingThree">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                               Y a-t-il une différence entre les plans pour écoles et les plans individuels ?
+                            {{ __('Y a-t-il une différence entre les plans pour écoles et les plans individuels ?') }}
                             </button>
                         </h2>
                         <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">

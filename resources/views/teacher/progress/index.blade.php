@@ -7,13 +7,13 @@
 <div class="container-fluid">
     <div class="card shadow-sm">
         <div class="card-header">
-            <p class="m-0">Progression de lecture pour chaque élève.</p>
+            <p class="m-0">{{ __('Progression de lecture pour chaque élève.') }}</p>
         </div>
         <div class="card-body">
             @if($students->isEmpty())
                 <div class="text-center py-5">
                     <i class="fas fa-user-graduate fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">Il n'y a aucun élève dans cette classe pour le moment.</p>
+                    <p class="text-muted">{{ __("Il n'y a aucun élève dans cette classe pour le moment.") }}</p>
                 </div>
             @else
                 <div class="accordion" id="studentsAccordion">
@@ -30,13 +30,13 @@
                                         $studentQuizAttempts = $quizAttempts->get($student->id);
                                     @endphp
 
-                                    <h5 class="mb-3">Progression de Lecture</h5>
+                                    <h5 class="mb-3">{{ __('Progression de Lecture') }}</h5>
                                     @if($assignedBooks->isNotEmpty())
                                         <table class="table table-sm table-striped">
                                             <thead>
                                                 <tr>
-                                                    <th>Livre Assigné</th>
-                                                    <th style="width: 40%;">Progression</th>
+                                                    <th>{{ __('Livre Assigné') }}</th>
+                                                    <th style="width: 40%;">{{ __('Progression') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -62,20 +62,20 @@
                                             </tbody>
                                         </table>
                                     @else
-                                        <p class="text-muted mb-0">Aucun livre n'a été assigné à cette classe.</p>
+                                        <p class="text-muted mb-0">{{ __("Aucun livre n'a été assigné à cette classe.") }}</p>
                                     @endif
 
                                     <hr class="my-4">
 
-                                    <h5 class="mb-3">Tentatives de Quiz</h5>
+                                    <h5 class="mb-3">{{ __('Tentatives de Quiz') }}</h5>
                                     @if($studentQuizAttempts && $studentQuizAttempts->count() > 0)
                                         <table class="table table-sm table-striped">
                                             <thead>
                                                 <tr>
-                                                    <th>Quiz</th>
-                                                    <th class="text-center">Score</th>
-                                                    <th class="text-center">Statut</th>
-                                                    <th class="text-center">Actions</th>
+                                                    <th>{{ __('Quiz') }}</th>
+                                                    <th class="text-center">{{ __('Score') }}</th>
+                                                    <th class="text-center">{{ __('Statut') }}</th>
+                                                    <th class="text-center">{{ __('Actions') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -85,20 +85,20 @@
                                                         <td class="text-center align-middle">{{ round($attempt->percentage) }}%</td>
                                                         <td class="text-center align-middle">
                                                             @if($attempt->is_passed)
-                                                                <span class="badge bg-success">Réussi</span>
+                                                                <span class="badge bg-success">{{ __('Réussi') }}</span>
                                                             @else
-                                                                <span class="badge bg-danger">Échoué</span>
+                                                                <span class="badge bg-danger">{{ __('Échoué') }}</span>
                                                             @endif
                                                         </td>
                                                         <td class="text-center align-middle">
-                                                            <a href="{{ route('teacher.progress.quiz-attempt', $attempt) }}" class="btn btn-sm btn-info">Voir les détails</a>
+                                                            <a href="{{ route('teacher.progress.quiz-attempt', $attempt) }}" class="btn btn-sm btn-info">{{ __('Voir les détails') }}</a>
                                                         </td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>
                                         </table>
                                     @else
-                                        <p class="text-muted mb-0">Aucun quiz n'a été tenté par cet élève.</p>
+                                        <p class="text-muted mb-0">{{ __("Aucun quiz n'a été tenté par cet élève.") }}</p>
                                     @endif
                                 </div>
                             </div>

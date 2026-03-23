@@ -47,7 +47,7 @@
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card h-100 border-start-primary shadow-sm">
                 <div class="card-body">
-                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Revenus Totaux</div>
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">{{ __('Revenus Totaux') }}</div>
                     <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($globalStats['total_revenue'], 2) }} €</div>
                 </div>
             </div>
@@ -55,7 +55,7 @@
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card h-100 border-start-success shadow-sm">
                 <div class="card-body">
-                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Ventes Totales</div>
+                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">{{ __('Ventes Totales') }}</div>
                     <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $globalStats['total_sales'] }}</div>
                 </div>
             </div>
@@ -63,7 +63,7 @@
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card h-100 border-start-info shadow-sm">
                 <div class="card-body">
-                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Note Moyenne Globale</div>
+                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">{{ __('Note Moyenne Globale') }}</div>
                     <div class="h5 mb-0 font-weight-bold text-gray-800 d-flex align-items-center">
                         {{ number_format($globalStats['overall_avg_rating'], 2) }} 
                         <span class="ms-2">{!! render_stars($globalStats['overall_avg_rating']) !!}</span>
@@ -74,7 +74,7 @@
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card h-100 border-start-warning shadow-sm">
                 <div class="card-body">
-                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Total Avis</div>
+                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">{{ __('Total Avis') }}</div>
                     <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $globalStats['total_reviews'] }}</div>
                 </div>
             </div>
@@ -86,7 +86,7 @@
         <div class="col-lg-6 mb-4">
             <div class="card shadow-sm">
                 <div class="card-header">
-                    <h6 class="m-0 font-weight-bold text-primary">Revenus des 6 derniers mois</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">{{ __('Revenus des 6 derniers mois') }}</h6>
                 </div>
                 <div class="card-body">
                     <canvas id="revenueChart"></canvas>
@@ -96,7 +96,7 @@
         <div class="col-lg-6 mb-4">
             <div class="card shadow-sm">
                 <div class="card-header">
-                    <h6 class="m-0 font-weight-bold text-primary">Ventes des 6 derniers mois</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">{{ __('Ventes des 6 derniers mois') }}</h6>
                 </div>
                 <div class="card-body">
                     <canvas id="salesChart"></canvas>
@@ -110,7 +110,7 @@
         <div class="col-lg-6 mb-4">
             <div class="card shadow-sm">
                 <div class="card-header">
-                    <h6 class="m-0 font-weight-bold text-primary">Top 5 des livres les plus vendus</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">{{ __('Top 5 des livres les plus vendus') }}</h6>
                 </div>
                 <div class="card-body">
                     <ul class="list-group list-group-flush">
@@ -120,7 +120,7 @@
                                 <span class="badge bg-primary rounded-pill">{{ $book->purchases_count }} ventes</span>
                             </li>
                         @empty
-                            <li class="list-group-item">Aucune vente enregistrée.</li>
+                            <li class="list-group-item">{{ __('Aucune vente enregistrée.') }}</li>
                         @endforelse
                     </ul>
                 </div>
@@ -129,7 +129,7 @@
         <div class="col-lg-6 mb-4">
             <div class="card shadow-sm">
                 <div class="card-header">
-                    <h6 class="m-0 font-weight-bold text-primary">Top 5 des livres les plus lus</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">{{ __('Top 5 des livres les plus lus') }}</h6>
                 </div>
                 <div class="card-body">
                     <ul class="list-group list-group-flush">
@@ -139,7 +139,7 @@
                                 <span class="badge bg-success rounded-pill">{{ format_seconds($book->total_read) }}</span>
                             </li>
                         @empty
-                            <li class="list-group-item">Aucun temps de lecture enregistré.</li>
+                            <li class="list-group-item">{{ __('Aucun temps de lecture enregistré.') }}</li>
                         @endforelse
                     </ul>
                 </div>
@@ -150,19 +150,19 @@
     <!-- Per-Book Stats Table -->
     <div class="card shadow-sm">
         <div class="card-header">
-            <h6 class="m-0 font-weight-bold text-primary">Statistiques détaillées par Livre</h6>
+            <h6 class="m-0 font-weight-bold text-primary">{{ __('Statistiques détaillées par Livre') }}</h6>
         </div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>Livre</th>
-                            <th class="text-center">Ventes</th>
-                            <th class="text-center">Temps de Lecture Total</th>
-                            <th class="text-center">Temps d'Écoute Total</th>
-                            <th class="text-center">Avis</th>
-                            <th class="text-center">Note Moyenne</th>
+                            <th>{{ __('Livre') }}</th>
+                            <th class="text-center">{{ __('Ventes') }}</th>
+                            <th class="text-center">{{ __('Temps de Lecture Total') }}</th>
+                            <th class="text-center">{{ __("Temps d'Écoute Total") }}</th>
+                            <th class="text-center">{{ __('Avis') }}</th>
+                            <th class="text-center">{{ __('Note Moyenne') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -191,7 +191,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center">Vous n'avez pas encore de livres publiés.</td>
+                                <td colspan="6" class="text-center">{{ __("Vous n'avez pas encore de livres publiés.") }}</td>
                             </tr>
                         @endforelse
                     </tbody>

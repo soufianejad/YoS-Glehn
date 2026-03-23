@@ -22,10 +22,10 @@
                             <p class="mb-0"><i class="fas fa-question-circle text-primary me-2"></i> <strong>Questions :</strong> {{ $quiz->questions_count }}</p>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <p class="mb-0"><i class="fas fa-bullseye text-success me-2"></i> <strong>Score pour réussir :</strong> {{ $quiz->pass_score }}%</p>
+                            <p class="mb-0"><i class="fas fa-bullseye text-success me-2"></i> <strong>{{ __('Score pour réussir :') }}</strong> {{ $quiz->pass_score }}%</p>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <p class="mb-0"><i class="fas fa-clock text-warning me-2"></i> <strong>Temps imparti :</strong> {{ $quiz->time_limit }} minutes</p>
+                            <p class="mb-0"><i class="fas fa-clock text-warning me-2"></i> <strong>{{ __('Temps imparti :') }}</strong> {{ $quiz->time_limit }} minutes</p>
                         </div>
                     </div>
 
@@ -37,7 +37,7 @@
                     </form>
                 </div>
                 <div class="card-footer text-muted">
-                    <a href="{{ route('student.quiz.index') }}" class="btn btn-sm btn-outline-secondary">Retour à la liste des quiz</a>
+                    <a href="{{ route('student.quiz.index') }}" class="btn btn-sm btn-outline-secondary">{{ __('Retour à la liste des quiz') }}</a>
                 </div>
             </div>
         </div>
