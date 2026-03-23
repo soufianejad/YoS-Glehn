@@ -23,6 +23,10 @@ class RegisterController extends Controller
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'g-recaptcha-response' => ['required', 'recaptcha'],
+        ], [
+            'g-recaptcha-response.required' => 'Veuillez confirmer que vous n\'êtes pas un robot.',
+            'g-recaptcha-response.recaptcha' => 'La vérification reCAPTCHA a échoué, veuillez réessayer.',
         ]);
 
         $user = User::create([
@@ -63,6 +67,10 @@ class RegisterController extends Controller
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'g-recaptcha-response' => ['required', 'recaptcha'],
+        ], [
+            'g-recaptcha-response.required' => 'Veuillez confirmer que vous n\'êtes pas un robot.',
+            'g-recaptcha-response.recaptcha' => 'La vérification reCAPTCHA a échoué, veuillez réessayer.',
         ]);
 
         $user = User::create([

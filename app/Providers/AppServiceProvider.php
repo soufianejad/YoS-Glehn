@@ -10,6 +10,8 @@ use App\Models\Revenue;
 use App\Models\School;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
 
@@ -29,6 +31,16 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
             Paginator::useBootstrap();
+
+        Validator::extend('recaptcha', function ($attribute, $value, $parameters, $validator) {
+            $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+                'secret' => env('RECAPTCHA_SECRET_KEY'),
+                'response' => $value,
+                'remoteip' => request()->ip(),
+            ]);
+
+            return $response->json('success');
+        });
 
         View::composer('layouts.dashboard', function ($view) {
             if (Auth::check()) {
