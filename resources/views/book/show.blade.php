@@ -164,7 +164,7 @@
                                             <i class="fas fa-book-open me-2"></i> {{ __('Lire maintenant') }}
                                         </a>
                                         @if($book->is_downloadable)
-                                            <a href="{{ route('book.pdf-content', $book) }}?download=1"
+                                            <a href="{{ route('read.pdf.content', $book) }}?download=1"
                                                class="btn btn-outline-info btn-lg hover-shadow" id="download_pdf_link">
                                                 <i class="fas fa-download me-2"></i> {{ __('Télécharger le PDF') }}
                                             </a>
@@ -523,7 +523,7 @@
                 readPdfLink.href = url;
             }
             if (downloadPdfLink) {
-                let url = `{{ route('book.pdf-content', $book) }}?download=1`;
+                let url = `{{ route('read.pdf.content', $book) }}?download=1`;
                 if (fileId !== 'default') {
                     url += `&file_id=${fileId}`;
                 }
