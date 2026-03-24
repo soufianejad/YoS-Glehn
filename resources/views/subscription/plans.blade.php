@@ -87,10 +87,10 @@
                             </div>
                             <ul class="feature-list text-left">
                                 <li>{{ __('Accès à toute la bibliothèque') }}</li>
-                                <li><i class="fas {{ $plan->pdf_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> Accès aux PDFs</li>
-                                <li><i class="fas {{ $plan->audio_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> Accès aux Audios</li>
-                                <li><i class="fas {{ $plan->download_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> Téléchargement</li>
-                                <li><i class="fas {{ $plan->quiz_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> Accès aux Quiz</li>
+                                <li><i class="fas {{ $plan->pdf_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> {{__("Accès aux PDFs")}}</li>
+                                <li><i class="fas {{ $plan->audio_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> {{__("Accès aux Audios")}}</li>
+                                <li><i class="fas {{ $plan->download_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> {{__("Téléchargement")}}</li>
+                                <li><i class="fas {{ $plan->quiz_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> {{__("Accès aux Quiz")}}</li>
                                  @if($plan->max_students)
                                     <li><i class="fas fa-users"></i> Jusqu'à {{ $plan->max_students }} étudiants</li>
                                 @endif
