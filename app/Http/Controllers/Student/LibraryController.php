@@ -136,7 +136,7 @@ class LibraryController extends Controller
 
         if ($book->space !== 'educational') {
 
-            abort(403, 'Access denied to this book.');
+            abort(403, __('Access denied to this book.'));
 
         }
 
@@ -176,10 +176,10 @@ class LibraryController extends Controller
 
         // Ensure the book is educational or assigned to the student's school/class
         if ($book->space !== 'educational') {
-            abort(403, 'Access denied to this book.');
+            abort(403, __('Access denied to this book.'));
         }
         if (! $book->pdf_file) {
-            abort(404, 'PDF not available for this book.');
+            abort(404, __('PDF not available for this book.'));
         }
 
         $readingProgress = ReadingProgress::where('user_id', $student->id)
@@ -195,10 +195,10 @@ class LibraryController extends Controller
     {
         // Ensure the book is educational or assigned to the student's school/class
         if ($book->space !== 'educational') {
-            abort(403, 'Access denied to this book.');
+            abort(403, __('Access denied to this book.'));
         }
         if (! $book->audio_file) {
-            abort(404, 'Audio not available for this book.');
+            abort(404, __('Audio not available for this book.'));
         }
 
         return view('student.book.listen', compact('book'));
@@ -233,7 +233,7 @@ class LibraryController extends Controller
 
         $this->badgeService->checkAndAwardBadges($user);
 
-        return response()->json(['message' => 'Reading progress updated.', 'progress' => $progress]);
+        return response()->json(['message' => __('Reading progress updated.'), 'progress' => $progress]);
     }
 
     public function updateAudioProgress(Request $request, Book $book)
@@ -265,23 +265,23 @@ class LibraryController extends Controller
         
         $this->badgeService->checkAndAwardBadges($user);
 
-        return response()->json(['message' => 'Audio progress updated.', 'progress' => $progress]);
+        return response()->json(['message' => __('Audio progress updated.'), 'progress' => $progress]);
     }
 
     public function download(Book $book)
     {
         // Ensure the book is educational or assigned to the student's school/class
         if ($book->space !== 'educational') {
-            abort(403, 'Access denied to this book.');
+            abort(403, __('Access denied to this book.'));
         }
         if (! $book->pdf_file) {
-            abort(404, 'PDF not available for this book.');
+            abort(404, __('PDF not available for this book.'));
         }
 
         $filePath = storage_path('app/public/'.$book->pdf_file);
 
         if (! file_exists($filePath)) {
-            abort(404, 'File not found.');
+            abort(404, __('File not found.'));
         }
 
         return response()->download($filePath, $book->slug.'.pdf');
@@ -294,22 +294,22 @@ class LibraryController extends Controller
         $user = auth()->user();
 
         if ($book->space !== 'educational') {
-            abort(403, 'Access denied to this book.');
+            abort(403, __('Access denied to this book.'));
         }
 
         // You might add more complex authorization here, e.g., checking if the student is assigned the book
         // if ($user->cannot('read', $book)) { // Assuming a policy exists
-        //     abort(403, 'You do not have permission to read this book.');
+        //     abort(403, __('You do not have permission to read this book.'));
         // }
 
         if (! $book->pdf_file) {
-            abort(404, 'PDF not available for this book.');
+            abort(404, __('PDF not available for this book.'));
         }
 
         $path = storage_path('app/'.$book->private_pdf_path); // Use the accessor
 
         if (! file_exists($path)) {
-            abort(404, 'PDF file not found on server.');
+            abort(404, __('PDF file not found on server.'));
         }
 
         return response()->file($path, [

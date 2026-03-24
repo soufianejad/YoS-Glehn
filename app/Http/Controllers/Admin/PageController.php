@@ -36,7 +36,7 @@ class PageController extends Controller
             'is_published' => $request->boolean('is_published'),
         ]);
 
-        return redirect()->route('admin.pages.index')->with('success', 'Page created successfully.');
+        return redirect()->route('admin.pages.index')->with('success', __('Page created successfully.'));
     }
 
     public function edit(Page $page)
@@ -59,13 +59,13 @@ class PageController extends Controller
             'is_published' => $request->boolean('is_published'),
         ]);
 
-        return redirect()->route('admin.pages.index')->with('success', 'Page updated successfully.');
+        return redirect()->route('admin.pages.index')->with('success', __('Page updated successfully.'));
     }
 
     public function destroy(Page $page)
     {
         $page->delete();
 
-        return redirect()->route('admin.pages.index')->with('success', 'Page deleted successfully.');
+        return redirect()->route('admin.pages.index')->with('success', __('Page deleted successfully.'));
     }
 }

@@ -63,7 +63,7 @@ class UserManagementController extends Controller
             'school_id' => $request->school_id,
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
+        return redirect()->route('admin.users.index')->with('success', __('User created successfully.'));
     }
 
     public function show(User $user)
@@ -80,7 +80,7 @@ class UserManagementController extends Controller
         ];
 
         // Paginated data for tabs, with custom page names to avoid conflicts
-        $payments = $user->payments()->with('book', 'subscription.subscriptionPlan')->latest()->paginate(10, ['*'], 'payments_page');
+        $payments = $user->payments()->with('book', __('subscription.subscriptionPlan'))->latest()->paginate(10, ['*'], 'payments_page');
         $quizAttempts = $user->quizAttempts()->with('quiz.book')->latest()->paginate(10, ['*'], 'quizzes_page');
         $readingProgress = $user->readingProgress()->with('book')->where('progress_percentage', '>', 0)->latest('last_read_at')->paginate(10, ['*'], 'reading_page');
 
@@ -106,28 +106,28 @@ class UserManagementController extends Controller
 
         $user->update($request->only('first_name', 'last_name', 'email', 'role', 'phone', 'school_id', 'is_active'));
 
-        return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+        return redirect()->route('admin.users.index')->with('success', __('User updated successfully.'));
     }
 
     public function destroy(User $user)
     {
         $user->delete();
 
-        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
+        return redirect()->route('admin.users.index')->with('success', __('User deleted successfully.'));
     }
 
     public function activate(User $user)
     {
         $user->update(['is_active' => true]);
 
-        return back()->with('success', 'User activated successfully.');
+        return back()->with('success', __('User activated successfully.'));
     }
 
     public function deactivate(User $user)
     {
         $user->update(['is_active' => false]);
 
-        return back()->with('success', 'User deactivated successfully.');
+        return back()->with('success', __('User deactivated successfully.'));
     }
 
     public function changeRole(Request $request, User $user)
@@ -138,7 +138,7 @@ class UserManagementController extends Controller
 
         $user->update(['role' => $request->role]);
 
-        return back()->with('success', 'User role updated successfully.');
+        return back()->with('success', __('User role updated successfully.'));
     }
 
     public function adultInvitations()
@@ -165,7 +165,7 @@ class UserManagementController extends Controller
             'status' => 'pending',
         ]);
 
-        return back()->with('success', 'Invitation generated successfully!');
+        return back()->with('success', __('Invitation generated successfully!'));
     }
 
     public function revokeInvitation(string $token)
@@ -173,7 +173,7 @@ class UserManagementController extends Controller
         $invitation = AdultAccess::where('access_token', $token)->firstOrFail();
         $invitation->update(['status' => 'revoked']);
 
-        return back()->with('success', 'Invitation revoked successfully!');
+        return back()->with('success', __('Invitation revoked successfully!'));
     }
 
     public function impersonate(User $user)

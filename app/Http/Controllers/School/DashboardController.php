@@ -25,7 +25,7 @@ class DashboardController extends Controller
         $school = $user->school;
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
         // Key Metrics
@@ -88,7 +88,7 @@ class DashboardController extends Controller
         $school = $user->school;
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
         $studentsByMonth = $school->students()
@@ -113,10 +113,10 @@ class DashboardController extends Controller
         $school = $user->school;
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
-        $students = $school->students()->with('readingProgress', 'audioProgress', 'quizAttempts')->paginate(10);
+        $students = $school->students()->with('readingProgress', __('audioProgress'), 'quizAttempts')->paginate(10);
 
         return view('school.dashboard.progress-report', compact('school', 'students'));
     }
@@ -127,7 +127,7 @@ class DashboardController extends Controller
         $school = $user->school;
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
         return view('school.settings.index', compact('school'));
@@ -139,7 +139,7 @@ class DashboardController extends Controller
         $school = $user->school;
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
         $request->validate([
@@ -201,7 +201,7 @@ class DashboardController extends Controller
 
         $school->update($schoolData);
 
-        return back()->with('success', 'School settings updated successfully.');
+        return back()->with('success', __('School settings updated successfully.'));
     }
 
     public function regenerateAccessCode()
@@ -210,13 +210,13 @@ class DashboardController extends Controller
         $school = $user->school;
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
         $school->access_code = strtoupper(Str::random(8));
         $school->save();
 
-        return back()->with('success', 'Access code regenerated successfully.');
+        return back()->with('success', __('Access code regenerated successfully.'));
     }
 
     /**

@@ -32,7 +32,7 @@ class TagController extends Controller
             'slug' => Str::slug($request->name),
         ]);
 
-        return redirect()->route('admin.tags.index')->with('success', 'Tag created successfully.');
+        return redirect()->route('admin.tags.index')->with('success', __('Tag created successfully.'));
     }
 
     public function edit(Tag $tag)
@@ -51,18 +51,18 @@ class TagController extends Controller
             'slug' => Str::slug($request->name),
         ]);
 
-        return redirect()->route('admin.tags.index')->with('success', 'Tag updated successfully.');
+        return redirect()->route('admin.tags.index')->with('success', __('Tag updated successfully.'));
     }
 
     public function destroy(Tag $tag)
     {
         // Optional: check if the tag is associated with any books before deleting
         if ($tag->books()->count() > 0) {
-            return back()->with('error', 'Cannot delete tag. It is currently associated with one or more books.');
+            return back()->with('error', __('Cannot delete tag. It is currently associated with one or more books.'));
         }
 
         $tag->delete();
 
-        return redirect()->route('admin.tags.index')->with('success', 'Tag deleted successfully.');
+        return redirect()->route('admin.tags.index')->with('success', __('Tag deleted successfully.'));
     }
 }

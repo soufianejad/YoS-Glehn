@@ -11,11 +11,11 @@ class NotificationPreferencesController extends Controller
     // Define the notification types that users can manage.
     // In a real app, this might come from a config file or be discovered dynamically.
     protected $notificationTypes = [
-        'new_message' => 'New Messages',
-        'quiz_result' => 'Quiz Results',
-        'subscription_update' => 'Subscription Updates',
-        'badge_unlocked' => 'New Badges Unlocked',
-        'book_assignment' => 'New Book Assignments', // For students
+        'new_message' => __('New Messages'),
+        'quiz_result' => __('Quiz Results'),
+        'subscription_update' => __('Subscription Updates'),
+        'badge_unlocked' => __('New Badges Unlocked'),
+        'book_assignment' => __('New Book Assignments'), // For students
     ];
 
     /**
@@ -50,6 +50,6 @@ class NotificationPreferencesController extends Controller
 
         $user->update(['notification_preferences' => $newPreferences]);
 
-        return back()->with('success', 'Notification preferences updated successfully.');
+        return back()->with('success', __('Notification preferences updated successfully.'));
     }
 }

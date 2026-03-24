@@ -96,7 +96,7 @@ use Illuminate\Validation\Rule;
             return $quiz;
         });
 
-        return redirect()->route('teacher.dashboard')->with('success', 'Quiz créé avec succès !');
+        return redirect()->route('teacher.dashboard')->with('success', __('Quiz créé avec succès !'));
     }
 
     /**
@@ -174,6 +174,6 @@ use Illuminate\Validation\Rule;
             $quiz->update(['questions_count' => $questionCount]);
         });
 
-        return redirect()->route('teacher.dashboard')->with('success', 'Quiz mis à jour avec succès !');
+        return redirect()->route('teacher.dashboard')->with('success', __('Quiz mis à jour avec succès !'));
     }
 }

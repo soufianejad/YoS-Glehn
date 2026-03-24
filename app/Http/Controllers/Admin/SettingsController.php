@@ -65,7 +65,7 @@ class SettingsController extends Controller
             // check if language already exists
             foreach ($languages as $language) {
                 if ($language['code'] === $request->language_code) {
-                    return back()->with('error', 'Language already exists.');
+                    return back()->with('error', __('Language already exists.'));
                 }
             }
 
@@ -83,7 +83,7 @@ class SettingsController extends Controller
         $languagesSetting->group = 'platform';
         $languagesSetting->save();
 
-        return back()->with('success', 'Languages updated successfully.');
+        return back()->with('success', __('Languages updated successfully.'));
     }
 
     public function clearCache()
@@ -92,17 +92,17 @@ class SettingsController extends Controller
         Artisan::call('view:clear');
         Artisan::call('config:clear');
 
-        return back()->with('success', 'Application cache cleared.');
+        return back()->with('success', __('Application cache cleared.'));
     }
 
     public function toggleMaintenance()
     {
         if (app()->isDownForMaintenance()) {
             Artisan::call('up');
-            $message = 'Application is now live.';
+            $message = __('Application is now live.');
         } else {
             Artisan::call('down');
-            $message = 'Application is now in maintenance mode.';
+            $message = __('Application is now in maintenance mode.');
         }
 
         return back()->with('success', $message);

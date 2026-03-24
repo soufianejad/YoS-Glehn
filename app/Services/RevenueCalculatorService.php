@@ -154,7 +154,7 @@ class RevenueCalculatorService
                 'author_id' => $author->id,
                 'payout_reference' => $this->generatePayoutReference(),
                 'amount' => $totalAmount,
-                'currency' => 'XOF',
+                'currency' => __('XOF'),
                 'payment_method' => $paymentMethod,
                 'payment_details' => $paymentDetails,
                 'period_start' => $periodStart,

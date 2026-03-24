@@ -59,7 +59,7 @@ class BookmarkController extends Controller
     {
         // Authorize that the user owns the bookmark
         if ($bookmark->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized action.');
+            abort(403, __('Unauthorized action.'));
         }
 
         $request->validate([
@@ -80,7 +80,7 @@ class BookmarkController extends Controller
     {
         // Authorize that the user owns the bookmark
         if ($bookmark->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized action.');
+            abort(403, __('Unauthorized action.'));
         }
 
         $bookmark->delete();

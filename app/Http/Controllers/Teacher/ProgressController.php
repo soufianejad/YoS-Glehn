@@ -34,7 +34,7 @@ class ProgressController extends Controller
     public function index(Classe $class)
     {
         if ($class->teacher_id !== Auth::id()) {
-            abort(403, 'Accès non autorisé.');
+            abort(403, __('Accès non autorisé.'));
         }
 
         // Get the IDs of books assigned to this class

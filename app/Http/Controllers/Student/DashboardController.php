@@ -91,7 +91,7 @@ class DashboardController extends Controller
 
         $student->update($request->only('first_name', 'last_name', 'phone'));
 
-        return back()->with('success', 'Profile updated successfully.');
+        return back()->with('success', __('Profile updated successfully.'));
     }
 
     public function school()
@@ -100,7 +100,7 @@ class DashboardController extends Controller
         $school = $student->school; // Assuming a school relationship on the User model
 
         if (! $school) {
-            return redirect()->route('student.dashboard')->with('error', 'You are not associated with a school.');
+            return redirect()->route('student.dashboard')->with('error', __('You are not associated with a school.'));
         }
 
         return view('student.school.info', compact('school'));
@@ -120,7 +120,7 @@ class DashboardController extends Controller
         $school = $student->school;
 
         if (! $school) {
-            return redirect()->route('student.dashboard')->with('error', 'You are not associated with a school.');
+            return redirect()->route('student.dashboard')->with('error', __('You are not associated with a school.'));
         }
 
         $search = $request->input('search');
@@ -155,12 +155,12 @@ class DashboardController extends Controller
         $school = $student->school;
 
         if (! $school) {
-            return redirect()->route('student.dashboard')->with('error', 'You are not associated with a school.');
+            return redirect()->route('student.dashboard')->with('error', __('You are not associated with a school.'));
         }
 
         // Check if the school allows students to view classmates
         if (! $school->students_can_view_classmates) {
-            return redirect()->route('student.dashboard')->with('error', 'Your school does not allow viewing classmates.');
+            return redirect()->route('student.dashboard')->with('error', __('Your school does not allow viewing classmates.'));
         }
 
         $search = $request->input('search');

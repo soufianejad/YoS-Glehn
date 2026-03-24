@@ -79,14 +79,14 @@ class PaymentController extends Controller
             $this->revenueCalculator->recordRevenue($payment);
         }
 
-        return back()->with('success', 'Payment validated and revenue recorded successfully.');
+        return back()->with('success', __('Payment validated and revenue recorded successfully.'));
     }
 
     public function refund(Payment $payment)
     {
         $payment->update(['status' => 'refunded']);
 
-        return back()->with('success', 'Payment refunded successfully.');
+        return back()->with('success', __('Payment refunded successfully.'));
     }
 
     public function monthlyReport()

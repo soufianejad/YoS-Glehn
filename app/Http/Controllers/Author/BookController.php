@@ -116,7 +116,7 @@ class BookController extends Controller
             }
         }
 
-        return redirect()->route('author.books.index')->with('success', 'Book created successfully.');
+        return redirect()->route('author.books.index')->with('success', __('Book created successfully.'));
     }
 
     public function show(Book $book)
@@ -281,7 +281,7 @@ class BookController extends Controller
             }
         }
 
-        return redirect()->route('author.books.index')->with('success', 'Book updated successfully.');
+        return redirect()->route('author.books.index')->with('success', __('Book updated successfully.'));
     }
 
     public function destroy(Book $book)
@@ -306,7 +306,7 @@ class BookController extends Controller
 
         $book->delete();
 
-        return redirect()->route('author.books.index')->with('success', 'Book deleted successfully.');
+        return redirect()->route('author.books.index')->with('success', __('Book deleted successfully.'));
     }
 
     public function statistics(Book $book)

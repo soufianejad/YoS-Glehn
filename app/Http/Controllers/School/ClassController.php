@@ -16,7 +16,7 @@ class ClassController extends Controller
         $school = $user->school;
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
         $search = $request->input('search');
@@ -47,7 +47,7 @@ class ClassController extends Controller
         $school = $user->school;
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
         $request->validate([
@@ -71,7 +71,7 @@ class ClassController extends Controller
             'teacher_id' => $request->teacher_id,
         ]);
 
-        return redirect()->route('school.classes.index')->with('success', 'Class created successfully.');
+        return redirect()->route('school.classes.index')->with('success', __('Class created successfully.'));
     }
 
     public function show(ClassModel $class)
@@ -82,7 +82,7 @@ class ClassController extends Controller
             abort(403);
         }
         $class->load(['students' => function ($query) {
-            $query->with('readingProgress', 'audioProgress', 'quizAttempts');
+            $query->with('readingProgress', __('audioProgress'), 'quizAttempts');
         }]);
 
         return view('school.classes.show', compact('class'));
@@ -125,7 +125,7 @@ class ClassController extends Controller
 
         $class->update($request->all());
 
-        return redirect()->route('school.classes.show', $class)->with('success', 'Class updated successfully.');
+        return redirect()->route('school.classes.show', $class)->with('success', __('Class updated successfully.'));
     }
 
     public function destroy(ClassModel $class)
@@ -138,7 +138,7 @@ class ClassController extends Controller
 
         $class->delete();
 
-        return redirect()->route('school.classes.index')->with('success', 'Class deleted successfully.');
+        return redirect()->route('school.classes.index')->with('success', __('Class deleted successfully.'));
     }
 
     public function addStudentsForm(ClassModel $class)
@@ -180,7 +180,7 @@ class ClassController extends Controller
             $class->students()->syncWithoutDetaching([$student->id => ['enrolled_at' => now()]]);
         }
 
-        return back()->with('success', 'Students added to class successfully.');
+        return back()->with('success', __('Students added to class successfully.'));
     }
 
     public function removeStudent(ClassModel $class, User $student)
@@ -193,6 +193,6 @@ class ClassController extends Controller
 
         $class->students()->detach($student->id);
 
-        return back()->with('success', 'Student removed from class successfully.');
+        return back()->with('success', __('Student removed from class successfully.'));
     }
 }

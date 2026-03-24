@@ -18,14 +18,14 @@ class FavoriteController extends Controller
 
             return response()->json([
                 'status' => 'unfavorited',
-                'message' => 'Book removed from favorites.',
+                'message' => __('Book removed from favorites.'),
             ]);
         } else {
             $user->favorites()->attach($book->id);
 
             return response()->json([
                 'status' => 'favorited',
-                'message' => 'Book added to favorites.',
+                'message' => __('Book added to favorites.'),
             ]);
         }
     }

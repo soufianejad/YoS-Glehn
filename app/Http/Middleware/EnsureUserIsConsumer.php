@@ -19,7 +19,7 @@ class EnsureUserIsConsumer
         $consumerRoles = ['reader', 'adult_reader', 'student', 'parent', 'teacher','author'];
 
         if (!Auth::check() || !in_array(Auth::user()->role, $consumerRoles)) {
-            abort(403, 'Unauthorized action.');
+            abort(403, __('Unauthorized action.'));
         }
 
         return $next($request);

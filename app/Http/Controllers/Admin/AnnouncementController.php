@@ -31,7 +31,7 @@ class AnnouncementController extends Controller
 
         Announcement::create($request->all());
 
-        return redirect()->route('admin.announcements.index')->with('success', 'Announcement created successfully.');
+        return redirect()->route('admin.announcements.index')->with('success', __('Announcement created successfully.'));
     }
 
     public function edit(Announcement $announcement)
@@ -50,13 +50,13 @@ class AnnouncementController extends Controller
 
         $announcement->update($request->all());
 
-        return redirect()->route('admin.announcements.index')->with('success', 'Announcement updated successfully.');
+        return redirect()->route('admin.announcements.index')->with('success', __('Announcement updated successfully.'));
     }
 
     public function destroy(Announcement $announcement)
     {
         $announcement->delete();
 
-        return redirect()->route('admin.announcements.index')->with('success', 'Announcement deleted successfully.');
+        return redirect()->route('admin.announcements.index')->with('success', __('Announcement deleted successfully.'));
     }
 }

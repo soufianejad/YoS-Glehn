@@ -124,7 +124,7 @@ class BookController extends Controller
         $pdfPages = $bookFile ? $bookFile->pages : $book->pdf_pages;
 
         if (! $pdfPath) {
-            abort(404, 'PDF non disponible pour ce livre.');
+            abort(404, __('PDF non disponible pour ce livre.'));
         }
 
         $initialPage = 0;
@@ -173,7 +173,7 @@ class BookController extends Controller
         } elseif (Storage::exists($pdfPath)) {
             $path = Storage::path($pdfPath);
         } else {
-            abort(404, 'Fichier PDF introuvable.');
+            abort(404, __('Fichier PDF introuvable.'));
         }
 
         $disposition = $request->query('download') ? 'attachment' : 'inline';
@@ -200,7 +200,7 @@ class BookController extends Controller
         $audioPath = $bookFile ? $bookFile->path : $book->audio_file;
 
         if (! $audioPath) {
-            abort(404, 'Audio non disponible pour ce livre.');
+            abort(404, __('Audio non disponible pour ce livre.'));
         }
 
         $initialPosition = 0;
@@ -239,7 +239,7 @@ class BookController extends Controller
         } elseif (Storage::exists($audioPath)) {
             $path = Storage::path($audioPath);
         } else {
-            abort(404, 'Fichier audio introuvable.');
+            abort(404, __('Fichier audio introuvable.'));
         }
 
         return response()->file($path, [
@@ -287,7 +287,7 @@ class BookController extends Controller
         
         $this->badgeService->checkAndAwardBadges($user);
 
-        return response()->json(['message' => 'Reading progress updated.', 'progress' => $progress]);
+        return response()->json(['message' => __('Reading progress updated.'), 'progress' => $progress]);
     }
 
     public function updateAudioProgress(Request $request, Book $book)
@@ -325,7 +325,7 @@ class BookController extends Controller
         
         $this->badgeService->checkAndAwardBadges($user);
 
-        return response()->json(['message' => 'Audio progress updated.', 'progress' => $progress]);
+        return response()->json(['message' => __('Audio progress updated.'), 'progress' => $progress]);
     }
 
     public function storeReview(Request $request, Book $book)
@@ -343,7 +343,7 @@ class BookController extends Controller
         $review->status = 'pending';
         $review->save();
 
-        return back()->with('success', 'Votre avis a été soumis.');
+        return back()->with('success', __('Votre avis a été soumis.'));
     }
 
     public function updateReview(Request $request, Review $review)
@@ -361,7 +361,7 @@ class BookController extends Controller
             'status' => 'pending',
         ]);
 
-        return back()->with('success', 'Votre avis a été mis à jour.');
+        return back()->with('success', __('Votre avis a été mis à jour.'));
     }
 
     public function deleteReview(Review $review)
@@ -369,7 +369,7 @@ class BookController extends Controller
         $this->authorize('delete', $review);
         $review->delete();
 
-        return back()->with('success', 'Votre avis a été supprimé.');
+        return back()->with('success', __('Votre avis a été supprimé.'));
     }
 
     public function purchasePdf(Book $book)
@@ -382,7 +382,7 @@ class BookController extends Controller
             'status' => 'completed',
         ]);
 
-        return back()->with('success', 'Merci pour votre achat !');
+        return back()->with('success', __('Merci pour votre achat !'));
     }
 
     public function purchaseAudio(Book $book)
@@ -395,7 +395,7 @@ class BookController extends Controller
             'status' => 'completed',
         ]);
 
-        return back()->with('success', 'Merci pour votre achat !');
+        return back()->with('success', __('Merci pour votre achat !'));
     }
 public function secureDownload(Book $book, Request $request)
 {
@@ -421,7 +421,7 @@ public function secureDownload(Book $book, Request $request)
     }
 
     if (!$pdfPath) {
-        abort(404, 'Fichier PDF introuvable.');
+        abort(404, __('Fichier PDF introuvable.'));
     }
 
     // Ensure we check the correct disk
@@ -431,6 +431,6 @@ public function secureDownload(Book $book, Request $request)
         return Storage::download($pdfPath, $fileName . '.pdf');
     }
 
-    abort(404, 'Fichier introuvable sur le serveur.');
+    abort(404, __('Fichier introuvable sur le serveur.'));
 }
 }

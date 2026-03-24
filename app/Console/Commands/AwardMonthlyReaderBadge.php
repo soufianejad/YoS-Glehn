@@ -13,7 +13,7 @@ class AwardMonthlyReaderBadge extends Command
 {
     protected $signature = 'app:award-monthly-reader-badge';
 
-    protected $description = 'Award a badge to the most active reader of the last month.';
+    protected $description = __('Award a badge to the most active reader of the last month.');
 
     public function handle()
     {

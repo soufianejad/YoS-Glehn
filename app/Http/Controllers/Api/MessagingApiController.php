@@ -15,7 +15,7 @@ class MessagingApiController extends Controller
         $user = Auth::user();
 
         if (! $user->conversations->contains($conversation)) {
-            return response()->json(['error' => 'Unauthorized'], 403);
+            return response()->json(['error' => __('Unauthorized')], 403);
         }
 
         $messages = $conversation->messages()->with('sender')->get();
@@ -30,7 +30,7 @@ class MessagingApiController extends Controller
         $user = Auth::user();
 
         if (! $user->conversations->contains($conversation)) {
-            return response()->json(['error' => 'Unauthorized'], 403);
+            return response()->json(['error' => __('Unauthorized')], 403);
         }
 
         $afterId = $request->query('after_id', 0);

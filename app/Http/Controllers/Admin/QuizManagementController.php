@@ -80,7 +80,7 @@ class QuizManagementController extends Controller
             return $quiz;
         });
 
-        return redirect()->route('admin.quiz.index')->with('success', 'Quiz créé avec succès !');
+        return redirect()->route('admin.quiz.index')->with('success', __('Quiz créé avec succès !'));
     }
 
     public function generate(Request $request, Book $book, QuizGeneratorService $quizGeneratorService)
@@ -96,9 +96,9 @@ class QuizManagementController extends Controller
         );
 
         if ($quiz) {
-            return redirect()->route('admin.quiz.show', $quiz)->with('success', 'Quiz generated successfully!');
+            return redirect()->route('admin.quiz.show', $quiz)->with('success', __('Quiz generated successfully!'));
         } else {
-            return back()->with('error', 'Failed to generate quiz.');
+            return back()->with('error', __('Failed to generate quiz.'));
         }
     }
 
@@ -182,22 +182,22 @@ class QuizManagementController extends Controller
             $quiz->update(['questions_count' => $questionCount]);
         });
 
-        return redirect()->route('admin.quiz.index')->with('success', 'Quiz mis à jour avec succès !');
+        return redirect()->route('admin.quiz.index')->with('success', __('Quiz mis à jour avec succès !'));
     }
 
     public function destroy(Quiz $quiz)
     {
         $quiz->delete();
 
-        return redirect()->route('admin.quizzes.index')->with('success', 'Quiz deleted successfully.');
+        return redirect()->route('admin.quizzes.index')->with('success', __('Quiz deleted successfully.'));
     }
 
     public function regenerate(Quiz $quiz, QuizGeneratorService $quizGeneratorService)
     {
         if ($quizGeneratorService->regenerateQuiz($quiz)) {
-            return back()->with('success', 'Quiz questions regenerated successfully!');
+            return back()->with('success', __('Quiz questions regenerated successfully!'));
         } else {
-            return back()->with('error', 'Failed to regenerate quiz questions.');
+            return back()->with('error', __('Failed to regenerate quiz questions.'));
         }
     }
 

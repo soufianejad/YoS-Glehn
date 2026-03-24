@@ -46,21 +46,21 @@ class SchoolManagementController extends Controller
     {
         $school->update(['status' => 'approved']);
 
-        return back()->with('success', 'School approved successfully.');
+        return back()->with('success', __('School approved successfully.'));
     }
 
     public function reject(School $school)
     {
         $school->update(['status' => 'rejected']);
 
-        return back()->with('success', 'School rejected.');
+        return back()->with('success', __('School rejected.'));
     }
 
     public function suspend(School $school)
     {
         $school->update(['status' => 'suspended']);
 
-        return back()->with('success', 'School suspended successfully.');
+        return back()->with('success', __('School suspended successfully.'));
     }
 
     public function students(School $school)

@@ -122,7 +122,7 @@ class RevenueController extends Controller
             ->exists();
 
         if ($hasPendingPayout) {
-            return redirect()->back()->with('error', 'Vous avez déjà une demande de versement en attente.');
+            return redirect()->back()->with('error', __('Vous avez déjà une demande de versement en attente.'));
         }
 
         // Determine the period from the revenues that are currently available for payout
@@ -135,12 +135,12 @@ class RevenueController extends Controller
             'payment_method' => $request->payment_method,
             'payment_details' => $request->payment_details,
             'status' => 'pending',
-            'payout_reference' => 'REQ-'.strtoupper(uniqid()),
-            'currency' => 'XOF',
+            'payout_reference' => __('REQ-').strtoupper(uniqid()),
+            'currency' => __('XOF'),
             'period_start' => $periodStart ?? now(),
             'period_end' => $periodEnd ?? now(),
         ]);
 
-        return redirect()->route('author.revenues.history')->with('success', 'Votre demande de versement a été envoyée avec succès.');
+        return redirect()->route('author.revenues.history')->with('success', __('Votre demande de versement a été envoyée avec succès.'));
     }
 }

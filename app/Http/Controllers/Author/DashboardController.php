@@ -200,6 +200,6 @@ class DashboardController extends Controller
 
         $author->update($request->only('first_name', 'last_name', 'email', 'phone'));
 
-        return back()->with('success', 'Profile updated successfully.');
+        return back()->with('success', __('Profile updated successfully.'));
     }
 }

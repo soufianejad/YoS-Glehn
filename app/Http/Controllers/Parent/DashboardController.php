@@ -28,7 +28,7 @@ class DashboardController extends Controller
 
         // Security check: ensure the user is the parent of the requested child.
         if ($child->parent_id !== $parent->id) {
-            abort(403, 'Unauthorized action.');
+            abort(403, __('Unauthorized action.'));
         }
 
         // Eager load the data needed for the report

@@ -63,7 +63,7 @@ class TeacherController extends Controller
             'school_id' => $school->id,
         ]);
 
-        return redirect()->route('school.teachers.index')->with('success', 'Teacher added successfully.');
+        return redirect()->route('school.teachers.index')->with('success', __('Teacher added successfully.'));
     }
 
     /**
@@ -114,7 +114,7 @@ class TeacherController extends Controller
             $teacher->update(['password' => Hash::make($request->password)]);
         }
 
-        return redirect()->route('school.teachers.index')->with('success', 'Teacher updated successfully.');
+        return redirect()->route('school.teachers.index')->with('success', __('Teacher updated successfully.'));
     }
 
     /**
@@ -130,6 +130,6 @@ class TeacherController extends Controller
 
         $teacher->delete();
 
-        return redirect()->route('school.teachers.index')->with('success', 'Teacher deleted successfully.');
+        return redirect()->route('school.teachers.index')->with('success', __('Teacher deleted successfully.'));
     }
 }

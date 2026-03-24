@@ -46,14 +46,14 @@ class QuizGeneratorService
             $questions = $this->generateQuestionsWithAI($bookContent, $book->title, $questionsCount);
 
             if (empty($questions)) {
-                throw new \Exception('Aucune question générée');
+                throw new \Exception(__('Aucune question générée'));
             }
 
             // Créer le quiz
             $quiz = Quiz::create([
                 'book_id' => $book->id,
                 'title' => 'Quiz - '.$book->title,
-                'description' => 'Quiz automatique basé sur le contenu du livre',
+                'description' => __('Quiz automatique basé sur le contenu du livre'),
                 'questions_count' => count($questions),
                 'pass_score' => 60,
                 'time_limit' => 30, // 30 minutes
@@ -176,7 +176,7 @@ class QuizGeneratorService
             $questions = json_decode($responseText, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new \Exception('Invalid JSON response from AI');
+                throw new \Exception(__('Invalid JSON response from AI'));
             }
 
             return $questions['questions'] ?? [];
@@ -260,7 +260,7 @@ PROMPT;
             $questions = $this->generateQuestionsWithAI($bookContent, $book->title, $quiz->questions_count);
 
             if (empty($questions)) {
-                throw new \Exception('Aucune question générée');
+                throw new \Exception(__('Aucune question générée'));
             }
 
             // Créer les nouvelles questions
@@ -326,7 +326,7 @@ PROMPT;
     {
         return [
             [
-                'question' => 'Quel est le titre de ce livre ?',
+                'question' => __('Quel est le titre de ce livre ?'),
                 'type' => 'multiple_choice',
                 'options' => [
                     $book->title,
@@ -338,7 +338,7 @@ PROMPT;
                 'explanation' => "Le titre du livre est '{$book->title}'",
             ],
             [
-                'question' => 'Dans quelle catégorie se trouve ce livre ?',
+                'question' => __('Dans quelle catégorie se trouve ce livre ?'),
                 'type' => 'multiple_choice',
                 'options' => [
                     $book->category->name,

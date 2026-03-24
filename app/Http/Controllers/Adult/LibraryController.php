@@ -79,7 +79,7 @@ class LibraryController extends Controller
     {
         // Ensure the book is for adult space
         if ($book->space !== 'adult') {
-            abort(403, 'Access denied to this book.');
+            abort(403, __('Access denied to this book.'));
         }
 
         // --- START: Grant full access to adult content ---
@@ -107,14 +107,14 @@ class LibraryController extends Controller
     {
         // Ensure the book is for adult space
         if ($book->space !== 'adult') {
-            abort(403, 'Access denied to this book.');
+            abort(403, __('Access denied to this book.'));
         }
         if (! $book->pdf_file) {
-            abort(404, 'PDF not available for this book.');
+            abort(404, __('PDF not available for this book.'));
         }
 
         if (! auth()->user()->hasAccessToBook($book)) {
-            abort(403, 'Access denied: You do not have permission to read this book.');
+            abort(403, __('Access denied: You do not have permission to read this book.'));
         }
 
         return view('adult.book.read', compact('book'));
@@ -124,14 +124,14 @@ class LibraryController extends Controller
     {
         // Ensure the book is for adult space
         if ($book->space !== 'adult') {
-            abort(403, 'Access denied to this book.');
+            abort(403, __('Access denied to this book.'));
         }
         if (! $book->audio_file) {
-            abort(404, 'Audio not available for this book.');
+            abort(404, __('Audio not available for this book.'));
         }
 
         if (! auth()->user()->hasAccessToBook($book)) {
-            abort(403, 'Access denied: You do not have permission to listen to this book.');
+            abort(403, __('Access denied: You do not have permission to listen to this book.'));
         }
 
         return view('adult.book.listen', compact('book'));
@@ -148,10 +148,10 @@ class LibraryController extends Controller
         $payment = Payment::create([
             'user_id' => $user->id,
             'book_id' => $book->id,
-            'transaction_id' => 'TRX-'.uniqid(),
+            'transaction_id' => __('TRX-').uniqid(),
             'payment_type' => 'book_pdf',
             'amount' => $book->pdf_price,
-            'currency' => 'USD',
+            'currency' => __('USD'),
             'payment_method' => 'simulated',
             'payment_provider' => 'simulated',
             'status' => 'completed',
@@ -170,7 +170,7 @@ class LibraryController extends Controller
 
         $this->revenueCalculator->recordRevenue($payment);
 
-        return back()->with('success', 'PDF purchased successfully!');
+        return back()->with('success', __('PDF purchased successfully!'));
     }
 
     public function purchaseAudio(Book $book)
@@ -184,10 +184,10 @@ class LibraryController extends Controller
         $payment = Payment::create([
             'user_id' => $user->id,
             'book_id' => $book->id,
-            'transaction_id' => 'TRX-'.uniqid(),
+            'transaction_id' => __('TRX-').uniqid(),
             'payment_type' => 'book_audio',
             'amount' => $book->audio_price,
-            'currency' => 'USD',
+            'currency' => __('USD'),
             'payment_method' => 'simulated',
             'payment_provider' => 'simulated',
             'status' => 'completed',
@@ -206,7 +206,7 @@ class LibraryController extends Controller
 
         $this->revenueCalculator->recordRevenue($payment);
 
-        return back()->with('success', 'Audio purchased successfully!');
+        return back()->with('success', __('Audio purchased successfully!'));
     }
 
     public function storeReview(Request $request, Book $book)
@@ -223,6 +223,6 @@ class LibraryController extends Controller
             'is_approved' => true, // Automatically approve for now
         ]);
 
-        return back()->with('success', 'Your review has been submitted successfully!');
+        return back()->with('success', __('Your review has been submitted successfully!'));
     }
 }

@@ -42,7 +42,7 @@ class AdminMessagingController extends Controller
     {
         $conversation->delete();
 
-        return redirect()->route('admin.messaging.index')->with('success', 'Conversation deleted successfully.');
+        return redirect()->route('admin.messaging.index')->with('success', __('Conversation deleted successfully.'));
     }
 
     /**
@@ -60,7 +60,7 @@ class AdminMessagingController extends Controller
         $user->save();
 
         return response()->json([
-            'message' => 'User messaging reception status updated successfully.',
+            'message' => __('User messaging reception status updated successfully.'),
             'can_receive_messages' => $user->can_receive_messages,
         ]);
     }

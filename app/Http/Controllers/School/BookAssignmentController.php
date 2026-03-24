@@ -15,7 +15,7 @@ class BookAssignmentController extends Controller
         $search = $request->input('search');
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
         $assignmentsQuery = $school->bookAssignments()->with('book', 'class');
@@ -41,7 +41,7 @@ class BookAssignmentController extends Controller
         $school = $user->school;
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
         $classes = $school->classes()->get();
@@ -56,7 +56,7 @@ class BookAssignmentController extends Controller
         $school = $user->school;
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
         $request->validate([
@@ -99,7 +99,7 @@ class BookAssignmentController extends Controller
             }
         }
 
-        return redirect()->route('school.books.assignments')->with('success', 'Book assigned successfully.');
+        return redirect()->route('school.books.assignments')->with('success', __('Book assigned successfully.'));
     }
 
     public function destroy(BookAssignment $assignment)
@@ -112,7 +112,7 @@ class BookAssignmentController extends Controller
 
         $assignment->delete();
 
-        return back()->with('success', 'Book assignment removed successfully.');
+        return back()->with('success', __('Book assignment removed successfully.'));
     }
 
     public function edit(BookAssignment $assignment)
@@ -142,6 +142,6 @@ class BookAssignmentController extends Controller
 
         $assignment->update($request->all());
 
-        return back()->with('success', 'Book assignment updated successfully.');
+        return back()->with('success', __('Book assignment updated successfully.'));
     }
 }

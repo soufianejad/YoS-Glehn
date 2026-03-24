@@ -149,7 +149,7 @@ class ReaderController extends Controller
 
         $user->update($userData);
 
-        return back()->with('success', 'Profile updated successfully.');
+        return back()->with('success', __('Profile updated successfully.'));
     }
 
     public function updatePassword(Request $request)
@@ -169,7 +169,7 @@ class ReaderController extends Controller
             'password' => Hash::make($request->new_password),
         ]);
 
-        return back()->with('success', 'Password changed successfully.');
+        return back()->with('success', __('Password changed successfully.'));
     }
 
     public function updateNotificationPreferences(Request $request)
@@ -201,7 +201,7 @@ class ReaderController extends Controller
 
         $user->update(['notification_preferences' => $preferences]);
 
-        return back()->with('success', 'Notification preferences updated successfully.');
+        return back()->with('success', __('Notification preferences updated successfully.'));
     }
 
     public function subscription()
@@ -246,11 +246,11 @@ class ReaderController extends Controller
         $user = auth()->user();
 
         if ($user->id !== $subscription->user_id) {
-            return back()->with('error', 'Unauthorized action.');
+            return back()->with('error', __('Unauthorized action.'));
         }
 
         if (! $subscription || ! $subscription->isActive()) {
-            return back()->with('error', 'No active subscription to cancel.');
+            return back()->with('error', __('No active subscription to cancel.'));
         }
 
         $subscription->update([
@@ -259,7 +259,7 @@ class ReaderController extends Controller
             'cancelled_at' => now(),
         ]);
 
-        return back()->with('success', 'Subscription cancelled successfully.');
+        return back()->with('success', __('Subscription cancelled successfully.'));
     }
 
     public function renewSubscription(Request $request)
@@ -268,7 +268,7 @@ class ReaderController extends Controller
         $subscription = $user->activeSubscription()->first(); // Get the active subscription
 
         if (! $subscription) {
-            return back()->with('error', 'You do not have an active subscription to renew.');
+            return back()->with('error', __('You do not have an active subscription to renew.'));
         }
 
         // In a real application, this would integrate with a payment gateway.
@@ -278,10 +278,10 @@ class ReaderController extends Controller
         \App\Models\Payment::create([
             'user_id' => $user->id,
             'subscription_id' => $subscription->id,
-            'transaction_id' => 'TRX-'.uniqid(),
+            'transaction_id' => __('TRX-').uniqid(),
             'payment_type' => 'subscription_renewal',
             'amount' => $subscription->subscriptionPlan->price,
-            'currency' => 'XOF',
+            'currency' => __('XOF'),
             'payment_method' => 'simulated',
             'payment_provider' => 'simulated',
             'status' => 'completed',
@@ -295,7 +295,7 @@ class ReaderController extends Controller
             'cancelled_at' => null, // Clear cancelled status if it was cancelled
         ]);
 
-        return back()->with('success', 'Subscription renewed successfully!');
+        return back()->with('success', __('Subscription renewed successfully!'));
     }
 
     public function payments()

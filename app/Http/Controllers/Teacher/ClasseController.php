@@ -31,7 +31,7 @@ class ClasseController extends Controller
     {
         // Authorization: Ensure the teacher is assigned to this class.
         if ($class->teacher_id !== Auth::id()) {
-            abort(403, 'Accès non autorisé.');
+            abort(403, __('Accès non autorisé.'));
         }
 
         // Eager load students to prevent N+1 query problems in the view

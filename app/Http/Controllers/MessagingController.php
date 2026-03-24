@@ -80,7 +80,7 @@ class MessagingController extends Controller
 
         // Authorize that the user is part of this conversation
         if (! $user->conversations->contains($conversation)) {
-            return response()->json(['error' => 'Unauthorized'], 403);
+            return response()->json(['error' => __('Unauthorized')], 403);
         }
 
         $messages = $conversation->messages()->with('sender')->get();
@@ -108,7 +108,7 @@ class MessagingController extends Controller
 
         // Authorize that the user is part of this conversation
         if (! $sender->conversations->contains($conversation)) {
-            return response()->json(['error' => 'Unauthorized'], 403);
+            return response()->json(['error' => __('Unauthorized')], 403);
         }
 
         $message = Message::create([
@@ -213,7 +213,7 @@ class MessagingController extends Controller
 
         // Authorize that the user is part of this conversation
         if (! $user->conversations->contains($conversation)) {
-            return response()->json(['error' => 'Unauthorized'], 403);
+            return response()->json(['error' => __('Unauthorized')], 403);
         }
 
         $afterId = $request->query('after_id', 0);

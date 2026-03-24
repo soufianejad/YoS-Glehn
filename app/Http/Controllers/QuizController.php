@@ -26,7 +26,7 @@ class QuizController extends Controller
     {
         $quiz = $book->quizzes()->first();
         if (! $quiz) {
-            return back()->with('error', 'No quiz is available for this book.');
+            return back()->with('error', __('No quiz is available for this book.'));
         }
 
         // Redirect to the start method to create an attempt first
@@ -73,7 +73,7 @@ class QuizController extends Controller
         }
 
         if ($attempt->completed_at) {
-            return redirect()->route('quiz.result', $attempt)->with('error', 'Quiz already submitted.');
+            return redirect()->route('quiz.result', $attempt)->with('error', __('Quiz already submitted.'));
         }
 
         $score = 0;

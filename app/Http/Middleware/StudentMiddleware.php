@@ -10,16 +10,16 @@ class StudentMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (! auth()->check()) {
-            return redirect()->route('login')->with('error', 'Vous devez être connecté');
+            return redirect()->route('login')->with('error', __('Vous devez être connecté'));
         }
 
         if (! auth()->user()->isStudent()) {
-            abort(403, 'Accès réservé aux étudiants');
+            abort(403, __('Accès réservé aux étudiants'));
         }
 
         // Vérifier que l'étudiant est bien lié à une école
         if (! auth()->user()->school_id) {
-            return redirect()->route('home')->with('error', 'Votre compte doit être lié à une école');
+            return redirect()->route('home')->with('error', __('Votre compte doit être lié à une école'));
         }
 
         return $next($request);

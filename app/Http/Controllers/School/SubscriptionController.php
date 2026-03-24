@@ -64,7 +64,7 @@ class SubscriptionController extends Controller
         // Optional: Check if the school already has an active subscription
         if ($school->subscription && $school->subscription->isActive()) {
             // Logic to handle upgrade/downgrade could go here
-            return redirect()->route('school.subscription.index')->with('info', 'Vous avez déjà un abonnement actif.');
+            return redirect()->route('school.subscription.index')->with('info', __('Vous avez déjà un abonnement actif.'));
         }
 
         // Create the new subscription
@@ -86,13 +86,13 @@ class SubscriptionController extends Controller
             'user_id' => $school->user_id, // Use school's user_id for the payment record
             'subscription_id' => $subscription->id,
             'amount' => $plan->price,
-            'currency' => 'USD', // Or your default currency
+            'currency' => __('USD'), // Or your default currency
             'status' => 'completed',
             'payment_method' => 'card', // Use an allowed enum value
             'transaction_id' => 'mock_'.uniqid(),
         ]);
 
-        return redirect()->route('school.subscription.index')->with('success', 'Abonnement au plan "'.$plan->name.'" réussi !');
+        return redirect()->route('school.subscription.index')->with('success', __('Abonnement au plan "').$plan->name.'" réussi !');
     }
 
     /**

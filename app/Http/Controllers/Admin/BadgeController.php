@@ -43,7 +43,7 @@ class BadgeController extends Controller
 
         Badge::create($badgeData);
 
-        return redirect()->route('admin.badges.index')->with('success', 'Badge created successfully.');
+        return redirect()->route('admin.badges.index')->with('success', __('Badge created successfully.'));
     }
 
     public function edit(Badge $badge)
@@ -75,7 +75,7 @@ class BadgeController extends Controller
 
         $badge->update($badgeData);
 
-        return redirect()->route('admin.badges.index')->with('success', 'Badge updated successfully.');
+        return redirect()->route('admin.badges.index')->with('success', __('Badge updated successfully.'));
     }
 
     public function destroy(Badge $badge)
@@ -86,6 +86,6 @@ class BadgeController extends Controller
 
         $badge->delete();
 
-        return redirect()->route('admin.badges.index')->with('success', 'Badge deleted successfully.');
+        return redirect()->route('admin.badges.index')->with('success', __('Badge deleted successfully.'));
     }
 }

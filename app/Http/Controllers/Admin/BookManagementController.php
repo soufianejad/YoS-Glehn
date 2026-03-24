@@ -154,7 +154,7 @@ class BookManagementController extends Controller
             }
         }
 
-        return redirect()->route('admin.books.index')->with('success', 'Book created successfully.');
+        return redirect()->route('admin.books.index')->with('success', __('Book created successfully.'));
     }
 
     public function show(Book $book)
@@ -307,7 +307,7 @@ class BookManagementController extends Controller
             }
         }
 
-        return redirect()->route('admin.books.index')->with('success', 'Book updated successfully.');
+        return redirect()->route('admin.books.index')->with('success', __('Book updated successfully.'));
     }
 
     public function destroy(Book $book)
@@ -330,7 +330,7 @@ class BookManagementController extends Controller
 
         $book->delete();
 
-        return redirect()->route('admin.books.index')->with('success', 'Book deleted successfully.');
+        return redirect()->route('admin.books.index')->with('success', __('Book deleted successfully.'));
     }
 
     public function approve(Book $book)
@@ -348,21 +348,21 @@ class BookManagementController extends Controller
             );
         }
 
-        return back()->with('success', 'Book approved and published.');
+        return back()->with('success', __('Book approved and published.'));
     }
 
     public function reject(Book $book)
     {
         $book->update(['status' => 'rejected']);
 
-        return back()->with('success', 'Book rejected.');
+        return back()->with('success', __('Book rejected.'));
     }
 
     public function feature(Book $book)
     {
         $book->update(['is_featured' => true]); // Assuming an 'is_featured' column exists
 
-        return back()->with('success', 'Book marked as featured.');
+        return back()->with('success', __('Book marked as featured.'));
     }
 
     public function changeSpace(Request $request, Book $book)
@@ -373,6 +373,6 @@ class BookManagementController extends Controller
 
         $book->update(['space' => $request->space]);
 
-        return back()->with('success', 'Book space updated successfully.');
+        return back()->with('success', __('Book space updated successfully.'));
     }
 }

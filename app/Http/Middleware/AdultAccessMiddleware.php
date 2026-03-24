@@ -10,7 +10,7 @@ class AdultAccessMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (! auth()->check()) {
-            return redirect()->route('login')->with('error', 'Vous devez être connecté');
+            return redirect()->route('login')->with('error', __('Vous devez être connecté'));
         }
 
         // Admins should always have access
@@ -19,7 +19,7 @@ class AdultAccessMiddleware
         }
 
         if (! auth()->user()->isAdultReader()) {
-            abort(403, 'Accès réservé aux adultes');
+            abort(403, __('Accès réservé aux adultes'));
         }
 
         return $next($request);

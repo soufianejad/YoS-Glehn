@@ -18,7 +18,7 @@ class StudentController extends Controller
         $search = $request->input('search');
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
         $studentsQuery = $school->students();
@@ -47,7 +47,7 @@ class StudentController extends Controller
         $school = $user->school;
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
         $request->validate([
@@ -68,7 +68,7 @@ class StudentController extends Controller
 
         $school->increment('current_students');
 
-        return redirect()->route('school.students.index')->with('success', 'Student added successfully.');
+        return redirect()->route('school.students.index')->with('success', __('Student added successfully.'));
     }
 
     public function show(User $student)
@@ -77,7 +77,7 @@ class StudentController extends Controller
         $school = $user->school;
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
         // Ensure the student belongs to this school
@@ -116,7 +116,7 @@ class StudentController extends Controller
 
         $student->update($request->only('first_name', 'last_name', 'email', 'phone'));
 
-        return redirect()->route('school.students.index')->with('success', 'Student updated successfully.');
+        return redirect()->route('school.students.index')->with('success', __('Student updated successfully.'));
     }
 
     public function destroy(User $student)
@@ -130,7 +130,7 @@ class StudentController extends Controller
         $student->delete();
         $school->decrement('current_students');
 
-        return redirect()->route('school.students.index')->with('success', 'Student deleted successfully.');
+        return redirect()->route('school.students.index')->with('success', __('Student deleted successfully.'));
     }
 
     public function deactivate(User $student)
@@ -143,7 +143,7 @@ class StudentController extends Controller
 
         $student->update(['is_active' => false]);
 
-        return back()->with('success', 'Student deactivated successfully.');
+        return back()->with('success', __('Student deactivated successfully.'));
     }
 
     public function activate(User $student)
@@ -156,7 +156,7 @@ class StudentController extends Controller
 
         $student->update(['is_active' => true]);
 
-        return back()->with('success', 'Student activated successfully.');
+        return back()->with('success', __('Student activated successfully.'));
     }
 
     public function importCreate()
@@ -181,10 +181,10 @@ class StudentController extends Controller
                 $errors[] = 'Row '.$failure->row().': '.implode(', ', $failure->errors());
             }
 
-            return back()->with('error', 'There were some errors with your import: <br>'.implode('<br>', $errors));
+            return back()->with('error', __('There were some errors with your import: <br>').implode('<br>', $errors));
         }
 
-        return back()->with('success', 'Students imported successfully.');
+        return back()->with('success', __('Students imported successfully.'));
     }
 
     /**

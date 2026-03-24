@@ -21,7 +21,7 @@ class BookAssignmentController extends Controller
     public function create(Classe $class)
     {
         if ($class->teacher_id !== Auth::id()) {
-            abort(403, 'Accès non autorisé.');
+            abort(403, __('Accès non autorisé.'));
         }
 
         $class->load('students');
@@ -43,7 +43,7 @@ class BookAssignmentController extends Controller
     public function store(Request $request, Classe $class)
     {
         if ($class->teacher_id !== Auth::id()) {
-            abort(403, 'Accès non autorisé.');
+            abort(403, __('Accès non autorisé.'));
         }
 
         $request->validate([

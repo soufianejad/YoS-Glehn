@@ -64,7 +64,7 @@ class ReviewController extends Controller
             );
         }
 
-        return back()->with('success', 'Review approved successfully!');
+        return back()->with('success', __('Review approved successfully!'));
     }
 
     /**
@@ -74,7 +74,7 @@ class ReviewController extends Controller
     {
         $review->update(['is_approved' => false]);
 
-        return back()->with('success', 'Review rejected successfully!');
+        return back()->with('success', __('Review rejected successfully!'));
     }
 
     /**
@@ -84,6 +84,6 @@ class ReviewController extends Controller
     {
         $review->delete();
 
-        return redirect()->route('admin.reviews.index')->with('success', 'Review deleted successfully.');
+        return redirect()->route('admin.reviews.index')->with('success', __('Review deleted successfully.'));
     }
 }

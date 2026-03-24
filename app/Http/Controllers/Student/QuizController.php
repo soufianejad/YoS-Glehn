@@ -44,7 +44,7 @@ class QuizController extends Controller
     public function show(Quiz $quiz)
     {
         if (! $quiz->is_active) {
-            abort(403, 'This quiz is not active.');
+            abort(403, __('This quiz is not active.'));
         }
         $quiz->load('book');
 
@@ -54,7 +54,7 @@ class QuizController extends Controller
     public function start(Quiz $quiz)
     {
         if (! $quiz->is_active) {
-            abort(403, 'This quiz is not active.');
+            abort(403, __('This quiz is not active.'));
         }
 
         $user = auth()->user();
@@ -90,7 +90,7 @@ class QuizController extends Controller
         $attempt = QuizAttempt::findOrFail($request->attempt_id);
 
         if ($attempt->completed_at) {
-            return redirect()->route('student.quiz.results', $attempt)->with('error', 'Quiz already submitted.');
+            return redirect()->route('student.quiz.results', $attempt)->with('error', __('Quiz already submitted.'));
         }
 
         $score = 0;
@@ -130,7 +130,7 @@ class QuizController extends Controller
             $this->badgeService->checkAndAwardBadges(auth()->user());
         }
 
-        return redirect()->route('student.quiz.results', $attempt)->with('success', 'Quiz submitted successfully!');
+        return redirect()->route('student.quiz.results', $attempt)->with('success', __('Quiz submitted successfully!'));
     }
 
     public function results(QuizAttempt $attempt)

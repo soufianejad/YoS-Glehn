@@ -48,7 +48,7 @@ class RegisterController extends Controller
         $invitation = AdultAccess::where('access_token', $token)->firstOrFail();
 
         if (! $invitation->canUse()) {
-            return redirect()->route('register')->with('error', 'Invalid or expired invitation token.');
+            return redirect()->route('register')->with('error', __('Invalid or expired invitation token.'));
         }
 
         return view('adult.invitation', compact('token', 'invitation'));
@@ -59,7 +59,7 @@ class RegisterController extends Controller
         $invitation = AdultAccess::where('access_token', $token)->firstOrFail();
 
         if (! $invitation->canUse()) {
-            return redirect()->route('register')->with('error', 'Invalid or expired invitation token.');
+            return redirect()->route('register')->with('error', __('Invalid or expired invitation token.'));
         }
 
         $request->validate([
@@ -86,6 +86,6 @@ class RegisterController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('home')->with('success', 'Adult account registered successfully!');
+        return redirect()->route('home')->with('success', __('Adult account registered successfully!'));
     }
 }

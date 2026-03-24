@@ -36,11 +36,11 @@ class SubscriptionController extends Controller
     public function subscribe(Request $request, SubscriptionPlan $plan)
 {
     if (!auth()->check()) {
-        return redirect()->route('login')->with('error', 'You must be logged in to subscribe to a plan.');
+        return redirect()->route('login')->with('error', __('You must be logged in to subscribe to a plan.'));
     }
 
     if (!$plan) {
-        return back()->with('error', 'Subscription plan not found.');
+        return back()->with('error', __('Subscription plan not found.'));
     }
 
     $user = auth()->user();
@@ -59,10 +59,10 @@ class SubscriptionController extends Controller
     $payment = Payment::create([
         'user_id' => $user->id,
         'subscription_id' => $subscription->id, // ⬅️ ADD THIS FIELD
-        'transaction_id' => 'TRX-' . uniqid(),
+        'transaction_id' => __('TRX-') . uniqid(),
         'payment_type' => 'subscription',
         'amount' => $plan->price,
-        'currency' => 'USD',
+        'currency' => __('USD'),
         'payment_method' => 'simulated',
         'payment_provider' => 'simulated',
         'status' => 'completed',
@@ -78,7 +78,7 @@ class SubscriptionController extends Controller
         'success'
     );
 
-    return redirect()->route('subscription.index')->with('success', 'Subscription successful!');
+    return redirect()->route('subscription.index')->with('success', __('Subscription successful!'));
 }
 
 
@@ -88,7 +88,7 @@ class SubscriptionController extends Controller
         $subscription = $user->subscription;
 
         if (! $subscription || ! $subscription->isActive()) {
-            return back()->with('error', 'No active subscription to renew.');
+            return back()->with('error', __('No active subscription to renew.'));
         }
 
         // In a real application, this would integrate with a payment gateway.
@@ -98,10 +98,10 @@ class SubscriptionController extends Controller
         $payment = Payment::create([
             'user_id' => $user->id,
             'subscription_id' => $subscription->id,
-            'transaction_id' => 'TRX-'.uniqid(),
+            'transaction_id' => __('TRX-').uniqid(),
             'payment_type' => 'subscription',
             'amount' => $subscription->subscriptionPlan->price,
-            'currency' => 'USD',
+            'currency' => __('USD'),
             'payment_method' => 'simulated',
             'payment_provider' => 'simulated',
             'status' => 'completed',
@@ -114,7 +114,7 @@ class SubscriptionController extends Controller
             'cancelled_at' => null,
         ]);
 
-        return back()->with('success', 'Subscription renewed successfully!');
+        return back()->with('success', __('Subscription renewed successfully!'));
     }
 
     public function cancel()
@@ -123,7 +123,7 @@ class SubscriptionController extends Controller
         $subscription = $user->subscription;
 
         if (! $subscription || ! $subscription->isActive()) {
-            return back()->with('error', 'No active subscription to cancel.');
+            return back()->with('error', __('No active subscription to cancel.'));
         }
 
         $subscription->update([
@@ -132,6 +132,6 @@ class SubscriptionController extends Controller
             'cancelled_at' => now(),
         ]);
 
-        return back()->with('success', 'Subscription cancelled successfully.');
+        return back()->with('success', __('Subscription cancelled successfully.'));
     }
 }

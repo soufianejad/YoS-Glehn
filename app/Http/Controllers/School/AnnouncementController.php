@@ -18,7 +18,7 @@ class AnnouncementController extends Controller
         $school = $user->school;
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
         $search = $request->input('search');
@@ -46,7 +46,7 @@ class AnnouncementController extends Controller
         $school = $user->school;
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
         $classes = $school->classes()->get();
@@ -63,7 +63,7 @@ class AnnouncementController extends Controller
         $school = $user->school;
 
         if (! $school) {
-            return redirect()->route('home')->with('error', 'You are not associated with a school.');
+            return redirect()->route('home')->with('error', __('You are not associated with a school.'));
         }
 
         $request->validate([
@@ -82,7 +82,7 @@ class AnnouncementController extends Controller
             'class_id' => $request->class_id,
         ]);
 
-        return redirect()->route('school.announcements.index')->with('success', 'Announcement created successfully.');
+        return redirect()->route('school.announcements.index')->with('success', __('Announcement created successfully.'));
     }
 
     /**
@@ -94,7 +94,7 @@ class AnnouncementController extends Controller
         $school = $user->school;
 
         if (! $school || $announcement->school_id !== $school->id) {
-            abort(403, 'Unauthorized action.');
+            abort(403, __('Unauthorized action.'));
         }
 
         return view('school.announcements.show', compact('school', 'announcement'));
@@ -109,7 +109,7 @@ class AnnouncementController extends Controller
         $school = $user->school;
 
         if (! $school || $announcement->school_id !== $school->id) {
-            abort(403, 'Unauthorized action.');
+            abort(403, __('Unauthorized action.'));
         }
 
         $classes = $school->classes()->get();
@@ -127,7 +127,7 @@ class AnnouncementController extends Controller
         $school = $user->school;
 
         if (! $school || $announcement->school_id !== $school->id) {
-            abort(403, 'Unauthorized action.');
+            abort(403, __('Unauthorized action.'));
         }
 
         $request->validate([
@@ -146,7 +146,7 @@ class AnnouncementController extends Controller
             'class_id' => $request->class_id,
         ]);
 
-        return redirect()->route('school.announcements.index')->with('success', 'Announcement updated successfully.');
+        return redirect()->route('school.announcements.index')->with('success', __('Announcement updated successfully.'));
     }
 
     /**
@@ -158,11 +158,11 @@ class AnnouncementController extends Controller
         $school = $user->school;
 
         if (! $school || $announcement->school_id !== $school->id) {
-            abort(403, 'Unauthorized action.');
+            abort(403, __('Unauthorized action.'));
         }
 
         $announcement->delete();
 
-        return back()->with('success', 'Announcement deleted successfully.');
+        return back()->with('success', __('Announcement deleted successfully.'));
     }
 }

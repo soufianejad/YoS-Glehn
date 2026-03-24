@@ -22,6 +22,6 @@ class ContactController extends Controller
 
         // For now, we just return a success message.
         // In a real application, you would send an email, save to DB, etc.
-        return back()->with('success', 'Merci pour votre message ! Nous vous répondrons bientôt.');
+        return back()->with('success', __('Merci pour votre message ! Nous vous répondrons bientôt.'));
     }
 }

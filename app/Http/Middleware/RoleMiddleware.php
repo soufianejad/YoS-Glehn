@@ -40,12 +40,12 @@ class RoleMiddleware
             }
 
             // If none of the conditions are met, deny access
-            abort(403, 'Unauthorized. You do not have access to the adult section.');
+            abort(403, __('Unauthorized. You do not have access to the adult section.'));
         }
 
         // Original logic for all other roles
         if ($user->role !== $role) {
-            abort(403, 'Unauthorized action.');
+            abort(403, __('Unauthorized action.'));
         }
 
         return $next($request);

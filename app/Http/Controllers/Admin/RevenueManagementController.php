@@ -76,14 +76,14 @@ class RevenueManagementController extends Controller
     {
         // Logic to approve a revenue period, e.g., mark all revenues within a period as 'approved'
         // This is a placeholder for a more complex business logic
-        return back()->with('success', 'Revenue period approved (placeholder).');
+        return back()->with('success', __('Revenue period approved (placeholder).'));
     }
 
     public function distributeSubscriptions()
     {
         // Complex logic to calculate and distribute subscription revenue to authors
         // This is a placeholder for a more complex business logic
-        return back()->with('success', 'Subscription revenue distributed (placeholder).');
+        return back()->with('success', __('Subscription revenue distributed (placeholder).'));
     }
 
     public function payouts()
@@ -113,7 +113,7 @@ class RevenueManagementController extends Controller
 
         AuthorPayout::create(array_merge($request->all(), ['status' => 'pending']));
 
-        return redirect()->route('admin.revenues.payouts.index')->with('success', 'Payout created successfully.');
+        return redirect()->route('admin.revenues.payouts.index')->with('success', __('Payout created successfully.'));
     }
 
     public function showPayout(AuthorPayout $payout)
@@ -136,14 +136,14 @@ class RevenueManagementController extends Controller
             );
         }
 
-        return back()->with('success', 'Payout confirmed successfully.');
+        return back()->with('success', __('Payout confirmed successfully.'));
     }
 
     public function cancelPayout(AuthorPayout $payout)
     {
         $payout->update(['status' => 'cancelled']);
 
-        return back()->with('success', 'Payout cancelled successfully.');
+        return back()->with('success', __('Payout cancelled successfully.'));
     }
 
     /**
@@ -169,7 +169,7 @@ class RevenueManagementController extends Controller
 
         $revenue->update($request->all());
 
-        return redirect()->route('admin.revenues.index')->with('success', 'Revenue record updated successfully.');
+        return redirect()->route('admin.revenues.index')->with('success', __('Revenue record updated successfully.'));
     }
 
     /**
@@ -180,10 +180,10 @@ class RevenueManagementController extends Controller
         if ($revenue->status === 'pending') {
             $revenue->update(['status' => 'approved']);
 
-            return back()->with('success', 'Revenue approved successfully.');
+            return back()->with('success', __('Revenue approved successfully.'));
         }
 
-        return back()->with('info', 'Revenue was not in pending state.');
+        return back()->with('info', __('Revenue was not in pending state.'));
     }
 
     /**
@@ -193,6 +193,6 @@ class RevenueManagementController extends Controller
     {
         $revenue->delete();
 
-        return back()->with('success', 'Revenue record deleted successfully.');
+        return back()->with('success', __('Revenue record deleted successfully.'));
     }
 }

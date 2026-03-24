@@ -43,7 +43,7 @@ class SubscriptionPlanController extends Controller
 
         SubscriptionPlan::create($data);
 
-        return redirect()->route('admin.subscription-plans.index')->with('success', 'Subscription plan created successfully.');
+        return redirect()->route('admin.subscription-plans.index')->with('success', __('Subscription plan created successfully.'));
     }
 
     public function edit(SubscriptionPlan $plan)
@@ -73,27 +73,27 @@ class SubscriptionPlanController extends Controller
 
         $plan->update($data);
 
-        return redirect()->route('admin.subscription-plans.index')->with('success', 'Subscription plan updated successfully.');
+        return redirect()->route('admin.subscription-plans.index')->with('success', __('Subscription plan updated successfully.'));
     }
 
     public function destroy(SubscriptionPlan $plan)
     {
         $plan->delete();
 
-        return redirect()->route('admin.subscription-plans.index')->with('success', 'Subscription plan deleted successfully.');
+        return redirect()->route('admin.subscription-plans.index')->with('success', __('Subscription plan deleted successfully.'));
     }
 
     public function activate(SubscriptionPlan $plan)
     {
         $plan->update(['is_active' => true]);
 
-        return back()->with('success', 'Subscription plan activated successfully.');
+        return back()->with('success', __('Subscription plan activated successfully.'));
     }
 
     public function deactivate(SubscriptionPlan $plan)
     {
         $plan->update(['is_active' => false]);
 
-        return back()->with('success', 'Subscription plan deactivated successfully.');
+        return back()->with('success', __('Subscription plan deactivated successfully.'));
     }
 }

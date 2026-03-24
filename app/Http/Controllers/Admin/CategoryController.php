@@ -37,7 +37,7 @@ class CategoryController extends Controller
 
         Category::create($data);
 
-        return redirect()->route('admin.categories.index')->with('success', 'Category created successfully.');
+        return redirect()->route('admin.categories.index')->with('success', __('Category created successfully.'));
     }
 
     public function edit(Category $category)
@@ -61,14 +61,14 @@ class CategoryController extends Controller
 
         $category->update($data);
 
-        return redirect()->route('admin.categories.index')->with('success', 'Category updated successfully.');
+        return redirect()->route('admin.categories.index')->with('success', __('Category updated successfully.'));
     }
 
     public function destroy(Category $category)
     {
         $category->delete();
 
-        return redirect()->route('admin.categories.index')->with('success', 'Category deleted successfully.');
+        return redirect()->route('admin.categories.index')->with('success', __('Category deleted successfully.'));
     }
 
     public function updateOrder(Request $request)
@@ -82,6 +82,6 @@ class CategoryController extends Controller
             Category::where('id', $categoryId)->update(['order' => $index + 1]);
         }
 
-        return response()->json(['message' => 'Category order updated successfully.']);
+        return response()->json(['message' => __('Category order updated successfully.')]);
     }
 }

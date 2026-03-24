@@ -70,7 +70,7 @@ class ParentController extends Controller
             $school->students()->whereIn('id', $request->student_ids)->update(['parent_id' => $parent->id]);
         }
 
-        return redirect()->route('school.parents.index')->with('success', 'Parent added successfully.');
+        return redirect()->route('school.parents.index')->with('success', __('Parent added successfully.'));
     }
 
     /**
@@ -124,7 +124,7 @@ class ParentController extends Controller
             $school->students()->whereIn('id', $request->student_ids)->update(['parent_id' => $parent->id]);
         }
 
-        return redirect()->route('school.parents.index')->with('success', 'Parent updated successfully.');
+        return redirect()->route('school.parents.index')->with('success', __('Parent updated successfully.'));
     }
 
     /**
@@ -144,6 +144,6 @@ class ParentController extends Controller
 
         $parent->delete();
 
-        return redirect()->route('school.parents.index')->with('success', 'Parent deleted successfully.');
+        return redirect()->route('school.parents.index')->with('success', __('Parent deleted successfully.'));
     }
 }

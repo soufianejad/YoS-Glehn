@@ -10,11 +10,11 @@ class AdminMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (! auth()->check()) {
-            return redirect()->route('login')->with('error', 'Vous devez être connecté');
+            return redirect()->route('login')->with('error', __('Vous devez être connecté'));
         }
 
         if (! auth()->user()->isAdmin()) {
-            abort(403, 'Accès réservé aux administrateurs');
+            abort(403, __('Accès réservé aux administrateurs'));
         }
 
         return $next($request);
