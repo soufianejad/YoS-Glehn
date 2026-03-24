@@ -6,12 +6,28 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Purchase;
 use App\Models\Subscription;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 class PaymentController extends Controller
 {
+    protected $paymentService;
+
+    public function __construct(PaymentService $paymentService)
+    {
+        $this->paymentService = $paymentService;
+    }
+
+    public function getMethodsByCountry(Request $request)
+    {
+        $country = $request->query('country', 'CI');
+        $data = $this->paymentService->getAvailablePaymentMethods(null, $country);
+        
+        return response()->json($data);
+    }
+
     public function callback(Request $request, $service)
     {
         Log::info("Payment Callback Received for {$service}:", $request->all());

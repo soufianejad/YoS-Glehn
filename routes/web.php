@@ -144,6 +144,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/book/{book}/secure-download', [BookController::class, 'secureDownload'])->name('book.secure_download');
 
     // Routes de paiement
+    Route::get('/payment/methods', [App\Http\Controllers\Public\PaymentController::class, 'getMethodsByCountry'])->name('payment.methods');
     Route::get('/payment/success', [App\Http\Controllers\Public\PaymentController::class, 'success'])->name('payment.success');
     Route::get('/payment/failed', [App\Http\Controllers\Public\PaymentController::class, 'failed'])->name('payment.failed');
     Route::get('/payment/pending', [App\Http\Controllers\Public\PaymentController::class, 'pending'])->name('payment.pending');

@@ -124,45 +124,86 @@
 
 @push('scripts')
 <script>
-    const networks = @json($methods['methods']);
+    let currentNetworks = @json($methods['methods']);
     const networksGrid = document.getElementById('networks-grid');
     const networkInput = document.getElementById('selected-network');
     const otpContainer = document.getElementById('otp-container');
     const countrySelect = document.getElementById('country-select');
+    const paymentForm = document.getElementById('payment-form');
+    const submitBtn = paymentForm.querySelector('button[type="submit"]');
 
-    function renderNetworks() {
+    function renderNetworks(methods) {
         networksGrid.innerHTML = '';
-        networks.forEach(method => {
+        if (methods.length === 0) {
+            networksGrid.innerHTML = '<div class="col-12 text-center text-muted py-3 small">{{ __("Aucun mode de paiement disponible pour ce pays.") }}</div>';
+            submitBtn.disabled = true;
+            return;
+        }
+        
+        submitBtn.disabled = false;
+        methods.forEach(method => {
             const col = document.createElement('div');
             col.className = 'col-6 col-sm-4';
             col.innerHTML = `
-                <div class="card network-card h-100 rounded-3 p-2 text-center" data-id="${method.id}">
+                <div class="card network-card h-100 rounded-3 p-2 d-flex align-items-center justify-content-center text-center shadow-sm" data-id="${method.id}">
                     <div class="fw-bold small text-uppercase" style="color: ${method.icon_color}">${method.name}</div>
                 </div>
             `;
             col.querySelector('.network-card').onclick = function() {
-                document.querySelectorAll('.network-card').forEach(c => c.classList.remove('selected'));
-                this.classList.add('selected');
-                networkInput.value = this.dataset.id;
-                
-                if (this.dataset.id === 'OMCIV2') {
-                    otpContainer.classList.remove('d-none');
-                } else {
-                    otpContainer.classList.add('d-none');
-                }
+                selectNetwork(this);
             };
             networksGrid.appendChild(col);
         });
+
+        // Auto-select first one
+        if (methods.length > 0) {
+            selectNetwork(networksGrid.querySelector('.network-card'));
+        }
     }
 
-    renderNetworks();
-
-    // Auto-select first network
-    if (networks.length > 0) {
-        setTimeout(() => {
-            networksGrid.querySelector('.network-card').click();
-        }, 100);
+    function selectNetwork(cardElement) {
+        document.querySelectorAll('.network-card').forEach(c => c.classList.remove('selected', 'border-primary'));
+        cardElement.classList.add('selected', 'border-primary');
+        networkInput.value = cardElement.dataset.id;
+        
+        // Show OTP for Orange Money CI
+        if (cardElement.dataset.id === 'ORANGE_CIV') {
+            otpContainer.classList.remove('d-none');
+        } else {
+            otpContainer.classList.add('d-none');
+        }
     }
+
+    async function fetchNetworks(country) {
+        networksGrid.innerHTML = '<div class="col-12 text-center py-3"><div class="spinner-border spinner-border-sm text-primary" role="status"></div></div>';
+        try {
+            const response = await fetch(`{{ route('payment.methods') }}?country=${country}`);
+            const data = await response.json();
+            currentNetworks = data.methods;
+            renderNetworks(currentNetworks);
+        } catch (error) {
+            console.error('Error fetching networks:', error);
+            networksGrid.innerHTML = '<div class="col-12 text-center text-danger py-3 small">{{ __("Erreur lors du chargement des modes de paiement.") }}</div>';
+        }
+    }
+
+    countrySelect.addEventListener('change', (e) => {
+        fetchNetworks(e.target.value);
+    });
+
+    paymentForm.addEventListener('submit', function(e) {
+        if (!networkInput.value) {
+            e.preventDefault();
+            alert('{{ __("Veuillez choisir un opérateur.") }}');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> {{ __("Traitement en cours...") }}';
+    });
+
+    // Initial render
+    renderNetworks(currentNetworks);
 </script>
 @endpush
 @endsection

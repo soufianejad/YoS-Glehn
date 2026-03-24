@@ -143,8 +143,8 @@ class PaymentService
 
         Session::put('payment_return_url', $successUrl ?? route('home'));
 
-        // --- WAVE ---
-        if ($network == "WAVECI") {
+        // --- WAVE (CI or SN) ---
+        if (in_array($network, ["WAVE_CIV", "WAVE_SEN"])) {
             try {
                 $response = Http::withToken(env('WAVE_API_KEY'))
                     ->post("https://api.wave.com/v1/checkout/sessions", [
@@ -167,11 +167,18 @@ class PaymentService
             }
         }
 
-        // --- TOUCHPAY (Orange Money, MTN CI, Moov) ---
-        if (in_array($network, ['MOMOCI', 'OMCIV2', 'FLOOZ'])) {
+        // --- TOUCHPAY (Orange Money, MTN CI, Moov CI) ---
+        if (in_array($network, ['MOMOCI', 'ORANGE_CIV', 'FLOOZ'])) {
             try {
                 $touchPayUrl = "https://api.gutouch.com/dist/api/touchpayapi/v1/".env('TOUCHPAY_MERCHANT_KEY')."/transaction?loginAgent=".env('TOUCHPAY_LOGIN_AGENT')."&passwordAgent=".env('TOUCHPAY_PASSWORD_AGENT');
                 
+                $serviceCode = match($network) {
+                    'ORANGE_CIV' => 'PAIEMENTMARCHANDOMPAYCIDIRECT',
+                    'MOMOCI' => 'PAIEMENTMARCHAND_MTN_CI',
+                    'FLOOZ' => 'PAIEMENTMARCHAND_MOOV_CI',
+                    default => null
+                };
+
                 $touchData = [
                     "idFromClient" => $refNumber,
                     "additionnalInfos" => [
@@ -183,10 +190,10 @@ class PaymentService
                     "amount" => $amount,
                     "callback" => route('payment.callback', ['service' => 'touchpay']),
                     "recipientNumber" => $request->phone,
-                    "serviceCode" => $network == 'OMCIV2' ? 'PAIEMENTMARCHANDOMPAYCIDIRECT' : ($network == 'MOMOCI' ? 'PAIEMENTMARCHAND_MTN_CI' : 'PAIEMENTMARCHAND_MOOV_CI'),
+                    "serviceCode" => $serviceCode,
                 ];
 
-                if ($network == 'OMCIV2') { $touchData['additionnalInfos']['otp'] = $request->otp; }
+                if ($network == 'ORANGE_CIV') { $touchData['additionnalInfos']['otp'] = $request->otp; }
 
                 $client = new Client();
                 $response = $client->put($touchPayUrl, [
@@ -206,9 +213,12 @@ class PaymentService
             }
         }
 
-        // --- PAIEMENTPRO (Cards & Others) ---
-        if ($network === 'CARD' || in_array($network, ['MOMOBJ', 'FLOOZBJ', 'OMBF', 'OMCM', 'OMGN', 'OMML'])) {
+        // --- PAIEMENTPRO (Cards & Other African Mobile Money) ---
+        // MOMOBJ, FLOOZBJ, OMBF, FLOOZ_BFA, OMCM
+        $paiementProNetworks = ['CARD', 'MOMOBJ', 'FLOOZBJ', 'OMBF', 'FLOOZ_BFA', 'OMCM'];
+        if (in_array($network, $paiementProNetworks)) {
             try {
+                // Surcharge pour carte
                 if ($network === 'CARD') { $amount = ($amount * 1.05) + 780; }
 
                 $paiementProArray = [
@@ -242,7 +252,7 @@ class PaymentService
             }
         }
 
-        return $this->handleError("Mode de paiement non supporté", $returnAsJson, $errorLink);
+        return $this->handleError("Mode de paiement non supporté ({$network})", $returnAsJson, $errorLink);
     }
 
     private function handleError($message, $returnAsJson, $errorLink)
