@@ -154,7 +154,7 @@
                         </h2>
                         <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                Oui, les plans pour écoles sont conçus pour plusieurs utilisateurs (étudiants et enseignants) et incluent des outils de gestion de classe. Les plans individuels sont pour un usage personnel.
+                                {{__("Oui, les plans pour écoles sont conçus pour plusieurs utilisateurs (étudiants et enseignants) et incluent des outils de gestion de classe. Les plans individuels sont pour un usage personnel.")}}
                             </div>
                         </div>
                     </div>
