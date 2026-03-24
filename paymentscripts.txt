@@ -1,0 +1,3092 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Event;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
+class EventController extends Controller
+{
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
+    public function store(Request $request)
+    {
+        $rules = [
+            'name'                                => 'required|string|max:191',
+            'subdomain'                           => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('events', 'subdomain'),
+            ],
+            'start'                               => 'required|date',
+            'end'                                 => 'required|date|after:start',
+            'image'                               => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'event_type'                          => 'required|string|in:vote,ticketing',
+            'payment_method'                      => 'nullable|array',
+            'collaborators'                       => 'nullable|array',
+            'collaborators.*'                     => 'exists:users,id',
+            'status'                              => 'required|string|in:active,inactive', // Nouveau handle status
+
+            // Champs inscriptions candidats
+            'candidate_registration_fee'          => 'nullable|numeric|min:0',
+            'candidate_registration_fee_klicvote' => 'nullable|numeric|min:0',
+            'candidate_registration_start_date'   => 'nullable|date',
+            'candidate_registration_end_date'     => 'nullable|date|after:candidate_registration_start_date',
+            'candidate_conditions'                => 'string|nullable',
+
+            'card_payment_delay_days'             => 'nullable|integer|min:0|max:180',
+        ];
+
+        if ($request->input('event_type') === 'vote') {
+            $rules['vote_type']  = 'required|string|in:gratuit,payant';
+            $rules['cost']       = 'required_if:vote_type,payant|nullable|numeric';
+            $rules['percentage'] = 'required_if:vote_type,payant|nullable|numeric';
+        }
+
+        if ($request->input('event_type') === 'ticketing') {
+            $rules['percentage'] = 'required_if:vote_type,payant|nullable|numeric';
+            $rules['end_reel']   = 'nullable|date';
+        }
+
+        $validated = $request->validate($rules);
+
+        try {
+            $user    = auth()->user();
+            $isAdmin = $user->hasRole('admin');
+
+            $data = $request->except(['_token', 'action', 'collaborators']);
+
+            // Gestion des booléens
+            $data['candidate_registration_enabled'] = $request->has('candidate_registration_enabled');
+            
+            // Logique de statut et archivage
+            if ($isAdmin) {
+                $data['status'] = $request->input('status');
+                // On garde la logique que si on choisit explicitement un état archivé (via un autre champ si existant)
+                // Mais ici on se base sur votre logique d'origine adaptée
+                $data['archived'] = $request->has('archived') ? true : false;
+            } else {
+                // Pour un collaborateur, on force inactif par sécurité selon votre logique d'origine
+                $data['status'] = 'inactive';
+                $data['archived'] = true;
+            }
+
+            $event = Event::create($data);
+
+            if ($request->hasFile('image')) {
+                $event->addMedia($request->image)->toMediaCollection('events');
+            }
+
+            if ($isAdmin) {
+                $collaborators = $request->input('collaborators', []);
+            } else {
+                $collaborators = [$user->id];
+            }
+            $event->collaborators()->sync($collaborators);
+
+            if ($request->event_type === 'ticketing') {
+                return redirect()->route('admin.ticket-management.event-tickets', $event->id)
+                    ->with('success', 'Événement de billetterie créé !');
+            }
+
+            return redirect()->route('admin.events.index')
+                ->with('success', 'Événement de vote créé avec succès !');
+
+        } catch (\Exception $e) {
+            \Log::error('Erreur création événement: ' . $e->getMessage());
+            return back()->with('error', 'Erreur lors de la création : ' . $e->getMessage())->withInput();
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        $event = Event::findOrFail($id);
+
+        $rules = [
+            'name'                                => 'required|string|max:191',
+            'subdomain'                           => [
+                'required',
+                'string',
+                'max:50',
+                'regex:/^[a-z0-9\-]+$/',
+                Rule::unique('events', 'subdomain')->ignore($event->id),
+            ],
+            'start'                               => 'required|date',
+            'end'                                 => 'required|date|after:start',
+            'image'                               => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'event_type'                          => 'required|string|in:vote,ticketing',
+            'status'                              => 'required|string|in:active,inactive', // Nouveau handle status
+            'payment_method'                      => 'nullable|array',
+            'collaborators'                       => 'nullable|array',
+            'collaborators.*'                     => 'exists:users,id',
+
+            'candidate_registration_fee'          => 'nullable|numeric|min:0',
+            'candidate_registration_fee_klicvote' => 'nullable|numeric|min:0',
+            'candidate_registration_start_date'   => 'nullable|date',
+            'candidate_registration_end_date'     => 'nullable|date|after:candidate_registration_start_date',
+            'candidate_conditions'                => 'string|nullable',
+
+            'card_payment_delay_days'             => 'nullable|integer|min:0|max:180',
+        ];
+
+        if ($request->input('event_type') === 'vote') {
+            $rules['vote_type']  = 'required|string|in:gratuit,payant';
+            $rules['cost']       = 'required_if:vote_type,payant|nullable|numeric';
+            $rules['percentage'] = 'required_if:vote_type,payant|nullable|numeric';
+        }
+
+        if ($request->input('event_type') === 'ticketing') {
+            $rules['percentage'] = 'required_if:vote_type,payant|nullable|numeric';
+            $rules['end_reel']   = 'nullable|date|after:start';
+        }
+
+        $validated = $request->validate($rules);
+
+        try {
+            $data = $request->except(['_token', '_method', 'collaborators']);
+            $data['candidate_registration_enabled'] = $request->has('candidate_registration_enabled');
+            $data['archived'] = $request->has('archived') ? true : false;
+
+            $event->update($data);
+
+            if ($request->hasFile('image')) {
+                $event->clearMediaCollection('events');
+                $event->addMedia($request->image)->toMediaCollection('events');
+            }
+
+            if ($request->has('collaborators')) {
+                $event->collaborators()->sync($request->input('collaborators'));
+            } else {
+                $event->collaborators()->sync([]);
+            }
+
+            return back()->with('success', 'Événement modifié avec succès !');
+
+        } catch (\Exception $e) {
+            \Log::error('Erreur mise à jour événement: ' . $e->getMessage());
+            return back()->with('error', 'Erreur lors de la mise à jour : ' . $e->getMessage())->withInput();
+        }
+    }
+
+    public function index()
+    {
+        $user = auth()->user();
+        $isAdmin = $user->hasRole('admin');
+
+        if ($isAdmin) {
+            $events = Event::with('collaborators')->orderBy('created_at', 'desc')->get();
+        } else {
+            $events = Event::with('collaborators')
+                ->whereHas('collaborators', function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        return view('admin.events.index', compact('events'));
+    }
+
+    public function switchStatus($id)
+    {
+        $event           = Event::findOrFail($id);
+        $event->archived = ! $event->archived;
+        $event->save();
+
+        return back()->with('success', 'Statut d\'archivage modifié avec succès !');
+    }
+
+    public function destroy($id)
+    {
+        $event = Event::findOrFail($id);
+        $event->collaborators()->detach();
+        $event->delete();
+
+        return back()->with('success', 'Événement supprimé avec succès !');
+    }
+
+    public function show(Event $event)
+    {
+        return view('admin.events.show', compact('event'));
+    }
+
+    public function edit(Event $event)
+    {
+        return view('admin.events.edit', compact('event'));
+    }
+
+    public function payments(Event $event)
+    {
+        return view('admin.events.payments', compact('event'));
+    }
+} <?php
+
+namespace App\Services;
+
+use App\Models\DonPayment;
+use App\Models\Event;
+use App\Models\CandidateRegistrationPayment; // AJOUTÉ
+use GuzzleHttp\Client;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
+use Ramsey\Uuid\Uuid;
+use SoapClient;
+use App\Helper;
+
+class PaymentService
+{
+    protected $countryConfigs;
+    protected $supportedMethods;
+
+    public function __construct()
+    {
+        $this->initializeConfigurations();
+    }
+
+    private function initializeConfigurations()
+    {
+        $this->countryConfigs = [
+            'CI' => ['currency' => 'XOF', 'code' => '225', 'iso' => 'CI'],
+            'BJ' => ['currency' => 'XOF', 'code' => '229', 'iso' => 'BJ'],
+            'BF' => ['currency' => 'XOF', 'code' => '226', 'iso' => 'BF'],
+            'CM' => ['currency' => 'XOF', 'code' => '237', 'iso' => 'CM'],
+            'GW' => ['currency' => 'XOF', 'code' => '245', 'iso' => 'GW'],
+            'ML' => ['currency' => 'XOF', 'code' => '223', 'iso' => 'ML'],
+            'NE' => ['currency' => 'XOF', 'code' => '227', 'iso' => 'NE'],
+            'SN' => ['currency' => 'XOF', 'code' => '221', 'iso' => 'SN'],
+            'CD' => ['currency' => 'CDF', 'code' => '243', 'iso' => 'CD'],
+            'GA' => ['currency' => 'XAF', 'code' => '241', 'iso' => 'GA'],
+            'CG' => ['currency' => 'XAF', 'code' => '242', 'iso' => 'CG'],
+            'KE' => ['currency' => 'KES', 'code' => '254', 'iso' => 'KE'],
+            'MW' => ['currency' => 'MWK', 'code' => '265', 'iso' => 'MW'],
+            'RW' => ['currency' => 'RWF', 'code' => '250', 'iso' => 'RW'],
+            'SL' => ['currency' => 'SLL', 'code' => '232', 'iso' => 'SL'],
+            'GH' => ['currency' => 'GHS', 'code' => '233', 'iso' => 'GH'],
+            'TZ' => ['currency' => 'TZS', 'code' => '255', 'iso' => 'TZ'],
+            'UG' => ['currency' => 'UGX', 'code' => '256', 'iso' => 'UG'],
+            'ZM' => ['currency' => 'ZMW', 'code' => '260', 'iso' => 'ZM'],
+            'NG' => ['currency' => 'NGN', 'code' => '234', 'iso' => 'NG'],
+            'MA' => ['currency' => 'MAD', 'code' => '212', 'iso' => 'MAD'],
+            'FR' => ['currency' => 'XOF', 'code' => '33', 'iso' => 'EUR'],
+		  	'TG' => ['currency' => 'XOF', 'code' => '228', 'iso' => 'TG'],
+            'MZ' => ['currency' => 'MZN', 'code' => '258', 'iso' => 'MZ'],
+            'OTHER' => ['currency' => 'XOF', 'code' => '', 'iso' => 'OTHER'],
+        ];
+
+        $this->supportedMethods = [
+            'MOMOCI' => ['name' => 'MTN CI', 'icon_color' => '#FFCC00', 'countries' => ['CI', 'MA']],
+            'MTN_MOMO_CIV' => ['name' => 'MTN', 'icon_color' => '#FFCC00', 'countries' => ['CI', 'MA']],
+            'ORANGE_CIV' => ['name' => 'ORANGE', 'icon_color' => '#FFCC00', 'countries' => ['CI', 'MA','FR']],
+            'WAVE_CIV' => ['name' => 'WAVE', 'icon_color' => '#FFCC00', 'countries' => ['CI', 'MA','FR']],
+            'OMCIV2' => ['name' => 'OM CI', 'icon_color' => '#FF6600', 'countries' => ['CI', 'MA','FR']],
+            'FLOOZ' => ['name' => 'MOOV CI', 'icon_color' => '#0066FF', 'countries' => ['CI', 'MA']],
+            'WAVECI' => ['name' => 'WAVE CI', 'icon_color' => '#00CC99', 'countries' => ['CI', 'MA']],
+            'MOMOBJ' => ['name' => 'MTN BENIN', 'icon_color' => '#FFCC00', 'countries' => ['BJ']],
+            'FLOOZBJ' => ['name' => 'MOOV BENIN', 'icon_color' => '#0066FF', 'countries' => ['BJ']],
+            'MTN_MOMO_BEN' => ['name' => 'MTN BENIN', 'icon_color' => '#0066FF', 'countries' => ['BJ']],
+            'MOOV_BEN' => ['name' => 'MOOV BENIN', 'icon_color' => '#0066FF', 'countries' => ['BJ']],
+            'OMBF' => ['name' => 'OM BF', 'icon_color' => '#FF6600', 'countries' => ['BF']],
+            'FLOOZ_BFA' => ['name' => 'MOOV BF', 'icon_color' => '#FF6600', 'countries' => ['BF']],
+            'OMCM' => ['name' => 'OM CM', 'icon_color' => '#FF6600', 'countries' => ['CM']],
+            'OMGN' => ['name' => 'OM GN', 'icon_color' => '#FF6600', 'countries' => ['GW']],
+            'OMML' => ['name' => 'OM ML', 'icon_color' => '#FF6600', 'countries' => ['ML']],
+            'ORANGE_SEN' => ['name' => 'ORANGE SN', 'icon_color' => '#FF6600', 'countries' => ['SN']],
+            'FREE_SEN' => ['name' => 'FREE SEN', 'icon_color' => '#FF6600', 'countries' => ['SN']],
+            'WAVE_SEN' => ['name' => 'WAVE SN', 'icon_color' => '#00CC99', 'countries' => ['SN']],
+            'WAVESN' => ['name' => 'WAVE SN', 'icon_color' => '#00CC99', 'countries' => ['SN']],
+            'AIRTELNG' => ['name' => 'AIRTELNG', 'icon_color' => '#E40000', 'countries' => ['NE']],
+            'OMSN' => ['name' => 'OM SN', 'icon_color' => '#FF6600', 'countries' => ['SN']],
+            'VODACOM_MPESA_COD' => ['name' => 'VODACOM', 'icon_color' => '#008000', 'countries' => ['CD']],
+            'AIRTEL_COD' => ['name' => 'AIRTEL', 'icon_color' => '#E40000', 'countries' => ['CD']],
+            'ORANGE_COD' => ['name' => 'ORANGE', 'icon_color' => '#FF6600', 'countries' => ['CD']],
+            'AIRTEL_GAB' => ['name' => 'AIRTEL', 'icon_color' => '#E40000', 'countries' => ['GA']],
+            'AIRTEL_COG' => ['name' => 'AIRTEL', 'icon_color' => '#E40000', 'countries' => ['CG']],
+            'MTN_MOMO_COG' => ['name' => 'MTN', 'icon_color' => '#FFCC00', 'countries' => ['CG']],
+            'MPESA_KEN' => ['name' => 'MPesa', 'icon_color' => '#34B233', 'countries' => ['KE']],
+            'AIRTEL_MWI' => ['name' => 'AIRTEL', 'icon_color' => '#E40000', 'countries' => ['MW']],
+            'TNM_MWI' => ['name' => 'TNM', 'icon_color' => '#006400', 'countries' => ['MW']],
+            'AIRTEL_RWA' => ['name' => 'AIRTEL', 'icon_color' => '#E40000', 'countries' => ['RW']],
+            'MTN_MOMO_RWA' => ['name' => 'MTN', 'icon_color' => '#FFCC00', 'countries' => ['RW']],
+            'ORANGE_SLE' => ['name' => 'ORANGE', 'icon_color' => '#FF6600', 'countries' => ['SL']],
+            'MTN_MOMO_GHA' => ['name' => 'MTN', 'icon_color' => '#FFCC00', 'countries' => ['GH']],
+            'AIRTELTIGO_GHA' => ['name' => 'AT', 'icon_color' => '#8A2BE2', 'countries' => ['GH']],
+            'VODAFONE_GHA' => ['name' => 'VODAFONE GH', 'icon_color' => '#E60000', 'countries' => ['GH']],
+            'AIRTEL_TZA' => ['name' => 'AIRTEL', 'icon_color' => '#E40000', 'countries' => ['TZ']],
+            'VODACOM_TZA' => ['name' => 'VODACOM', 'icon_color' => '#008000', 'countries' => ['TZ']],
+            'TIGO_TZA' => ['name' => 'TIGO', 'icon_color' => '#0000FF', 'countries' => ['TZ']],
+            'HALOTEL_TZA' => ['name' => 'HALOTEL', 'icon_color' => '#FF8C00', 'countries' => ['TZ']],
+            'AIRTEL_OAPI_UGA' => ['name' => 'AIRTEL', 'icon_color' => '#E40000', 'countries' => ['UG']],
+            'MTN_MOMO_UGA' => ['name' => 'MTN', 'icon_color' => '#FFCC00', 'countries' => ['UG']],
+            'AIRTEL_OAPI_ZMB' => ['name' => 'AIRTEL', 'icon_color' => '#E40000', 'countries' => ['ZM']],
+            'MTN_MOMO_ZMB' => ['name' => 'MTN', 'icon_color' => '#FFCC00', 'countries' => ['ZM']],
+            'ZAMTEL_ZMB' => ['name' => 'ZAMTEL', 'icon_color' => '#228B22', 'countries' => ['ZM']],
+            'AIRTEL_NGA' => ['name' => 'AIRTEL', 'icon_color' => '#E40000', 'countries' => ['NG']],
+            'MTN_MOMO_NGA' => ['name' => 'MTN', 'icon_color' => '#FFCC00', 'countries' => ['NG']],
+            'MOOV_BFA' => ['name' => 'MOOV BF', 'icon_color' => '#FFCC00', 'countries' => ['BF']],
+            'ORANGE_BFA' => ['name' => 'ORANGE BF', 'icon_color' => '#FFCC00', 'countries' => ['BF']],
+            'MTN_MOMO_CMR' => ['name' => 'MTN Money', 'icon_color' => '#FFCC00', 'countries' => ['CM']],
+            'ORANGE_CMR' => ['name' => 'OM CM', 'icon_color' => '#FFCC00', 'countries' => ['CM']],
+            'MOOTG' => ['name' => 'FLOOZ TOGO', 'icon_color' => '#0066FF', 'countries' => ['TG']],
+            'TOGOCEL' => ['name' => 'TOGO CEL', 'icon_color' => '#FFD700', 'countries' => ['TG']],
+            'MOMOCM' => ['name' => 'MTN MOM', 'icon_color' => '#FFCC00', 'countries' => ['CM']],
+            'VODACOM_MOZ' => ['name' => 'VODACOM MOZ', 'icon_color' => '#FFCC00', 'countries' => ['MZ']],
+            'CARD' => ['name' => 'VISA CARD', 'icon_color' => '#1a1f71', 'countries' => array_keys($this->countryConfigs)],
+        ];
+
+    }
+
+    public function getAvailablePaymentMethods(string $phone, string $countryIso = null, Event $event = null): array
+    {
+        $countryCode = $countryIso ?? $this->detectCountryFromPhone($phone);
+        $countryCode = strtoupper($countryCode); // Normalize to uppercase for consistency
+
+        // Map country ISO codes to payment_method JSON keys
+        $countryMap = [
+            'CI' => 'COTE D\'IVOIRE',
+            'BJ' => 'BENIN',
+            'BF' => 'BURKINA FASO',
+            'CM' => 'CAMEROUN',
+            'GW' => 'GUINÉE BISSAU',
+            'ML' => 'MALI',
+            'NE' => 'NIGER',
+            'SN' => 'SÉNÉGAL',
+            'MA' => 'MAROC',
+            'GH' => 'GHANA',
+            'CD' => 'RÉPUBLIQUE DÉMOCRATIQUE DU CONGO',
+            'GA' => 'Gabon',
+            'CG' => 'Congo',
+            'KE' => 'KENYA',
+            'MW' => 'MALAWI',
+            'RW' => 'RWANDA',
+            'SL' => 'SIERRA LÉONE',
+            'TZ' => 'TANZANIE',
+            'UG' => 'OUGANDA',
+            'ZM' => 'ZAMBIE',
+            'NG' => 'NIGÉRIA',
+            'TG' => 'TOGO',
+		  	'FR' => 'FRANCE',
+            'MZ' => 'MOZAMBIQUE',
+            'OTHER' => 'AUTRE PAYS',
+        ];
+
+        $eventCountry = $countryMap[$countryCode] ?? 'AUTRE PAYS';
+
+        $availableMethods = [];
+
+        // Get payment methods allowed by the event
+        $allowedMethods = $event && isset($event->payment_method['touchpay'][$eventCountry])
+        ? $event->payment_method['touchpay'][$eventCountry]
+        : [];
+        // If no event or no specific payment methods defined, return all supported methods for the country
+        if (empty($allowedMethods)) {
+
+            foreach ($this->supportedMethods as $methodCode => $details) {
+                if (in_array($countryCode, $details['countries'])) {
+                    $availableMethods[] = [
+                        'id' => $methodCode,
+                        'name' => $details['name'],
+                        'icon_color' => $details['icon_color'],
+                     ];
+                }
+            }
+		  
+		  
+        } else {
+
+            // Filter supported methods by those allowed in the event's payment_method JSON
+            foreach ($this->supportedMethods as $methodCode => $details) {
+                if (in_array($countryCode, $details['countries']) && in_array($methodCode, $allowedMethods)) {
+                    $availableMethods[] = [
+                        'id' => $methodCode,
+                        'name' => $details['name'],
+                        'icon_color' => $details['icon_color'],
+                    ];
+                }
+            }
+        }
+        if (empty($availableMethods)) {
+            $availableMethods[] = [
+                "id" => "CARD",
+                "name" => "VISA CARD",
+                "icon_color" => "#1a1f71"];
+		 // $availableMethods = [];
+        }
+        return [
+            'country' => $countryCode,
+            'currency' => $this->countryConfigs[$countryCode]['currency'] ?? 'XOF',
+            'methods' => $availableMethods,
+        ];
+    }
+
+    private function detectCountryFromPhone(string $phone): string
+    {
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+        foreach ($this->countryConfigs as $iso => $config) {
+            if (str_starts_with($phone, $config['code'])) {
+                return $iso;
+            }
+        }
+        return 'CI'; // Fallback
+    }
+
+    /**
+     * Check provider availability using pawaPay's /v2/availability endpoint
+     */
+    private function checkPawaPayProviderAvailability(string $country, string $provider, string $operationType = 'DEPOSIT'): ?string
+    {
+         $apiToken = env('PAWAPAY_API_TOKEN');
+         $baseUrl = env('PAWAPAY_BASE_URL', 'https://api.pawapay.io');
+
+        // $apiToken = env('PAWAPAY_API_TOKEN_SANDBOX');
+        // $baseUrl = env('PAWAPAY_BASE_URL_SANDBOX');
+        try {
+            $response = Http::withToken($apiToken)
+                ->timeout(10)
+                ->get("{$baseUrl}/v2/availability", [
+                    'country' => $country,
+                    'operationType' => $operationType,
+                ]);
+             
+            if ($response->successful()) {
+                $availabilityData = $response->json();
+                Log::info("PawaPay Availability Check for {$country}/{$provider}/{$operationType}: " . json_encode($availabilityData));
+                
+                foreach ($availabilityData as $countryData) {
+                    if ($countryData['country'] === $country) {
+
+                        foreach ($countryData['providers'] as $providerData) {
+                            if ($providerData['provider'] === $provider) {
+
+                                // operationTypes is associative array: ["DEPOSIT" => "OPERATIONAL"]
+                                foreach ($providerData['operationTypes'] as $opType => $status) {
+
+                                    if ($opType === $operationType) {
+                                        return $status; // example: OPERATIONAL
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Log::warning("Provider {$provider} not found for country {$country} or operation {$operationType}");
+                return null;
+            } else {
+                Log::error("PawaPay Availability API Error: Status {$response->status()}, Body: {$response->body()}");
+                return null;
+            }
+        } catch (\Exception $e) {
+            Log::error("PawaPay Availability Check Exception: {$e->getMessage()}");
+            return null;
+        }
+    }
+
+    /**
+     * Get provider configuration using pawaPay's /v2/active-conf endpoint
+     */
+    private function getPawaPayProviderConfig(string $country, string $provider, string $operationType = 'DEPOSIT'): ?array
+    {
+         $apiToken = env('PAWAPAY_API_TOKEN');
+         $baseUrl = env('PAWAPAY_BASE_URL', 'https://api.pawapay.io');
+
+
+        //  $apiToken = env('PAWAPAY_API_TOKEN_SANDBOX');
+        // $baseUrl = env('PAWAPAY_BASE_URL_SANDBOX');
+        try {
+            $response = Http::withToken($apiToken)
+                ->timeout(10)
+                ->get("{$baseUrl}/v2/active-conf", [
+                    'country' => $country,
+                    'operationType' => $operationType,
+                ]);
+
+            if ($response->successful()) {
+                $configData = $response->json();
+                Log::info("PawaPay Config Check for {$country}/{$provider}/{$operationType}: " . json_encode($configData));
+
+                foreach ($configData['countries'] as $countryData) {
+                    if ($countryData['country'] === $country) {
+
+                        foreach ($countryData['providers'] as $providerData) {
+                            if ($providerData['provider'] === $provider) {
+
+                                foreach ($providerData['currencies'] as $currencyData) {
+
+                                    // FIX: operationTypes structure:  "DEPOSIT" => [ ... ]
+                                    foreach ($currencyData['operationTypes'] as $opType => $opData) {
+
+                                        if ($opType === $operationType) {
+                                            return [
+                                                'currency' => $currencyData['currency'],
+                                                'minTransactionLimit' => $opData['minAmount'] ?? null,
+                                                'maxTransactionLimit' => $opData['maxAmount'] ?? null,
+                                                'status' => $opData['status'] ?? 'UNKNOWN',
+                                                'callbackUrl' => $opData['callbackUrl'] ?? null,
+                                            ];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Log::warning("Config for {$provider} not found for country {$country} or operation {$operationType}");
+                return null;
+
+            } else {
+                Log::error("PawaPay Config API Error: Status {$response->status()}, Body: {$response->body()}");
+                return null;
+            }
+        } catch (\Exception $e) {
+            Log::error("PawaPay Config Check Exception: {$e->getMessage()}");
+            return null;
+        }
+    }
+
+    public function initiatePayment(Request $request, $paymentObject, bool $returnAsJson = false, ?string $successUrl = null)
+    {
+        // 1. Déterminer le type d'objet (Don, Inscription Candidat, ou Vote)
+        $isDonation = $paymentObject instanceof DonPayment;
+        $isRegistration = $paymentObject instanceof CandidateRegistrationPayment;
+
+        // 2. Normalisation des données (Ref, Montant) selon le type
+        $amount = $paymentObject->montant ?? $paymentObject->amount;
+        
+        // Gérer les différents noms de champ pour la référence
+        if ($isRegistration) {
+            $refNumber = $paymentObject->transaction_id;
+        } elseif ($isDonation) {
+            $refNumber = $paymentObject->ref;
+        } else {
+            // Cas vote standard
+            $refNumber = $paymentObject->reference ?? $paymentObject->ref;
+        }
+
+        Log::channel('payment')->info("--- INITIATION PAIEMENT ---", [
+            'type' => $isDonation ? 'DON' : ($isRegistration ? 'INSCRIPTION' : 'VOTE'),
+            'reference' => $refNumber,
+            'return_as_json' => $returnAsJson,
+            'success_url' => $successUrl,
+        ]);
+
+        $network = $request->input('network');
+        $returnLink = route('payment.success');
+        $errorLink = route('payment.failed');
+
+        // Stocker l'URL de retour finale en session
+        Session::put('payment_return_url', $successUrl ?? route('welcome'));
+
+        // --- WAVE ---
+        if ($network == "WAVECI") {
+            try {
+                $waveData = [
+                    "amount" => (string) $amount,
+                    "currency" => "XOF",
+                    "aggregated_merchant_id" => env('WAVE_AGGREGATED_MERCHANT_ID'),
+                    "error_url" => $errorLink,
+                    "success_url" => $returnLink,
+                ];
+
+                $response = Http::withToken(env('WAVE_API_KEY'))
+                    ->post("https://api.wave.com/v1/checkout/sessions", $waveData);
+
+                if ($response->successful() && isset($response->json()['wave_launch_url'])) {
+                    $waveId = $response->json()['id'];
+                    
+                    // Sauvegarde de l'ID Wave
+                    if ($isRegistration) {
+                        $paymentObject->provider_reference = $waveId;
+                    } else {
+                        $paymentObject->payid = $waveId;
+                    }
+                    $paymentObject->save();
+
+                    $redirectUrl = $response->json()['wave_launch_url'];
+                    return $returnAsJson ? ['success' => true, 'redirect_url' => $redirectUrl] : Redirect::away($redirectUrl);
+                } else {
+                    Log::error("Wave API returned an error for Ref {$refNumber}", [
+                        'status' => $response->status(),
+                        'body' => $response->body(),
+                    ]);
+                    throw new \Exception('Erreur d\'initialisation du paiement Wave.');
+                }
+            } catch (\Exception $e) {
+                Log::error("Wave Error for Ref {$refNumber}: " . $e->getMessage());
+                $result = ['success' => false, 'error' => "Erreur Wave: " . $e->getMessage()];
+                return $returnAsJson ? $result : Redirect::to($errorLink)->with('danger', $result['error']);
+            }
+        }
+
+        // --- TOUCHPAY ---
+        if (in_array($network, ['MOMOCI', 'OMCIV2', 'FLOOZ']) && Helper::getPaymentService() == 'touchpay') {
+            try {
+                Log::info("👉 Début du processus TouchPay", [
+                    'network' => $network,
+                    'refNumber' => $refNumber,
+                    'amount' => $amount,
+                    'phone' => $request->phone,
+                    'email' => $request->email ?? '',
+                ]);
+
+                $loginAgent = env('TOUCHPAY_LOGIN_AGENT');
+                $passwordAgent = env('TOUCHPAY_PASSWORD_AGENT');
+
+                if (empty($loginAgent) || empty($passwordAgent)) {
+                    throw new \Exception("Les variables d'environnement TouchPay sont manquantes.");
+                }
+
+                $touchPayUrl = "https://api.gutouch.com/dist/api/touchpayapi/v1/RIKAC8213/transaction?loginAgent={$loginAgent}&passwordAgent={$passwordAgent}";
+                
+                // Détermination URL Callback TouchPay
+                $tpCallback = route('callback', 'touchpay'); // Défaut (Vote)
+                if ($isDonation) {
+                    $tpCallback = route('don.callback', 'touchpay');
+                } elseif ($isRegistration) {
+                    $tpCallback = route('candidate.payment.callback', ['service' => 'touchpay']);
+                }
+
+                $touchData = [
+                    "idFromClient" => $refNumber,
+                    "additionnalInfos" => [
+                        "recipientEmail" => $request->email ?? '',
+                        "recipientFirstName" => $request->firstname ?? 'N/A',
+                        "recipientLastName" => $request->lastname ?? '',
+                        "destinataire" => $request->phonewithoutcode ?? $request->phone,
+                    ],
+                    "amount" => $amount,
+                    "callback" => $tpCallback,
+                    "recipientNumber" => $request->phonewithoutcode ?? $request->phone,
+                    "serviceCode" => $network == 'OMCIV2'
+                    ? 'PAIEMENTMARCHANDOMPAYCIDIRECT'
+                    : ($network == 'MOMOCI' ? 'PAIEMENTMARCHAND_MTN_CI' : 'PAIEMENTMARCHAND_MOOV_CI'),
+                ];
+
+                if ($network == 'OMCIV2') {
+                    $touchData['additionnalInfos']['otp'] = $request->otp;
+                }
+
+                Log::info("📦 Données envoyées à TouchPay", $touchData);
+
+                $client = new Client();
+                $response = $client->put($touchPayUrl, [
+                    'headers' => ['Content-Type' => 'application/json'],
+                    'auth' => [env('TOUCHPAY_API_KEY'), env('TOUCHPAY_API_SECRET'), 'digest'],
+                    'json' => $touchData,
+                ]);
+
+                $respRaw = $response->getBody()->getContents();
+                $resp = json_decode($respRaw, true);
+                Log::info("✅ Réponse TouchPay", ['response' => $resp]);
+
+                if (in_array($network, ['MOMOCI', 'FLOOZ'])) {
+                    if (in_array(strtoupper($resp['status'] ?? ''), ['INITIATED', 'PENDING'])) {
+                        Session::put('payment_reference', $refNumber);
+                        return Redirect::route('payment.pending');
+                    }
+                }
+
+                if (strtoupper($resp['status'] ?? '') === 'SUCCESSFUL') {
+                    return Redirect::to($returnLink);
+                } else {
+                    $errorMsg = $resp['message'] ?? $resp['detailMessage'] ?? 'Échec du paiement';
+                    throw new \Exception($errorMsg);
+                }
+            } catch (\Exception $e) {
+                Log::error("❌ TouchPay Error for Ref {$refNumber}", [
+                    'network' => $network,
+                    'exception' => $e->getMessage(),
+                ]);
+                $result = ['success' => false, 'error' => "Erreur TouchPay: " . $e->getMessage()];
+                return $returnAsJson ? $result : Redirect::to($errorLink)->with('danger', $result['error']);
+            }
+        }
+
+        // --- PAWAPAY ---
+        if (in_array($network, [
+            "AIRTEL_COG", "MTN_MOMO_COG", "VODACOM_MPESA_COD", "AIRTEL_COD", "ORANGE_COD",
+            "AIRTEL_GAB", "MPESA_KEN", "AIRTEL_MWI", "TNM_MWI", "AIRTEL_RWA", "FREE_SEN",
+            "MTN_MOMO_RWA", "ORANGE_SLE", "orange_sen", "MTN_MOMO_GHA", "AIRTELTIGO_GHA",
+            "VODAFONE_GHA", "AIRTEL_TZA", "VODACOM_TZA", "TIGO_TZA", "HALOTEL_TZA",
+            "MTN_MOMO_UGA", "AIRTEL_OAPI_UGA", "MTN_MOMO_ZMB", "AIRTEL_OAPI_ZMB",
+            "ZAMTEL_ZMB", "AIRTEL_NGA", "MTN_MOMO_NGA", "FLOOZ_BFA", "WAVE_SEN",
+            "VODACOM_MOZ", 'MOOV_BFA', 'ORANGE_BFA', 'MTN_MOMO_BEN', 'MOOV_BEN',
+            'MTN_MOMO_CIV', 'ORANGE_CIV', 'WAVE_CIV', 'ORANGE_CMR', 'MTN_MOMO_CMR',
+        ])) {
+            Log::info("Processing PawaPay: {$network} for Ref: {$refNumber}");
+            
+            $apiToken = env('PAWAPAY_API_TOKEN');
+            $baseUrl = env('PAWAPAY_BASE_URL');
+            
+            if (!$apiToken) {
+                $result = ['success' => false, 'error' => 'Configuration PawaPay manquante.'];
+                return $returnAsJson ? $result : redirect($errorLink)->with('danger', $result['error']);
+            }
+
+            $countryConfig = $this->getPawaPayCountryConfig($network);
+
+            if (!$countryConfig) {
+                $result = ['success' => false, 'error' => 'Réseau PawaPay invalide.'];
+                return $returnAsJson ? $result : redirect($errorLink)->with('danger', $result['error']);
+            }
+
+            // Calcul montant total
+            $totalAmount = (string) $amount;
+            
+            // Pour les votes standards, on recalcule parfois via Helper, mais pour Don et Inscription on prend le montant fixe
+            if (!$isDonation && !$isRegistration) {
+                $totalAmountPawapay = (string) Helper::getCostPerVoteByCountry(
+                    Helper::detectCountryFromIP(request()),
+                    $paymentObject->event ?? null
+                );
+            } else {
+                $totalAmountPawapay = $totalAmount;
+            }
+
+            $rawPhone = preg_replace('/[^0-9]/', '', $request->input('phone'));
+            if (str_starts_with($rawPhone, $countryConfig['countryCode'])) {
+                $rawPhone = substr($rawPhone, strlen($countryConfig['countryCode']));
+            }
+            $payerPhoneNumber = $countryConfig['countryCode'] . $rawPhone;
+
+            // Utilisation d'un ID de dépot UUID pour PawaPay (si nécessaire) ou de la Ref existante
+            // Ici, si l'inscription utilise déjà transaction_id comme string unique, on peut l'utiliser
+            // Mais PawaPay demande souvent un UUID valide.
+            $depositId = Uuid::uuid4()->toString();
+
+            // Vérif disponibilité
+            $providerStatus = $this->checkPawaPayProviderAvailability($countryConfig['country'], $network, 'DEPOSIT');
+            if ($providerStatus !== 'OPERATIONAL') {
+                $errorMessage = "Provider {$network} is currently unavailable ({$providerStatus}).";
+                $paymentObject->update(['status' => 'échoué', 'description' => $errorMessage]); // status='failed' pour inscription
+                $result = ['success' => false, 'error' => $errorMessage];
+                return $returnAsJson ? $result : redirect($errorLink)->with('danger', $result['error']);
+            }
+
+            // Config provider
+            $providerConfig = $this->getPawaPayProviderConfig($countryConfig['country'], $network, 'DEPOSIT');
+            if (!$providerConfig || $providerConfig['status'] !== 'OPERATIONAL') {
+                $result = ['success' => false, 'error' => 'Configuration provider PawaPay invalide.'];
+                return $returnAsJson ? $result : redirect($errorLink)->with('danger', $result['error']);
+            }
+
+            // Mise à jour référence interne avec l'ID PawaPay pour pouvoir faire le lien au callback
+            if ($isRegistration) {
+                // Pour inscription, on garde notre transaction_id mais on stocke l'ID PawaPay pour le callback
+                // Ou bien on remplace transaction_id par le depositId UUID si nécessaire
+                // Ici, on met à jour la ref interne pour matcher celle envoyée à PawaPay
+                $paymentObject->transaction_id = $depositId;
+            } elseif ($isDonation) {
+                $paymentObject->reference = $depositId;
+            } else {
+                $paymentObject->reference = $depositId;
+            }
+            $paymentObject->save();
+
+            // URL de callback
+            $pawaCallback = $providerConfig['callbackUrl'] ?? route('callback', 'pawapay');
+            if ($isDonation) {
+                $pawaCallback = route('don.callback', 'pawapay');
+            } elseif ($isRegistration) {
+                $pawaCallback = route('candidate.payment.callback',  ['service' => 'pawapay'] );
+            }
+
+            try {
+                $statementDesc = "RKVote " . substr($refNumber, -10); // Court pour les relevés bancaires
+                
+                $pawaData = [
+                    "depositId" => $depositId,
+                    "amount" => $totalAmountPawapay,
+                    "currency" => $countryConfig['currency'],
+                    "country" => $countryConfig['country'],
+                    "correspondent" => $network,
+                    "payer" => ["type" => "MSISDN", "address" => ["value" => $payerPhoneNumber]],
+                    "customerTimestamp" => now()->toISOString(),
+                    "statementDescription" => Str::limit($statementDesc, 20, ''),
+                    "notificationUrl" => $pawaCallback,
+                ];
+
+                Log::info("PawaPay Request {$depositId}: " . json_encode($pawaData));
+                $response = Http::withToken($apiToken)->timeout(25)->post("{$baseUrl}/deposits", $pawaData);
+               
+                if ($response->successful()) {
+                    $respData = $response->json();
+                    $status = $respData['status'] ?? null;
+                    if ($status === 'ACCEPTED') {
+                        Session::put('payment_reference', $depositId);
+                        $result = ['success' => true, 'redirect_url' => route('payment.pending'), 'message' => 'Veuillez confirmer le paiement sur votre mobile.'];
+                        return $returnAsJson ? $result : redirect()->route('payment.pending')->with('info', $result['message']);
+                    } else {
+                        $reason = $respData['rejectionReason']['rejectionMessage'] ?? 'Raison inconnue';
+                        $result = ['success' => false, 'error' => 'PawaPay: ' . $reason];
+                        return $returnAsJson ? $result : redirect($errorLink)->with('danger', $result['error']);
+                    }
+                } else {
+                    $apiError = $response->json('error_description', 'Erreur inconnue');
+                    Log::error("PawaPay API Error: " . $response->body());
+                    $result = ['success' => false, 'error' => 'Erreur PawaPay: ' . $apiError];
+                    return $returnAsJson ? $result : redirect($errorLink)->with('danger', $result['error']);
+                }
+            } catch (\Exception $e) {
+                Log::error("PawaPay Generic Exception: {$e->getMessage()}");
+                $result = ['success' => false, 'error' => 'Erreur technique PawaPay.'];
+                return $returnAsJson ? $result : redirect($errorLink)->with('danger', $result['error']);
+            }
+        }
+$testLogger = Log::build([
+    'driver' => 'single',
+    'path' => storage_path('logs/testsofianePaymentService.log'),
+]);
+
+        // --- PAIEMENTPRO (Default) ---
+        if (in_array($network, [
+    'MOMOBJ', 'FLOOZBJ', 'OMBF', 'OMCM', 'MOMOCM', 'OMCIV2', 'MOMOCI',
+    'FLOOZ', 'WAVECI', 'OMGN', 'OMML', 'CARD', 'PAYPAL', 'AIRTELNG',
+    'OMSN', 'WAVESN', 'MOOTG', 'TOGOCEL',
+])) {
+
+    // ✅ LOG DÉMARRAGE PROCESS
+    $testLogger->info("════════════════════════════════════");
+    $testLogger->info("🚀 DÉBUT TRANSACTION PAIEMENTPRO", [
+        'network' => $network,
+        'refNumber' => $refNumber,
+        'amount_initial' => $amount,
+        'email' => $request->email ?? null,
+        'phone' => $request->phone ?? null,
+        'isDonation' => $isDonation,
+        'isRegistration' => $isRegistration,
+    ]);
+
+    try {
+
+        // ✅ LOG AVANT MODIFICATION MONTANT
+        $testLogger->info("Montant AVANT traitement", ['amount' => $amount]);
+
+        if ($network === 'CARD') {
+		  	$amount = ($amount * 1.05)+780;
+
+            // ✅ LOG APRÈS MAJORATION
+            $testLogger->info("Montant APRÈS majoration CARD (+5%)", [
+                'amount_final' => $amount
+            ]);
+        }
+
+        // ✅ LOG CALLBACK
+        $ppCallback = route('callback', 'paiementpro');
+
+        if ($isDonation) {
+            $ppCallback = route('callback', 'paiementpro');
+        } elseif ($isRegistration) {
+            $ppCallback = route('callback', 'paiementpro');
+        }
+
+        $testLogger->info("Callback PaiementPro", [
+            'callback_url' => $ppCallback
+        ]);
+
+        // ✅ PAYLOAD COMPLET ENVOYÉ
+        $paiementProArray = [
+            'merchantId' => env('PAIEMENTPRO_MERCHANT_ID', 'PP-F1278'),
+            'countryCurrencyCode' => '952',
+            'amount' => $amount,
+            'channel' => $network,
+            'customerEmail' => $request->email ?? '',
+            'customerFirstName' => $request->firstname ?? 'N/A',
+            'customerLastname' => $request->lastname ?? '',
+            'customerPhoneNumber' => $request->phone,
+            'referenceNumber' => $refNumber,
+            'notificationURL' => $ppCallback,
+            'returnURL' => $returnLink,
+            'description' => $isDonation
+                ? "Don KlicVote"
+                : ($isRegistration ? "Inscription Candidat" : "Vote KlicVote"),
+        ];
+
+        $testLogger->info("📦 PAYLOAD ENVOYÉ À PAIEMENTPRO", $paiementProArray);
+
+        // ✅ LOG CONTEXTE SSL
+        $context = stream_context_create([
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            ]
+        ]);
+
+        $testLogger->info("Contexte SSL créé");
+
+        // ✅ LOG SOAP CLIENT
+        $client = new SoapClient(
+            'https://www.paiementpro.net/webservice/OnlineServicePayment_v2.php?wsdl',
+            ['stream_context' => $context]
+        );
+
+        $testLogger->info("Client SOAP PaiementPro initialisé");
+
+        // ✅ LOG AVANT APPEL SOAP
+        $testLogger->info("Appel initTransact EN COURS...");
+
+        $response = $client->initTransact($paiementProArray);
+
+        // ✅ LOG RÉPONSE BRUTE COMPLÈTE
+        $testLogger->info("✅ RÉPONSE BRUTE PAIEMENTPRO", (array) $response);
+
+        // ✅ LOG ANALYSE RÉPONSE
+        if (isset($response->Sessionid)) {
+            $testLogger->info("SessionID détecté", [
+                'Sessionid' => $response->Sessionid
+            ]);
+        } else {
+            $testLogger->warning("AUCUN SessionID détecté");
+        }
+
+        if (isset($response->Description)) {
+            $testLogger->info("Description PaiementPro", [
+                'Description' => $response->Description
+            ]);
+        }
+
+        // ✅ TRAITEMENT SUCCÈS
+        if (isset($response->Sessionid) && $response->Description === "SUCCESS") {
+
+            if ($isRegistration) {
+                $paymentObject->provider_reference = $response->Sessionid;
+
+                $testLogger->info("provider_reference enregistré", [
+                    'value' => $response->Sessionid
+                ]);
+            } else {
+                $paymentObject->payid = $response->Sessionid;
+
+                $testLogger->info("payid enregistré", [
+                    'value' => $response->Sessionid
+                ]);
+            }
+
+            $paymentObject->save();
+
+            // ✅ LOG SAUVEGARDE DB
+            $testLogger->info("✅ Paiement sauvegardé en base", [
+                'payment_id' => $paymentObject->id ?? null
+            ]);
+
+            // ✅ LOG REDIRECTION
+            $redirectUrl = "https://www.paiementpro.net/webservice/onlinepayment/processing_v2.php?sessionid={$response->Sessionid}";
+
+            $testLogger->info("🔁 Redirection vers PaiementPro", [
+                'redirect_url' => $redirectUrl
+            ]);
+
+            return $returnAsJson
+                ? ['success' => true, 'redirect_url' => $redirectUrl]
+                : Redirect::away($redirectUrl);
+
+        } else {
+
+            // ✅ LOG ERREUR RÉPONSE
+            $testLogger->error("❌ ÉCHEC PaiementPro", [
+                'response' => (array) $response
+            ]);
+
+            throw new \Exception($response->Description ?? 'Erreur inconnue PaiementPro');
+        }
+
+    } catch (\Exception $e) {
+
+        // ✅ LOG EXCEPTION COMPLÈTE
+        $testLogger->critical("🔥 EXCEPTION PAIEMENTPRO", [
+            'refNumber' => $refNumber,
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        $result = [
+            'success' => false,
+            'error' => "Erreur PaiementPro: " . $e->getMessage()
+        ];
+
+        return $returnAsJson
+            ? $result
+            : Redirect::to($errorLink)->with('danger', $result['error']);
+    }
+}
+
+    }
+
+    private function getPawaPayCountryConfig(?string $network): ?array
+    {
+        $map = [
+            //CI
+            'MTN_MOMO_CIV' => ['country' => 'CIV', 'currency' => 'XOF', 'countryCode' => '225'],
+            'ORANGE_CIV' => ['country' => 'CIV', 'currency' => 'XOF', 'countryCode' => '225'],
+            'WAVE_CIV' => ['country' => 'CIV', 'currency' => 'XOF', 'countryCode' => '225'],
+
+            // RÉPUBLIQUE DÉMOCRATIQUE DU CONGO
+            'VODACOM_MPESA_COD' => ['country' => 'COD', 'currency' => 'CDF', 'countryCode' => '243'],
+            'AIRTEL_COD' => ['country' => 'COD', 'currency' => 'CDF', 'countryCode' => '243'],
+            'ORANGE_COD' => ['country' => 'COD', 'currency' => 'CDF', 'countryCode' => '243'],
+
+            // GABON
+            'AIRTEL_GAB' => ['country' => 'GAB', 'currency' => 'XAF', 'countryCode' => '241'],
+
+            // CONGO BRAZZAVILLE
+            'AIRTEL_COG' => ['country' => 'COG', 'currency' => 'XAF', 'countryCode' => '242'],
+            'MTN_MOMO_COG' => ['country' => 'COG', 'currency' => 'XAF', 'countryCode' => '242'],
+
+            // KENYA
+            'MPESA_KEN' => ['country' => 'KEN', 'currency' => 'KES', 'countryCode' => '254'],
+
+            // MALAWI
+            'AIRTEL_MWI' => ['country' => 'MWI', 'currency' => 'MWK', 'countryCode' => '265'],
+            'TNM_MWI' => ['country' => 'MWI', 'currency' => 'MWK', 'countryCode' => '265'],
+
+            // RWANDA
+            'AIRTEL_RWA' => ['country' => 'RWA', 'currency' => 'RWF', 'countryCode' => '250'],
+            'MTN_MOMO_RWA' => ['country' => 'RWA', 'currency' => 'RWF', 'countryCode' => '250'],
+
+            // SIERRA LEONE
+            'ORANGE_SLE' => ['country' => 'SLE', 'currency' => 'SLE', 'countryCode' => '232'],
+
+            // GHANA
+            'MTN_MOMO_GHA' => ['country' => 'GHA', 'currency' => 'GHS', 'countryCode' => '233'],
+            'AIRTELTIGO_GHA' => ['country' => 'GHA', 'currency' => 'GHS', 'countryCode' => '233'],
+            'VODAFONE_GHA' => ['country' => 'GHA', 'currency' => 'GHS', 'countryCode' => '233'],
+
+            // TANZANIE
+            'AIRTEL_TZA' => ['country' => 'TZA', 'currency' => 'TZS', 'countryCode' => '255'],
+            'VODACOM_TZA' => ['country' => 'TZA', 'currency' => 'TZS', 'countryCode' => '255'],
+            'TIGO_TZA' => ['country' => 'TZA', 'currency' => 'TZS', 'countryCode' => '255'],
+            'HALOTEL_TZA' => ['country' => 'TZA', 'currency' => 'TZS', 'countryCode' => '255'],
+
+            // OUGANDA
+            'AIRTEL_OAPI_UGA' => ['country' => 'UGA', 'currency' => 'UGX', 'countryCode' => '256'],
+            'MTN_MOMO_UGA' => ['country' => 'UGA', 'currency' => 'UGX', 'countryCode' => '256'],
+
+            // ZAMBIE
+            'AIRTEL_OAPI_ZMB' => ['country' => 'ZMB', 'currency' => 'ZMW', 'countryCode' => '260'],
+            'MTN_MOMO_ZMB' => ['country' => 'ZMB', 'currency' => 'ZMW', 'countryCode' => '260'],
+            'ZAMTEL_ZMB' => ['country' => 'ZMB', 'currency' => 'ZMW', 'countryCode' => '260'],
+
+            // NIGÉRIA
+            'AIRTEL_NGA' => ['country' => 'NGA', 'currency' => 'NGN', 'countryCode' => '234'],
+            'MTN_MOMO_NGA' => ['country' => 'NGA', 'currency' => 'NGN', 'countryCode' => '234'],
+
+            // SÉNÉGAL
+            'FREE_SEN' => ['country' => 'SEN', 'currency' => 'XOF', 'countryCode' => '221'],
+            'WAVE_SEN' => ['country' => 'SEN', 'currency' => 'XOF', 'countryCode' => '221'],
+            'WAVESN' => ['country' => 'SEN', 'currency' => 'XOF', 'countryCode' => '221'],
+
+            // BURKINA FASO
+            'FLOOZ_BFA' => ['country' => 'BFA', 'currency' => 'XOF', 'countryCode' => '226'],
+            'MOOV_BFA' => ['country' => 'BFA', 'currency' => 'XOF', 'countryCode' => '226'],
+            'ORANGE_BFA' => ['country' => 'BFA', 'currency' => 'XOF', 'countryCode' => '226'],
+
+            // BÉNIN
+            'MTN_MOMO_BEN' => ['country' => 'BEN', 'currency' => 'XOF', 'countryCode' => '229'],
+            'MOOV_BEN' => ['country' => 'BEN', 'currency' => 'XOF', 'countryCode' => '229'],
+
+            // MOZAMBIQUE
+            'VODACOM_MOZ' => ['country' => 'MOZ', 'currency' => 'MZN', 'countryCode' => '258'],
+
+            // CAMEROUN (MTN MOMO via pawaPay)
+            'MOMOCM' => ['country' => 'CMR', 'currency' => 'XAF', 'countryCode' => '237'],
+            'MTN_MOMO_CMR' => ['country' => 'CMR', 'currency' => 'XAF', 'countryCode' => '237'],
+            'ORANGE_CMR' => ['country' => 'CMR', 'currency' => 'XAF', 'countryCode' => '237'],
+        ];
+
+        return $map[$network] ?? null;
+    }
+}<?php
+
+namespace App\Http\Controllers;
+
+use App\Helper;
+use App\Jobs\SendWhatsappMessageJob;
+use App\Jobs\SendWhatsappMessageJob2;
+use App\Models\Artist;
+use App\Models\Payment;
+use App\Models\VoterUser;
+use App\Models\Setting;
+use App\Models\CandidateRegistrationPayment;
+use App\Services\PaymentService;
+use App\Services\PricingService;
+use App\Services\SecureTokenService; // Ajout pour générer un nouveau token
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use App\Models\Event;
+use App\Models\Ticket;
+use App\Models\TicketOrder;
+use App\Models\Donation;
+use App\Models\DonPayment;
+use App\Services\IntegratedTicketingService;
+use App\Services\VoterAuthService;
+use App\Services\TicketingService;
+use App\Jobs\SendTicketWhatsappJob;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Http;
+class VoteController extends Controller
+{
+    protected $paymentService;
+    protected $pricingService;
+    protected $tokenService; // Ajout pour gérer les tokens
+
+    public function __construct(
+        PaymentService $paymentService, 
+        PricingService $pricingService,
+        SecureTokenService $tokenService // Injection du service de token
+    ) {
+        $this->paymentService = $paymentService;
+        $this->pricingService = $pricingService;
+        $this->tokenService = $tokenService;
+    }
+
+    public function index(Request $request)
+    {
+     
+    
+        $validatedData = $request->validate([
+            'id' => 'required|exists:artists,id',
+            'vote' => 'required|numeric|min:1',
+            'network' => 'required_without:free|nullable|string|max:50',
+            'phone' => 'required_without:free|nullable|string',
+            'whatsapp' => 'nullable|string',
+            'email'=> 'nullable|string',
+            
+            'voter_name' => 'nullable|string|max:191',
+            'otp' => 'required_if:network,OMCIV2|nullable|string',
+        ]);
+ 
+        $artist = Artist::findOrFail($validatedData['id']);
+        $event = $artist->category->event ?? $artist->event;
+
+        if (!$event || !Helper::canVote($artist->category)) {
+            return redirect()->back()->with('danger', "Vote fermé pour ce candidat.");
+        }
+
+        if ($request->boolean('free')) {
+            return $this->handleFreeVote($request, $artist);
+        }
+
+        if (empty($validatedData['network']) || empty($validatedData['phone'])) {
+            return back()->with('danger', 'Le numéro de téléphone et le moyen de paiement sont requis.');
+        }
+        $eventNameSlug = $event 
+            ? Str::slug($event->name, '') 
+            : 'EVENT';
+    
+        DB::beginTransaction();
+        
+        try {
+            $priceCalculation = $this->pricingService->calculatePrice($event, (int)$validatedData['vote'], [
+                'artist_id' => $artist->id,
+                'phone_number' => $validatedData['phone'],
+                'save_calculation' => true
+            ]);
+
+            if($event->type == "ticketing"){
+
+            $payment = Payment::create([
+                'artist_id' => $artist->id,
+                'telephone' => $validatedData['phone'],
+                'whatsapp' => $validatedData['whatsapp'] ?? $validatedData['phone'],
+                // 'reference' => 'KVV-' . $eventNameSlug . '-' . now()->format('YmdHis') . Str::random(6),
+             'reference' => 'KVB-'  . now()->format('YmdHis') . Str::random(6),
+                'montant' => $priceCalculation['final_price'],
+                'vote' => $validatedData['vote'],
+                'email' => $validatedData['email'] ?? null,
+                
+                'client' => $validatedData['voter_name'] ?? 'Votant QR',
+                'status' => 'tentative',
+                'network' => $validatedData['network'],
+                'date' => now()
+            ]);
+        }
+           else{
+            $payment = Payment::create([
+                'artist_id' => $artist->id,
+                'telephone' => $validatedData['phone'],
+                'whatsapp' => $validatedData['whatsapp'] ?? $validatedData['phone'],
+                // 'reference' => 'KVV-' . $eventNameSlug . '-' . now()->format('YmdHis') . Str::random(6),
+             'reference' => 'KVV-' . now()->format('YmdHis') . Str::random(6),
+                'montant' => $priceCalculation['final_price'],
+                'vote' => $validatedData['vote'],
+                'email' => $validatedData['email'] ?? null,
+              
+                'client' => $validatedData['voter_name'] ?? 'Votant QR',
+                'status' => 'tentative',
+                'network' => $validatedData['network'],
+                'date' => now()
+            ]);
+
+           }
+
+           
+
+            DB::commit();
+
+            $successUrl = null;
+            if ($request->input('tab') === 'qr-scan' && $request->has('token')) {
+                $successUrl = route('qr-scan.vote', [
+                    'artistId' => $artist->id,
+                    'token' => $request->token
+                ]);
+            } else {
+                // Générer un nouveau token pour les autres cas
+                $token = $this->tokenService->generateQRToken([
+                    'type' => 'vote', 
+                    'id' => $artist->id, 
+                    'event_id' => $event->id, 
+                    'hash' => hash('sha256', $artist->id . config('app.key'))
+                ]);
+                $successUrl = route('qr-scan.vote', [
+                    'artistId' => $artist->id,
+                    'token' => $token
+                ]);
+            }
+            return $this->paymentService->initiatePayment($request, $payment, false, $successUrl);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Erreur lors de la création du paiement de vote : " . $e->getMessage());
+            return redirect()->back()->with('danger', 'Une erreur technique est survenue.'.$e->getMessage());
+        }
+    }
+
+    private function handleFreeVote(Request $request, Artist $artist)
+    {
+        $lastVote = DB::table('free_votes')
+            ->where('ip_address', $request->ip())
+            ->where('artist_id', $artist->id)
+            ->orderBy('created_at', 'desc')
+            ->first();
+        
+        $cooldownMinutes = 15;
+        if ($lastVote && Carbon::now()->diffInMinutes(Carbon::parse($lastVote->created_at)) < $cooldownMinutes) {
+            $wait = $cooldownMinutes - Carbon::now()->diffInMinutes(Carbon::parse($lastVote->created_at));
+            return redirect()->back()->with('danger', "Attendez {$wait} min pour revoter gratuitement pour ".strip_tags($artist->name).".");
+        }
+
+        DB::table('free_votes')->insert(['ip_address' => $request->ip(), 'artist_id' => $artist->id, 'created_at' => now()]);
+        $artist->increment('free_vote', 1);
+
+        // Rediriger vers la page de vote après un vote gratuit
+        $token = $this->tokenService->generateQRToken([
+            'type' => 'vote', 
+            'id' => $artist->id, 
+            'event_id' => $artist->category->event->id ?? $artist->event->id, 
+            'hash' => hash('sha256', $artist->id . config('app.key'))
+        ]);
+        return redirect()->route('qr-scan.vote', [
+            'artistId' => $artist->id,
+            'token' => $token
+        ])->with('success', "Vote gratuit validé pour ".strip_tags($artist->name).".");
+    }
+
+public function callback(Request $request, $service)
+{
+    Log::info("Callback reçu pour le service : {$service}", [
+        'ip' => $request->ip(),
+        'body' => $request->getContent(),
+    ]);
+
+    // ==================================================================
+    // 1. WAVE
+    // ==================================================================
+    if ($service === 'wave') {
+        $data = $request->json()->all();
+        $sessionId = $data['data']['id'] ?? null;
+
+        if (!$sessionId) {
+            return response('OK', 200);
+        }
+
+        $donPayment     = \App\Models\DonPayment::where(function ($q) use ($sessionId) {
+            $q->where('ref', $sessionId)->orWhere('payid', $sessionId);
+        })->where('status', 'tentative')->first();
+
+        $votePayment    = \App\Models\Payment::where('payid', $sessionId)
+            ->where('status', 'tentative')
+            ->whereNull('ticket_order_id')
+            ->whereNotNull('artist_id')
+            ->first();
+
+        $ticketPayment  = \App\Models\Payment::where('payid', $sessionId)
+            ->where('status', 'tentative')
+            ->whereNotNull('ticket_order_id')
+            ->first();
+
+        $regPayment     = \App\Models\CandidateRegistrationPayment::where('provider_reference', $sessionId)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($donPayment && ($data['data']['payment_status'] ?? '') === 'succeeded') {
+            $donPayment->update(['status' => 'validé', 'payid' => $sessionId]);
+            app(\App\Http\Controllers\DonationController::class)->handleSuccessfulPayment($donPayment);
+            return response('OK', 200);
+        }
+
+        if ($votePayment && ($data['data']['payment_status'] ?? '') === 'succeeded') {
+            $this->validatePayment($votePayment);
+            return $this->redirectAfterSuccessfulVote($votePayment);
+        }
+
+        if ($ticketPayment && ($data['data']['payment_status'] ?? '') === 'succeeded') {
+            $this->validateTicketPayment($ticketPayment);
+            return $this->redirectAfterSuccessfulTicket($ticketPayment);
+        }
+
+        if ($regPayment && ($data['data']['payment_status'] ?? '') === 'succeeded') {
+            $regPayment->update(['status' => 'success', 'paid_at' => now(), 'response_data' => $data]);
+            $regPayment->candidateRegistration->update(['payment_status' => 'paid']);
+            return response('OK', 200);
+        }
+
+        return response('OK', 200);
+    }
+
+    // ==================================================================
+    // 2. TOUCHPAY
+    // ==================================================================
+    if ($service === 'touchpay') {
+        $body = $request->json()->all();
+        $reference = $body['partner_transaction_id'] ?? null;
+
+        if (!$reference) {
+            return response('OK', 200);
+        }
+
+        $donPayment    = \App\Models\DonPayment::where('ref', $reference)->where('status', 'tentative')->first();
+        $votePayment   = \App\Models\Payment::where('reference', $reference)->where('status', 'tentative')->whereNull('ticket_order_id')->whereNotNull('artist_id')->first();
+        $ticketPayment = \App\Models\Payment::where('reference', $reference)->where('status', 'tentative')->whereNotNull('ticket_order_id')->first();
+        $regPayment    = \App\Models\CandidateRegistrationPayment::where('transaction_id', $reference)->where('status', 'pending')->first();
+
+        if ($donPayment && strtoupper($body['status'] ?? '') === 'SUCCESSFUL') {
+            $donPayment->update(['status' => 'validé', 'payid' => $body['gu_transaction_id'] ?? null]);
+            app(\App\Http\Controllers\DonationController::class)->handleSuccessfulPayment($donPayment);
+            return response('OK', 200);
+        }
+
+        if ($votePayment && strtoupper($body['status'] ?? '') === 'SUCCESSFUL') {
+            $this->validatePayment($votePayment, $body['gu_transaction_id'] ?? null);
+            return $this->redirectAfterSuccessfulVote($votePayment);
+        }
+
+        if ($ticketPayment && strtoupper($body['status'] ?? '') === 'SUCCESSFUL') {
+            $this->validateTicketPayment($ticketPayment, $body['gu_transaction_id'] ?? null);
+            return $this->redirectAfterSuccessfulTicket($ticketPayment);
+        }
+
+        if ($regPayment && strtoupper($body['status'] ?? '') === 'SUCCESSFUL') {
+            $regPayment->update([
+                'status' => 'success',
+                'paid_at' => now(),
+                'provider_reference' => $body['gu_transaction_id'] ?? null,
+                'response_data' => $body
+            ]);
+            $regPayment->candidateRegistration->update(['payment_status' => 'paid']);
+            return response('OK', 200);
+        }
+
+        return response('OK', 200);
+    }
+
+    // ==================================================================
+    // 3. PAWAPAY
+    // ==================================================================
+    if ($service === 'pawapay') {
+        $body = $request->json()->all();
+        $depositId = $body['depositId'] ?? null;
+
+        if (!$depositId) {
+            return response('OK', 200);
+        }
+
+        $donPayment    = \App\Models\DonPayment::where('ref', $depositId)->where('status', 'tentative')->first();
+        $votePayment   = \App\Models\Payment::where('reference', $depositId)->where('status', 'tentative')->whereNull('ticket_order_id')->whereNotNull('artist_id')->first();
+        $ticketPayment = \App\Models\Payment::where('reference', $depositId)->where('status', 'tentative')->whereNotNull('ticket_order_id')->first();
+        $regPayment    = \App\Models\CandidateRegistrationPayment::where(function ($q) use ($depositId) {
+            $q->where('transaction_id', $depositId)->orWhere('provider_reference', $depositId);
+        })->where('status', 'pending')->first();
+
+        if ($donPayment && strtoupper($body['status'] ?? '') === 'COMPLETED') {
+            $donPayment->update(['status' => 'validé']);
+            app(\App\Http\Controllers\DonationController::class)->handleSuccessfulPayment($donPayment);
+            return response('OK', 200);
+        }
+
+        if ($votePayment && strtoupper($body['status'] ?? '') === 'COMPLETED') {
+            $this->validatePayment($votePayment);
+            return $this->redirectAfterSuccessfulVote($votePayment);
+        }
+
+        if ($ticketPayment && strtoupper($body['status'] ?? '') === 'COMPLETED') {
+            $this->validateTicketPayment($ticketPayment);
+            return $this->redirectAfterSuccessfulTicket($ticketPayment);
+        }
+
+        if ($regPayment && strtoupper($body['status'] ?? '') === 'COMPLETED') {
+            $regPayment->update(['status' => 'success', 'paid_at' => now(), 'response_data' => $body]);
+            $regPayment->candidateRegistration->update(['payment_status' => 'paid']);
+            return response('OK', 200);
+        }
+
+        return response('OK', 200);
+    }
+
+    // ==================================================================
+    // 4. PAIEMENTPRO
+    // ==================================================================
+    if ($service === 'paiementpro') {
+        $reference    = $request->input('referenceNumber');
+        $responseCode = $request->input('responsecode');
+        $payId        = $request->input('payId');
+
+        if (!$reference) {
+            return redirect()->route('qr-scan.scanner');
+        }
+
+        $donPayment    = \App\Models\DonPayment::where('ref', $reference)->where('status', 'tentative')->first();
+        $votePayment   = \App\Models\Payment::where('reference', $reference)->where('status', 'tentative')->whereNull('ticket_order_id')->whereNotNull('artist_id')->first();
+        $ticketPayment = \App\Models\Payment::where('reference', $reference)->where('status', 'tentative')->whereNotNull('ticket_order_id')->first();
+        $regPayment    = \App\Models\CandidateRegistrationPayment::where('transaction_id', $reference)->where('status', 'pending')->first();
+
+        if ($donPayment && $responseCode == '0') {
+            $donPayment->update(['status' => 'validé', 'payid' => $payId]);
+            app(\App\Http\Controllers\DonationController::class)->handleSuccessfulPayment($donPayment);
+            return response('OK', 200);
+        }
+
+        if ($votePayment && $responseCode == '0') {
+            $this->validatePayment($votePayment, $payId);
+            return $this->redirectAfterSuccessfulVote($votePayment);
+        }
+
+        if ($ticketPayment && $responseCode == '0') {
+            $this->validateTicketPayment($ticketPayment, $payId);
+            return $this->redirectAfterSuccessfulTicket($ticketPayment);
+        }
+
+        if ($regPayment && $responseCode == '0') {
+            $regPayment->update([
+                'status' => 'success',
+                'paid_at' => now(),
+                'provider_reference' => $payId
+            ]);
+            $regPayment->candidateRegistration->update(['payment_status' => 'paid']);
+            $subdomain = $regPayment->candidateRegistration->event->subdomain ?? 'www';
+            return redirect()->route('candidate.registration.create', $subdomain)
+                ->with('success', 'Votre paiement a été validé et votre inscription confirmée !');
+        }
+
+        return redirect()->route('qr-scan.scanner')
+            ->with('error_message', 'Transaction refusée ou introuvable');
+    }
+
+    // ==================================================================
+    // 5. PAYSTACK
+    // ==================================================================
+    if ($service === 'paystack') {
+
+    $logger = Log::build([
+        'driver' => 'single',
+        'path' => storage_path('logs/paystack.log'),
+        'level' => 'debug',
+    ]);
+
+    $logger->info('🔔 Paystack callback reçu', [
+        'ip' => $request->ip(),
+        'body' => $request->getContent(),
+    ]);
+
+    $payload = $request->json()->all();
+
+    $reference  = $payload['data']['reference'] ?? null;
+    $paystackId = $payload['data']['id'] ?? null;
+    $status     = $payload['data']['status'] ?? null;
+
+    $logger->info('📦 Données transaction', [
+        'reference' => $reference,
+        'paystack_id' => $paystackId,
+        'status' => $status,
+    ]);
+
+    if (!$reference || $status !== 'success') {
+        $logger->warning('⛔ Callback ignoré', [
+            'reference' => $reference,
+            'status' => $status,
+        ]);
+        return response('OK', 200);
+    }
+
+    $donPayment = \App\Models\DonPayment::where('ref', $reference)
+        ->where('status', 'tentative')
+        ->first();
+
+    $votePayment = \App\Models\Payment::where('reference', $reference)
+        ->where('status', 'tentative')
+        ->whereNull('ticket_order_id')
+        ->whereNotNull('artist_id')
+        ->first();
+
+    $ticketPayment = \App\Models\Payment::where('reference', $reference)
+        ->where('status', 'tentative')
+        ->whereNotNull('ticket_order_id')
+        ->first();
+
+    $regPayment = \App\Models\CandidateRegistrationPayment::where('transaction_id', $reference)
+        ->where('status', 'pending')
+        ->first();
+
+    $logger->info('🔎 Résultat matching', [
+        'don' => (bool) $donPayment,
+        'vote' => (bool) $votePayment,
+        'ticket' => (bool) $ticketPayment,
+        'registration' => (bool) $regPayment,
+    ]);
+
+    if ($donPayment) {
+        $logger->info('💝 Don validé', ['id' => $donPayment->id]);
+        $donPayment->update(['status' => 'validé', 'payid' => $paystackId]);
+        app(\App\Http\Controllers\DonationController::class)->handleSuccessfulPayment($donPayment);
+        return response('OK', 200);
+    }
+
+    if ($votePayment) {
+        $logger->info('🗳️ Vote validé', ['id' => $votePayment->id]);
+        $this->validatePayment($votePayment, $paystackId);
+        return response('OK', 200);
+    }
+
+    if ($ticketPayment) {
+        $logger->info('🎫 Ticket validé', ['id' => $ticketPayment->id]);
+        $this->validateTicketPayment($ticketPayment, $paystackId);
+        return response('OK', 200);
+    }
+
+    if ($regPayment) {
+        $logger->info('📝 Inscription candidat validée', ['id' => $regPayment->id]);
+        $regPayment->update([
+            'status' => 'success',
+            'paid_at' => now(),
+            'provider_reference' => $paystackId,
+            'response_data' => $payload,
+        ]);
+        $regPayment->candidateRegistration->update(['payment_status' => 'paid']);
+        return response('OK', 200);
+    }
+
+    $logger->warning('❓ Aucun paiement correspondant trouvé', [
+        'reference' => $reference,
+    ]);
+
+    return response('OK', 200);
+}
+
+
+    return response('Service non géré', 404);
+}
+// Méthode helper pour éviter de dupliquer le redirect vote
+private function redirectAfterSuccessfulVote($payment)
+{
+    $artist = \App\Models\Artist::find($payment->artist_id);
+    $event  = $artist->category->event ?? $artist->event;
+
+    $token = $this->tokenService->generateQRToken([
+        'type'     => 'vote',
+        'id'       => $payment->artist_id,
+        'event_id' => $event->id,
+        'hash'     => hash('sha256', $payment->artist_id . config('app.key'))
+    ]);
+
+    $redirect = redirect()->route('qr-scan.vote', [
+        'artistId' => $payment->artist_id,
+        'token'    => $token
+    ])->with('success', 'Paiement validé ! Vos votes sont ajoutés.');
+
+    return $this->attachVoterCookie($redirect, $payment->telephone);
+}
+
+    private function validatePayment(Payment $payment, ?string $transactionId = null): void
+    {
+        DB::transaction(function () use ($payment, $transactionId) {
+            $paymentToValidate = Payment::where('id', $payment->id)->lockForUpdate()->first();
+    
+            if ($paymentToValidate && $paymentToValidate->status === 'tentative') {
+                $paymentToValidate->status = 'validé';
+                if ($transactionId) { 
+                    $paymentToValidate->payid = $transactionId; 
+                }
+                $paymentToValidate->save();
+    
+                $artist = Artist::find($paymentToValidate->artist_id);
+                if ($artist) {
+                    $oldVotes = $artist->vote;
+                    $artist->increment('vote', $paymentToValidate->vote);
+                    $artist->refresh();
+                    Log::info("Votes incrémentés pour {$artist->name}: de {$oldVotes} à {$artist->vote}");
+    
+                    $voter = $this->getOrCreateVoter($paymentToValidate);
+                    if ($voter) {
+                        $voter->addVote(
+                            artist: $artist,
+                            voteCount: $paymentToValidate->vote,
+                            amountPaid: $paymentToValidate->montant,
+                            isFreeVote: false,
+                            paymentReference: $paymentToValidate->reference
+                        );
+                    }
+                }
+    
+                $this->sendNotifications($paymentToValidate, $paymentToValidate->tab);
+                Log::info("Paiement validé avec succès", ['reference' => $paymentToValidate->reference]);
+            } else {
+                Log::warning("Tentative de revalidation d'un paiement déjà traité", [
+                    'reference' => $payment->reference, 
+                    'status' => $paymentToValidate->status ?? 'INCONNU'
+                ]);
+            }
+        });
+    }
+
+    private function getOrCreateVoter(Payment $payment): ?VoterUser
+    {
+        try {
+            $phone = preg_replace('/[^0-9+]/', '', $payment->telephone);
+            $whatsapp = preg_replace('/[^0-9+]/', '', $payment->whatsapp);
+            $voter = VoterUser::where('phone', $phone)
+            ->orWhere('phone', '+' . $phone)
+            ->first();
+        
+            if ($voter) {
+                $voter->update(['last_login_at' => now()]);
+                $artist = strip_tags($payment->artist->name) ?? 'Artiste inconnu';
+                $event = $payment->artist->event->name ?? 'Événement inconnu';
+                $votes = $payment->vote ?? 1;
+                $montant = $payment->montant;
+                $method = $payment->network ?? 'Non spécifié';
+                $ref = $payment->reference ?? 'N/A';
+                $date = $payment->date ? $payment->date->format('d/m/Y H:i') : now()->format('d/m/Y H:i');
+
+                $existingUserMessage = [
+                    'custom_message' =>
+                        "✅ Bonjour {$voter->name}, merci de revoter !\n\n".
+                        "📌 Détails de votre transaction :\n".
+                        "- 🎤 Candidat(e) : {$artist}\n".
+                        "- 🗳️ Points validés : {$votes}\n".
+                        "- 📊 Cumul point candidat : {$payment->artist->vote}\n".
+                        "- 🎉 Événement : {$event}\n".
+                        "- 💰 Montant : {$montant}\n".
+                        "- 📱 Méthode : {$method}\n".
+                        "- 🧾 Référence : {$ref}\n".
+                        "- ⏰ Date : {$date}\n\n".
+                        "Merci infiniment pour votre soutien 🙏"
+                ];
+               
+            } else {
+                $voter = VoterUser::create([
+                    'name' => $payment->client ?: 'Votant',
+                    'phone' => $phone,
+                   
+                    'whatsapp_number' => $whatsapp,
+                    'registration_source' => 'payment',
+                    'account_activated' => true,
+                    'last_login_at' => now(),
+                ]);
+                
+
+                $voter->password_setup_token = Str::random(40);
+                $voter->password_setup_expires_at = now()->addHours(24); // valable 24h
+                $voter->save();
+                
+                // Générer le lien via le nom de la route existante
+              //  $setupLink = route('voter.password.setup', ['token' => $voter->password_setup_token]);
+                
+
+
+                $setupLink = config('app.url') . route(
+    'voter.password.setup',
+    ['token' => $voter->password_setup_token],
+    false // IMPORTANT : enlève le domaine auto
+);
+                // Préparer le message WhatsApp
+                $resetData = [
+                    'reset_link' => $setupLink,
+                    'user_name' => $voter->name ?: 'Votant',
+                    'pour'=> "creation"
+                ];
+
+
+                if($whatsapp){
+                 
+                    $resetJob = new SendWhatsappMessageJob2($whatsapp, $resetData, false);
+                   
+                }else{
+                    $resetJob = new SendWhatsappMessageJob2($phone, $resetData, false);
+                }
+                $resetJob->handle();
+               
+
+                
+                Log::info("Nouveau votant créé", [
+                    'voter_id' => $voter->id,
+                    'phone' => $phone
+                ]);
+            }
+
+            return $voter;
+        } catch (\Exception $e) {
+            Log::error("Erreur lors de la création/récupération du votant: " . $e->getMessage(), [
+                'payment_id' => $payment->id,
+                'phone' => $payment->telephone
+            ]);
+            return null;
+        }
+    }
+
+    private function sendNotifications(Payment $payment, ?string $tab = null)
+    {
+        try {
+            
+            $adminPhone1 = env('ADMIN_WHATSAPP_NUMBER');
+            $adminPhone2 = env('ADMIN_WHATSAPP_NUMBER2');
+            if ($adminPhone1 || $adminPhone2) {
+                $job = new SendWhatsappMessageJob($adminPhone1, $payment, true);
+                $job->handle();
+                $job = new SendWhatsappMessageJob($adminPhone2, $payment, true);
+                $job->handle();
+            }
+            if ($payment->whatsapp) {
+                $job = new SendWhatsappMessageJob($payment->whatsapp, $payment, false, $tab);
+                $job->handle();
+            }
+        } catch (\Exception $e) {
+            Log::channel('whatsapp')->error("Erreur dispatch WhatsApp ref {$payment->reference}: {$e->getMessage()}");
+        }
+    }
+    private function getOrCreateVoterForTicket(Payment $payment): VoterUser
+{
+    try {
+        $phone = preg_replace('/[^0-9+]/', '', $payment->telephone);
+        $whatsapp = preg_replace('/[^0-9+]/', '', $payment->whatsapp);
+
+        $voter = VoterUser::where('phone', $phone)
+            ->orWhere('phone', "+" . $phone)
+            ->first();
+
+        if ($voter) {
+            // Préparer les données à mettre à jour avec les infos du paiement
+            $updateData = [
+                'name' => $payment->client ?: $voter->name,
+                'phone' => $phone ?: $voter->phone,
+                'whatsapp_number' => $whatsapp ?: $voter->whatsapp_number,
+                'email' => $payment->email ?: $voter->email,
+                'last_login_at' => now(),
+            ];
+
+            // Retirer les champs vides pour éviter d’écraser avec null
+            $updateData = array_filter($updateData, fn($value) => !empty($value));
+
+            $voter->update($updateData);
+
+            Log::info("Utilisateur existant mis à jour avec les nouvelles informations", [
+                'voter_id' => $voter->id,
+                'updateData' => $updateData,
+            ]);
+
+            // Message confirmation d'achat
+            $existingUserMessage = [
+                'custom_message' =>
+                    "🎫 Bonjour {$payment->client}, votre achat de billet est confirmé !\n\n" .
+                    "📌 Détails de votre achat :\n" .
+                    "- 💰 Montant : " . number_format($payment->montant, 0, ',', ' ') . " FCFA\n" .
+                    "- 📱 Méthode : {$payment->network}\n" .
+                    "- 🧾 Référence : {$payment->reference}\n" .
+                    "- ⏰ Date : " . now()->format('d/m/Y H:i') . "\n\n" .
+                    "Vos billets vous seront envoyés séparément. Merci pour votre confiance ! 🙏"
+            ];
+
+            $job = new SendWhatsappMessageJob(
+                $whatsapp ?? $phone,
+                $existingUserMessage,
+                false,
+                true,
+                ['email_subject' => 'Achat de billet confirmé']
+            );
+            $job->handle();
+        } else {
+            // Création d’un nouveau votant
+            $voter = VoterUser::create([
+                'name' => $payment->client ?: 'Client',
+                'phone' => $phone,
+                'whatsapp_number' => $whatsapp,
+                'email' => $payment->email,
+                'registration_source' => 'ticket_purchase',
+                'account_activated' => false,
+                'last_login_at' => now(),
+            ]);
+
+            $voter->password_setup_token = Str::random(40);
+            $voter->password_setup_expires_at = now()->addHours(24);
+            $voter->save();
+
+            //$setupLink = route('voter.password.setup', ['token' => $voter->password_setup_token]);
+
+
+              $setupLink = config('app.url') . route(
+    'voter.password.setup',
+    ['token' => $voter->password_setup_token],
+    false // IMPORTANT : enlève le domaine auto
+);
+            $resetData = [
+                'reset_link' => $setupLink,
+                'user_name' => $voter->name,
+                'pour' => "creation"
+            ];
+
+            $job = new SendWhatsappMessageJob(
+                $whatsapp ?? $phone,
+                $resetData,
+                false,
+                true,
+                ['email_subject' => 'Compte créé']
+            );
+            $job->handle();
+
+            Log::info("Nouveau votant créé pour achat de billet", [
+                'voter_id' => $voter->id,
+                'phone' => $phone,
+                'payment_reference' => $payment->reference
+            ]);
+        }
+
+        return $voter;
+    } catch (\Exception $e) {
+        Log::error("Erreur lors de la création/récupération du votant pour billet: " . $e->getMessage(), [
+            'payment_id' => $payment->id,
+            'phone' => $payment->telephone
+        ]);
+
+        // Retour de secours
+        return VoterUser::firstOrCreate(
+            ['phone' => preg_replace('/[^0-9+]/', '', $payment->telephone)],
+            [
+                'name' => $payment->client ?: 'Client',
+                'whatsapp_number' => preg_replace('/[^0-9+]/', '', $payment->whatsapp),
+                'email' => $payment->email,
+                'registration_source' => 'ticket_purchase_fallback',
+                'account_activated' => false,
+            ]
+        );
+    }
+}
+private function linkTicketToVoter(Ticket $ticket, VoterUser $voter, array $customerData)
+    {
+        $metadata = $ticket->metadata ?? [];
+        $metadata = array_merge($metadata, [
+            'voter_user_id' => $voter->id,
+            'voter_auth_token' => $voter->auth_token,
+            'whatsapp_number' => $customerData['whatsapp_number'] ?? $voter->whatsapp_number,
+            'auto_registered' => !$voter->account_activated,
+            'linked_at' => now()->toISOString()
+        ]);
+        
+        $ticket->update(['metadata' => $metadata]);
+        
+        // Ajouter des points au voter pour l'achat de billet (mais pas de votes)
+        $voter->increment('total_points', 5);
+        
+        Log::info("Ticket linked to VoterUser", [
+            'ticket_id' => $ticket->id,
+            'voter_id' => $voter->id,
+            'ticket_number' => $ticket->ticket_number
+        ]);
+    }
+
+
+    private function validateTicketPayment(Payment $payment, ?string $transactionId = null): void
+    {
+      
+        DB::transaction(function () use ($payment, $transactionId) {
+            $paymentToValidate = Payment::where('id', $payment->id)->lockForUpdate()->first();
+           
+            if ($paymentToValidate && $paymentToValidate->status === 'tentative') {
+                
+                
+                $paymentToValidate->status = 'validé';
+                if ($transactionId) { 
+                    $paymentToValidate->payid = $transactionId; 
+                }
+                $paymentToValidate->save();
+             
+                // Mettre à jour le statut de la commande de billets
+                if ($paymentToValidate->ticket_order_id) {
+                    $order = TicketOrder::find($paymentToValidate->ticket_order_id);
+                    if ($order) {
+                        $order->update([
+                            'status' => 'confirmed', 
+                            'payment_status' => 'completed',
+                            'payment_reference' => $paymentToValidate->reference
+                        ]);
+                        // ────────────────────────────────────────────────
+                    //  ICI → INCRÉMENTATION DU STOCK VENDU (le bon endroit)
+                    // ────────────────────────────────────────────────
+                    $ticketingService = app(TicketingService::class);
+
+                    foreach ($order->orderItems as $item) {
+                        $ticketType = $item->ticketType;
+
+                        // Sécurité supplémentaire contre race condition / oversell
+                        if ($ticketType->remaining_quantity < $item->quantity) {
+                            Log::critical("Stock insuffisant lors de la confirmation finale !", [
+                                'ticket_type_id' => $ticketType->id,
+                                'remaining'      => $ticketType->remaining_quantity,
+                                'requested'      => $item->quantity,
+                                'order_id'       => $order->id,
+                            ]);
+                            // Tu peux ici :
+                            // - marquer la commande en erreur
+                            // - envoyer alerte admin
+                            // - throw new \Exception(...) si tu veux bloquer
+                            // Pour l'instant on logue seulement
+                            continue;
+                        }
+
+                        $ticketType->increment('quantity_sold', $item->quantity);
+                        Log::info("quantity_sold incrémenté", [
+                            'ticket_type_id' => $ticketType->id,
+                            'quantity'       => $item->quantity,
+                            'new_sold'       => $ticketType->quantity_sold
+                        ]);
+                    }
+                        // Générer les billets si ce n'est pas déjà fait
+                        $tickets = TicketOrder::where('payment_reference', $paymentToValidate->payid)->get();
+                        if ($tickets->isEmpty()) {
+                            $ticketingService = app(TicketingService::class);
+                            $tickets = $ticketingService->generateTickets($order->id);
+                        }
+
+                        // Créer ou récupérer le VoterUser
+                        $voter = $this->getOrCreateVoterForTicket($paymentToValidate);
+
+                        // Lier les billets au voter et envoyer
+                        foreach ($tickets as $ticket) {
+                            $this->linkTicketToVoter($ticket, $voter, [
+                                'whatsapp_number' => $paymentToValidate->telephone
+                            ]);
+                            
+                            // Envoyer le billet par WhatsApp
+                            $customTicketMessage = $this->buildCustomTicketMessage($ticket);
+                            $job = new SendWhatsappMessageJob($paymentToValidate->whatsapp ?? $paymentToValidate->telephone, ['custom_message' => $customTicketMessage], false,true,['email_subject' => 'Vos tickets']);
+                            $job->handle();
+                        }
+
+
+                        $Adminmessage = [
+                            'custom_message' =>
+                                "🔔 *Paiement de billeterie validé avec succès !*\n\n" .
+                                "👤 Client : {$payment->client}\n" .
+                                "📞 Téléphone : {$paymentToValidate->telephone}\n" .
+                                "🧾 Référence : {$paymentToValidate->reference}\n" .
+                                "💰 Montant : {$paymentToValidate->montant} FCFA\n" .
+                                "💳 Statut : {$paymentToValidate->status}\n" .
+                                "✅ Les billets ont été générés et envoyés."
+                        ];
+
+                        $adminPhone1 = env('ADMIN_WHATSAPP_NUMBER');
+                        $adminPhone2 = env('ADMIN_WHATSAPP_NUMBER2');
+
+
+                        if($adminPhone1 || $adminPhone2){
+                            $job = new SendWhatsappMessageJob($adminPhone1, $Adminmessage, false);  
+                            $job->handle();  
+                            $job = new SendWhatsappMessageJob($adminPhone2, $Adminmessage, false);  
+                            $job->handle();  
+                        }
+                        Log::info("Ticket payment validated successfully", [
+                            'payment_id' => $paymentToValidate->id,
+                            'order_id' => $order->id,
+                            'tickets_count' => count($tickets),
+                            'voter_id' => $voter->id
+                        ]);
+                    }
+                }
+            } else {
+                Log::warning("Tentative de revalidation d'un paiement de billet déjà traité", [
+                    'reference' => $payment->reference, 
+                    'status' => $paymentToValidate->status ?? 'INCONNU'
+                ]);
+            }
+        });
+    }
+    private function buildCustomTicketMessage($ticket): string
+{
+    $event = $ticket->event;
+    $ticketType = $ticket->ticketType;
+
+    $template = "🎫 *Votre billet KlicVote*\n\n🎉 *Événement :* {event_name}\n🎟️ *Type :* {ticket_type}\n🎫 *Référence :* {qr_code}\n\n📅 *Date :* {ticket_date}\n{price_paid}⚠️ *IMPORTANT :*\n• Présentez ce billet à l'entrée\n• Le QR code sera scanné pour validation\n• Billet valable une seule fois\n• Arrivez 30 min avant le début\n\n{benefits}🔗 *Données QR :* `{qr_data}`\n\n🔗 *Voir votre billet :* {ticket_url}\n\n📞 *Besoin d'aide ?* Répondez à ce message\n\n🎊 _L'équipe KlicVote vous souhaite un excellent événement !_";
+
+    // ✅ Date réelle du ticket
+    $ticketDate = '';
+    if ($ticketType->real_date) {
+        $ticketDate = $ticketType->real_date->format('d/m/Y à H:i');
+    }
+
+    // Prix payé
+    $pricePaid = '';
+    if ($ticket->price_paid > 0) {
+        $pricePaid = "💰 *Prix payé :* " . number_format($ticket->price_paid, 0, ',', ' ') . " FCFA\n";
+    }
+
+    // Avantages
+    $benefits = '';
+    if ($ticketType->benefits && count($ticketType->benefits) > 0) {
+        $benefits .= "🌟 *Avantages inclus :*\n";
+        foreach ($ticketType->benefits as $benefit) {
+            $benefits .= "• $benefit\n";
+        }
+        $benefits .= "\n";
+    }
+
+    // QR Code et URL
+    $qrData = $ticket->generateQRCodeData();
+    $ticketUrl = route('ticketing.ticket', $ticket->qr_code);
+
+    $parsed = parse_url($ticketUrl);
+
+    if (isset($parsed['host'])) {
+        $hostParts = explode('.', $parsed['host']);
+        // Si sous-domaine détecté (ex: event.monsite.com)
+        if (count($hostParts) > 2) {
+            $mainDomain = $hostParts[count($hostParts)-2] . '.' . $hostParts[count($hostParts)-1];
+            $ticketUrl = $parsed['scheme'] . '://' . $mainDomain . ($parsed['path'] ?? '');
+        }
+    }
+
+    // 🔹 Double sécurité avec Regex pour supprimer sous-domaines
+    $ticketUrl = preg_replace(
+        '/https?:\/\/(?:[^\.]+\.)+([^.]+\.[^.]+)/',
+        'https://$1',
+        $ticketUrl
+    );
+
+    // Remplacements
+    $replacements = [
+        '{event_name}'   => $event->name,
+        '{ticket_type}'  => $ticketType->name,
+        '{qr_code}'      => $ticket->qr_code,
+        '{ticket_date}'  => $ticketDate,
+        '{price_paid}'   => $pricePaid,
+        '{benefits}'     => $benefits,
+        '{qr_data}'      => $qrData,
+        '{ticket_url}'   => $ticketUrl
+    ];
+
+    $message = str_replace(
+        array_keys($replacements),
+        array_values($replacements),
+        $template
+    );
+
+    return $message;
+}
+    // private function buildCustomTicketMessage($ticket): string
+    // {
+    //     $event = $ticket->event;
+    //     $ticketType = $ticket->ticketType;
+
+    //     $template = "🎫 *Votre billet KlicVote*\n\n🎉 *Événement :* {event_name}\n🎟️ *Type :* {ticket_type}\n🎫 *Référence :* {qr_code}\n\n📅 *Date :* {start_date}\n{end_date}\n{price_paid}⚠️ *IMPORTANT :*\n• Présentez ce billet à l'entrée\n• Le QR code sera scanné pour validation\n• Billet valable une seule fois\n• Arrivez 30 min avant le début\n\n{benefits}🔗 *Données QR :* `{qr_data}`\n\n🔗 *Voir votre billet :* {ticket_url}\n\n📞 *Besoin d'aide ?* Répondez à ce message\n\n🎊 _L'équipe KlicVote vous souhaite un excellent événement !_";
+
+    //     $endDate = '';
+    //     if ($event->end && $event->end->format('Y-m-d') !== $event->start->format('Y-m-d')) {
+    //         $endDate = "📅 *Fin :* " . $event->end->format('d/m/Y à H:i') . "\n";
+    //     }
+
+    //     $pricePaid = '';
+    //     if ($ticket->price_paid > 0) {
+    //         $pricePaid = "💰 *Prix payé :* " . number_format($ticket->price_paid, 0, ',', ' ') . " FCFA\n";
+    //     }
+
+    //     $benefits = '';
+    //     if ($ticketType->benefits && count($ticketType->benefits) > 0) {
+    //         $benefits .= "🌟 *Avantages inclus :*\n";
+    //         foreach ($ticketType->benefits as $benefit) {
+    //             $benefits .= "• $benefit\n";
+    //         }
+    //         $benefits .= "\n";
+    //     }
+
+    //     $qrData = $ticket->generateQRCodeData();
+    //     $ticketUrl = route('ticketing.ticket', $ticket->qr_code);
+
+    //     $parsed = parse_url($ticketUrl);
+
+    //     if (isset($parsed['host'])) {
+
+    //         $hostParts = explode('.', $parsed['host']);
+
+    //         // Si sous-domaine détecté (ex: event.monsite.com)
+    //         if (count($hostParts) > 2) {
+    //             $mainDomain = $hostParts[count($hostParts)-2] . '.' . $hostParts[count($hostParts)-1];
+
+    //             $ticketUrl = $parsed['scheme'] . '://' . $mainDomain . ($parsed['path'] ?? '');
+    //         }
+    //     }
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | MÉTHODE 2 : Double sécurité avec Regex
+    //     |--------------------------------------------------------------------------
+    //     */
+
+    //     // Supprime tout ce qui est avant le domaine principal
+    //     $ticketUrl = preg_replace(
+    //         '/https?:\/\/(?:[^\.]+\.)+([^.]+\.[^.]+)/',
+    //         'https://$1',
+    //         $ticketUrl
+    //     );
+
+    //     $replacements = [
+    //         '{event_name}' => $event->name,
+    //         '{ticket_type}' => $ticketType->name,
+    //         '{qr_code}' => $ticket->qr_code,
+    //         '{start_date}' => $event->start->format('d/m/Y à H:i'),
+    //         '{end_date}' => $endDate,
+    //         '{price_paid}' => $pricePaid,
+    //         '{benefits}' => $benefits,
+    //         '{qr_data}' => $qrData,
+    //         '{ticket_url}' => $ticketUrl
+    //     ];
+
+    //     $message = str_replace(
+    //         array_keys($replacements),
+    //         array_values($replacements),
+    //         $template
+    //     );
+
+    //     return $message;
+    // }
+private function redirectAfterSuccessfulTicket($payment)
+{
+    $redirect = null;
+
+    if ($payment->ticket_order_id) {
+        $order = \App\Models\TicketOrder::find($payment->ticket_order_id);
+        if ($order) {
+            $redirect = redirect()->route('ticketing.order.success', $order)
+                ->with('success', 'Paiement validé ! Vos billets ont été envoyés.');
+        }
+    }
+
+    $redirect = $redirect ?? redirect()->route('ticketing.index')
+        ->with('info', 'Paiement traité avec succès.');
+
+    return $this->attachVoterCookie($redirect, $payment->telephone);
+}
+
+    private function handleSuccessfulPayment(DonPayment $donation)
+    {
+        try {
+            // Créer ou récupérer l'utilisateur
+            $user = $this->getOrCreateDonorUser($donation);
+            $isNewUser = $user && $user->wasRecentlyCreated;
+
+            // Envoyer les notifications
+            $this->sendDonationNotifications($donation, $user, $isNewUser);
+
+        } catch (\Exception $e) {
+            Log::error("Erreur post-paiement donation: " . $e->getMessage(), [
+                'donation_id' => $donation->id,
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+    }
+    private function getOrCreateDonorUser(DonPayment $donation): ?VoterUser
+    {
+        try {
+            $phone = preg_replace('/[^0-9+]/', '', $donation->phone);
+            $whatsapp = preg_replace('/[^0-9+]/', '', $donation->whatsapp);
+            
+            $user = VoterUser::where('phone', $phone)->first();
+
+            if ($user) {
+                $user->update([
+                    'last_login_at' => now(),
+                    'phone' => $user->phone ?: $phone,
+                    'email' => $user->email ?: $donation->email,
+                ]);
+
+                Log::info("VoterUser existant trouvé pour la donation", [
+                    'user_id' => $user->id,
+                    'donation_id' => $donation->id,
+                    'phone' => $phone
+                ]);
+
+                return $user;
+            } else {
+                $user = VoterUser::create([
+                    'name' => $donation->name,
+                    'phone' => $phone,
+                    'whatsapp_number' => $whatsapp,
+                    'email' => $donation->email,
+                    'registration_source' => 'donation',
+                    'account_activated' => true,
+                    'last_login_at' => now(),
+                ]);
+
+                $user->password_setup_token = Str::random(40);
+                $user->password_setup_expires_at = now()->addHours(24);
+                $user->save();
+
+                Log::info("Nouveau VoterUser créé pour la donation", [
+                    'user_id' => $user->id,
+                    'donation_id' => $donation->id,
+                    'phone' => $phone,
+                    'email' => $donation->email
+                ]);
+
+                return $user;
+            }
+        } catch (\Exception $e) {
+            Log::error("Erreur lors de la création/récupération du VoterUser donateur: " . $e->getMessage(), [
+                'donation_id' => $donation->id,
+                'phone' => $donation->phone,
+                'email' => $donation->email
+            ]);
+            return null;
+        }
+    }
+    private function sendDonationNotifications(DonPayment $donation, VoterUser $user = null, bool $isNewUser = false)
+    {
+        try {
+            $phone = preg_replace('/[^0-9+]/', '', $donation->phone);
+            $whatsapp = preg_replace('/[^0-9+]/', '', $donation->whatsapp);
+            
+            if ($isNewUser && $user) {
+                $newUserMessage = [
+                    'custom_message' => 
+                        "Merci {$user->name} pour votre généreuse donation !\n\n".
+                        "Votre don de {$donation->amount} FCFA a été validé avec succès.\n".
+                        "Référence : {$donation->ref}\n".
+                        "Date : " . $donation->created_at->format('d/m/Y H:i') . "\n\n".
+                        "Merci encore pour votre soutien précieux."
+                ];
+                
+                SendWhatsappMessageJob::dispatchSync($whatsapp ?? $phone, $newUserMessage, false);
+                
+                $accountCreationMessage = [
+                    'custom_message' =>
+                        "Bonne nouvelle {$user->name} !\n\n".
+                        "Un compte a été créé automatiquement pour vous suite à votre donation.\n\n".
+                        "Cela vous permettra de :\n".
+                        "- Suivre vos donations\n".
+                        "- Accéder à votre historique\n".
+                        "- Participer aux votes si disponibles\n\n".
+                        "Vous recevrez un lien pour configurer votre mot de passe dans un instant."
+                ];
+                
+                SendWhatsappMessageJob::dispatchSync($whatsapp ?? $phone, $accountCreationMessage, false);
+                
+                //$setupLink = route('voter.password.setup', ['token' => $user->password_setup_token]);
+
+
+                  $setupLink = config('app.url') . route(
+    'voter.password.setup',
+    ['token' => $user->password_setup_token],
+    false // IMPORTANT : enlève le domaine auto
+);
+
+
+
+                $resetData = [
+                    'reset_link' => $setupLink,
+                    'user_name' => $user->name ?: 'Donateur',
+                    'pour' => "creation"
+                ];
+                
+                $resetJob = new SendWhatsappMessageJob($whatsapp ?? $phone, $resetData, false);
+                $resetJob->handle();
+                
+            } else if ($user) {
+                $existingUserMessage = [
+                    'custom_message' =>
+                        "Bonjour {$user->name}, merci pour votre nouvelle donation !\n\n".
+                        "Détails de votre donation :\n".
+                        "- Montant : {$donation->amount} FCFA\n".
+                        "- Référence : {$donation->ref}\n".
+                        "- Date : " . $donation->created_at->format('d/m/Y H:i') . "\n\n".
+                        "Merci infiniment pour votre soutien continu."
+                ];
+                
+                SendWhatsappMessageJob::dispatchSync($whatsapp ?? $phone, $existingUserMessage, false);
+            } else {
+                $fallbackMessage = [
+                    'custom_message' =>
+                        "Merci pour votre donation !\n\n".
+                        "Votre don de {$donation->amount} FCFA a été validé avec succès.\n".
+                        "Référence : {$donation->ref}\n".
+                        "Date : " . $donation->created_at->format('d/m/Y H:i') . "\n\n".
+                        "Merci pour votre soutien précieux."
+                ];
+                
+                SendWhatsappMessageJob::dispatchSync($whatsapp ?? $phone, $fallbackMessage, false);
+            }
+            
+            // Notification admin
+            if ($adminPhone = Setting::query()->where('label', 'whatsapp_number')->first()->value) {
+                $adminMessage = [
+                    'custom_message' =>
+                        "*Nouvelle donation reçue*\n\n".
+                        "Détails:\n".
+                        "- Montant: {$donation->amount} FCFA\n".
+                        "- Donateur: {$donation->firstname} {$donation->lastname}\n".
+                        "- Téléphone: {$donation->phone}\n".
+                        "- Email: " . ($donation->email ?: 'Non fourni') . "\n".
+                        "- Référence: {$donation->ref}\n".
+                        "- Méthode: {$donation->network}\n".
+                        "- Date: " . $donation->created_at->format('d/m/Y H:i')
+                ];
+                
+                SendWhatsappMessageJob::dispatchSync($adminPhone, $adminMessage, true);
+            }
+            
+        } catch (\Exception $e) {
+            Log::error("Erreur envoi notifications donation WhatsApp: " . $e->getMessage(), [
+                'donation_id' => $donation->id,
+                'phone' => $phone
+            ]);
+        }
+    }
+
+private function attachVoterCookie(\Illuminate\Http\RedirectResponse $redirect, string $telephone): \Illuminate\Http\RedirectResponse
+{
+    $phone = preg_replace('/[^0-9+]/', '', $telephone);
+
+    $voter = \App\Models\VoterUser::where(function ($q) use ($phone) {
+            $q->where('phone', $phone)
+              ->orWhere('phone', '+' . $phone)
+              ->orWhere('whatsapp_number', $phone)
+              ->orWhere('whatsapp_number', '+' . $phone);
+        })
+        ->first();
+
+    if ($voter?->auth_token) {
+        $redirect = $redirect->withCookie(
+            cookie('voter_auto_login', $voter->auth_token, 60 * 24 * 30)
+        );
+    }
+
+    return $redirect;
+}
+
+}@php
+    $paymentMethods = [
+        "COTE D'IVOIRE" => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'MOMOCI' => 'MTN CI PAIEMENT PRO & TOUCHPAY',
+            'OMCIV2' => 'OM CI PAIEMENT PRO & TOUCHPAY',
+            'FLOOZ' => 'MOOV CI PAIEMENT PRO & TOUCHPAY',
+            'WAVECI' => 'WAVE CI PAIEMENT PRO & TOUCHPAY',
+            'MTN_MOMO_CIV'=>'MTN PAWAPAY',
+            'ORANGE_CIV'=>'ORANGE PAWAPAY',
+            'WAVE_CIV'=>'WAVE PAWAPAY',
+           	'PS MTN'=> 'PS MTN',
+           	'PS ORANGE'=> 'PS ORANGE',
+           	'PS WAVE'=> 'PS WAVE',
+        ],
+		"FRANCE" => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'OMCIV2' => 'OM CI PAIEMENT PRO & TOUCHPAY',
+            'WAVECI' => 'WAVE CI PAIEMENT PRO & TOUCHPAY',
+            'ORANGE_CIV'=>'ORANGE PAWAPAY',
+            'WAVE_CIV'=>'WAVE PAWAPAY',
+           	'PS ORANGE'=> 'PS ORANGE',
+           	'PS WAVE'=> 'PS WAVE',
+        ],
+        "MAROC" => [
+            'CARD' => 'VISA CARD',
+            'MOMOCI' => 'MTN CI',
+            'OMCIV2' => 'OM CI',
+            'FLOOZ' => 'MOOV CI',
+            'WAVECI' => 'WAVE CI',
+            'PS CARD' =>'PS CARD',
+            'PS VOD'=> 'PS VOD',
+            'PS MPESA'=> 'PS MPESA',
+            'PS ORANGE'=> 'PS ORANGE',
+            'PS WAVE'=> 'PS WAVE',
+        ],
+        'BENIN' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'MOMOBJ' => 'MTN BENIN PAIEMENT PRO',
+            'FLOOZBJ' => 'MOOV BENIN PAIEMENT PRO',
+            'MTN_MOMO_BEN' => 'MTN BENIN PAWAPAY',
+            'MOOV_BEN' => 'MOOV BENIN PAWAPAY',
+        ],
+        'BURKINA FASO' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'OMBF' => 'OM BF PAIMENT PRO',
+            'FLOOZ_BFA' => 'MOOV BF PAIMENT PRO',
+            'MOOV_BFA' => 'MOOV_BFA PAWAPAY',
+            'ORANGE_BFA' => 'ORANGE_BFA PAWAPAY'
+        ],
+        'CAMEROUN' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'OMCM' => 'OM CM PAIMENT PRO',
+            'MOMOCM' => 'MTN CM PAIMENT PRO',
+            'MTN_MOMO_CMR' => 'MTN MOM PAWAPAY',
+            "ORANGE_CMR"=>'ORANGE CMR PAWAPAY'
+        ],
+        'GUINÉE BISSAU' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'OMGN' => 'OM GN',
+        ],
+        'MALI' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'OMML' => 'OM ML',
+        ],
+        'NIGER' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'AIRTELNG' => 'AIRTELNG',
+        ],
+        'SÉNÉGAL' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'OMSN' => 'OM SN PAIEMENT PRO',
+            'FREE_SEN' =>'FREE SN PAWAPAY',
+            'ORANGE_SEN' => 'ORANGE SN PAWAPAY',
+            'WAVE_SEN'=>'WAVE SN PAWAPAY',
+            'WAVESN'=>'WAVE SN Paiement Pro'
+        ],
+        'AUTRE PAYS' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'CARD' => 'VISA CARD',
+        ],
+        'CONGO DÉMOCRATIQUE' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'VODACOM_MPESA_COD' => 'VODACOM PAWAPAY',
+            'AIRTEL_COD' => 'AIRTEL PAWAPAY',
+            'ORANGE_COD' => 'ORANGE PAWAPAY',
+        ],
+        'GABON' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD PAWAPAY',
+            'AIRTEL_GAB' => 'AIRTEL PAWAPAY',
+        ],
+        'CONGO' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'AIRTEL_COG' => 'AIRTEL PAWAPAY',
+            'MTN_MOMO_COG' => 'MTN PAWAPAY',
+        ],
+        'KENYA' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'MPESA_KEN' => 'MPesa PAWAPAY',
+            'PS ATL'=> 'PS ATL',
+            'PS MPESA'=> 'PS MPESA',
+        ],
+        'MALAWI' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'AIRTEL_MWI' => 'AIRTEL PAWAPAY',
+            'TNM_MWI' => 'TNM PAWAPAY',
+        ],
+        'RWANDA' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'AIRTEL_RWA' => 'AIRTEL PAWAPAY',
+            'MTN_MOMO_RWA' => 'MTN PAWAPAY',
+        ],
+        'SIERRA LEONE' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'ORANGE_SLE' => 'ORANGE PAWAPAY',
+        ],
+        'GHANA' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'MTN_MOMO_GHA' => 'MTN PAWAPAY',
+            'AIRTELTIGO_GHA' => 'AIRTEL PAWAPAY',
+            'VODAFONE_GHA' => 'VODAFONE PAWAPAY',
+            'PS MTN'=> 'PS MTN',
+            'PS ATL'=> 'PS ATL',
+             'PS VOD'=> 'PS VOD',
+        ],
+        'TANZANIA' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'AIRTEL_TZA' => 'AIRTEL PAWAPAY',
+            'VODACOM_TZA' => 'VODACOM PAWAPAY',
+            'TIGO_TZA' => 'TIGO PAWAPAY',
+            'HALOTEL_TZA' => 'HALOTEL PAWAPAY',
+        ],
+        'UGANDA' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'AIRTEL_OAPI_UGA' => 'AIRTEL PAWAPAY',
+            'MTN_MOMO_UGA' => 'MTN PAWAPAY',
+        ],
+        'ZAMBIA' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'AIRTEL_OAPI_ZMB' => 'AIRTEL PAWAPAY',
+            'MTN_MOMO_ZMB' => 'MTN PAWAPAY',
+            'ZAMTEL_ZMB' => 'ZAMTEL PAWAPAY',
+        ],
+        'NIGERIA' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'AIRTEL_NGA' => 'AIRTEL PAWAPAY',
+            'MTN_MOMO_NGA' => 'MTN PAWAPAY',
+        ],'TOGO' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'MOOTG' => 'FLOOZ TOGO PAIMENT PRO',
+            'TOGOCEL' => 'TOGO CEL PAIMENT PRO',
+        ],
+        'MOZAMBIQUE' => [
+            'PS CARD' =>'PS CARD',
+            'CARD' => 'VISA CARD',
+            'VODACOM_MOZ' => 'VODACOM MOZ PAWAPAY',
+        ],
+    ];
+@endphp
+
+@extends('admin.app')
+
+@section('title', 'Gestion des Événements')
+
+@section('css')
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.0/css/responsive.bootstrap5.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-bs4.min.css" rel="stylesheet">
+@endsection
+
+@section('content')
+    <section class="content-header">
+        <div class="bg-primary pt-10 pb-21"></div>
+        <div class="container-fluid mt-n22 px-6">
+            <div class="row mb-2">
+                <div class="col-sm-12">
+                    <h1 class="text-white">Gestion des Événements</h1>
+                </div>
+                <div class="col-sm-12">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a class="text-white" href="{{ route('admin') }}">Accueil</a></li>
+                        <li class="breadcrumb-item text-white active">Événements</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="mb-3">
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#eventModal">
+                    <i class="bi bi-plus-circle me-2"></i> Nouvel Événement
+                </button>
+            </div>
+            @include('admin._partials.message')
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Liste des Événements</h5>
+                </div>
+                <div class="card-body overflow-auto">
+                    <table id="dataTable" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Collaborateur</th>
+                                <th>Nombre de visites</th>
+                                <th>Début</th>
+                                <th>Fin</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($events as $item)
+                                <tr>
+                                    <td>
+                                        <img src="{{ $item->getFirstMediaUrl('events') }}" class="rounded-circle" width="40" height="40" alt="">
+                                        <strong class="ms-2">{{ $item->name }}</strong><br>
+                                        @if($item->event_type == 'ticketing')
+                                            <span class="badge bg-info">Billetterie</span>
+                                        @else
+                                            <span class="badge bg-primary">Vote</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @forelse($item->collaborators as $collab)
+                                            <span class="badge bg-secondary">{{ $collab->name }}</span>
+                                        @empty
+                                            <span class="text-muted">Aucun</span>
+                                        @endforelse
+                                    </td>
+                                    <td>{{ $item->views_count }}</td>
+                                    <td>{{ $item->start?->format('d/m/Y H:i') }}</td>
+                                    <td>{{ $item->end?->format('d/m/Y H:i') }}</td>
+                                    <td>
+                                        @if($item->status === 'active')
+                                            <span class="badge bg-success">Actif</span>
+                                        @else
+                                            <span class="badge bg-warning text-dark">Inactif</span>
+                                        @endif
+
+                                        @if($item->archived)
+                                            <span class="badge bg-danger">Archivé</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-icon btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#eventModal" data-event='{{ $item->toJson() }}' data-update-url="{{ route('admin.events.update', $item->id) }}" title="Modifier">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                        <a href="{{ route('admin.candidate-registrations.index', ['event' => $item->id])  }}" 
+                                           class="btn btn-warning btn-sm mb-1 w-100" title="Gestion des candidatures">
+                                            <i class="bi bi-people"></i> Candidats 
+                                            <span class="badge bg-light text-dark">{{ $item->candidateRegistrations()->count() }}</span>
+                                        </a>
+                                        <a href="{{ route('admin.artists.index', ['event_id' => $item->id]) }}" 
+                                           class="btn btn-info btn-sm mb-1 w-100" title="Gérer les artistes">
+                                            <i class="bi bi-person-lines-fill"></i> Artistes
+                                        </a>
+                                        <button type="button" class="btn btn-icon btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-delete-url="{{ route('admin.events.destroy', $item->id) }}" title="Supprimer">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                        @if(auth()->user()->hasRole('admin'))
+                                        <a href="{{ route('events.switchStatus', $item->id) }}" class="btn btn-icon btn-secondary btn-sm" title="Archiver"><i class="bi bi-archive"></i></a>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modale unifiée pour création / édition -->
+    <div id="eventModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <form id="eventForm" action="{{ route('admin.events.store') }}" method="post" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" name="_method" id="formMethod" value="POST">
+                <div class="modal-content">
+                    <div class="modal-header bg-light">
+                        <h5 class="modal-title" id="eventModalLabel">Créer un Nouvel Événement</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="event_type_selector" class="form-label">Type d'Événement <span class="text-danger">*</span></label>
+                                    <select name="event_type" id="event_type_selector" class="form-select {{ $errors->has('event_type') ? 'is-invalid' : '' }}" required>
+                                        <option value="vote">Événement de Vote</option>
+                                        <option value="ticketing">Événement de Billetterie</option>
+                                    </select>
+                                    @error('event_type')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="status" class="form-label">Statut <span class="text-danger">*</span></label>
+                                    <select name="status" id="status" class="form-select {{ $errors->has('status') ? 'is-invalid' : '' }}" required>
+                                        <option value="active">Actif</option>
+                                        <option value="inactive">Inactif</option>
+                                    </select>
+                                    @error('status')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="name" class="form-label">Nom de l'événement <span class="text-danger">*</span></label>
+                                    <input type="text" name="name" id="name" class="form-control {{ $errors->has('name') ? 'is-invalid' : '' }}" required>
+                                    @error('name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="subdomain" class="form-label">Sous-domaine <span class="text-danger">*</span></label>
+                                    <input type="text" name="subdomain" id="subdomain" class="form-control {{ $errors->has('subdomain') ? 'is-invalid' : '' }}" required placeholder="ex: miss-2025">
+                                    @error('subdomain')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            
+                            @if(auth()->user()->hasRole('admin'))
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="collaborators" class="form-label">Collaborateurs</label>
+                                    <select name="collaborators[]" id="collaborators" class="form-select" multiple>
+                                        @foreach (\App\Models\User::all() as $user)
+                                            <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('collaborators')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="archived" id="archived" value="1">
+                                    <label class="form-check-label" for="archived">Archiver l'événement</label>
+                                </div>
+                            </div>
+                            @endif
+
+                            <!-- Champs spécifiques au Vote -->
+                            <div id="vote_fields" class="col-12 row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="vote_type" class="form-label">Type de vote</label>
+                                        <select name="vote_type" id="vote_type" class="form-select {{ $errors->has('vote_type') ? 'is-invalid' : '' }}">
+                                            <option value="gratuit">Gratuit</option>
+                                            <option value="payant">Payant</option>
+                                        </select>
+                                        @error('vote_type')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6" id="vote_cost_fields" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="cost" class="form-label">Coût du vote (FCFA)</label>
+                                        <input type="number" name="cost" id="cost" class="form-control {{ $errors->has('cost') ? 'is-invalid' : '' }}">
+                                        @error('cost')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Champs spécifiques à la Billetterie -->
+                            <div id="ticketing_fields" class="col-12 row g-3" style="display: none;">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label for="description" class="form-label">Description</label>
+                                        <textarea name="description" id="description" class="form-control {{ $errors->has('description') ? 'is-invalid' : '' }}" rows="3"></textarea>
+                                        @error('description')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="venue_name" class="form-label">Nom du lieu</label>
+                                        <input type="text" name="venue_name" id="venue_name" class="form-control {{ $errors->has('venue_name') ? 'is-invalid' : '' }}">
+                                        @error('venue_name')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="city" class="form-label">Ville</label>
+                                        <input type="text" name="city" id="city" class="form-control {{ $errors->has('city') ? 'is-invalid' : '' }}">
+                                        @error('city')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="percentage_field" class="col-md-6" style="display: none;">
+                                <div class="form-group">
+                                    <label for="percentage" class="form-label">Pourcentage (%)</label>
+                                    <input type="number" name="percentage" id="percentage" class="form-control {{ $errors->has('percentage') ? 'is-invalid' : '' }}">
+                                    @error('percentage')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="card_payment_delay_days" class="form-label">Délai paiements carte (jours)</label>
+                                    <input type="number" name="card_payment_delay_days" id="card_payment_delay_days" class="form-control" value="60">
+                                </div>
+                            </div>
+
+                            <!-- Moyens de paiement -->
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="form-label">Moyens de Paiement à Activer</label>
+                                    <div class="accordion" id="paymentMethodsAccordion">
+                                        @foreach ($paymentMethods as $country => $methods)
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header" id="heading-{{ Str::slug($country) }}">
+                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ Str::slug($country) }}">
+                                                        {{ $country }}
+                                                    </button>
+                                                </h2>
+                                                <div id="collapse-{{ Str::slug($country) }}" class="accordion-collapse collapse" data-bs-parent="#paymentMethodsAccordion">
+                                                    <div class="accordion-body">
+                                                        @foreach ($methods as $key => $name)
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="payment_method[touchpay][{{ $country }}][]" value="{{ $key }}" id="check_{{ $key }}">
+                                                                <label class="form-check-label" for="check_{{ $key }}">{{ $name }}</label>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="start" class="form-label">Début <span class="text-danger">*</span></label>
+                                    <input type="datetime-local" name="start" id="start" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="end" class="form-label">Fin <span class="text-danger">*</span></label>
+                                    <input type="datetime-local" name="end" id="end" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6" id="end_reel_wrapper" style="display: none;">
+                                <div class="form-group">
+                                    <label for="end_reel" class="form-label">Fin réel de l'evenement</label>
+                                    <input type="datetime-local" name="end_reel" id="end_reel" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="image" class="form-label">Image d'illustration</label>
+                                    <input type="file" name="image" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                        <h6 class="mb-3">Inscriptions des candidats</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="form-check form-switch mt-4">
+                                    <input class="form-check-input" type="checkbox" name="candidate_registration_enabled" id="candidate_registration_enabled">
+                                    <label class="form-check-label" for="candidate_registration_enabled">Activer les inscriptions</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="candidate_registration_fee" class="form-label">Frais d'inscription (FCFA)</label>
+                                <input type="number" name="candidate_registration_fee" id="candidate_registration_fee" class="form-control" value="0">
+                            </div>
+                             <div class="col-md-4">
+                                <label for="candidate_registration_fee_klicvote" class="form-label">Part Klicvote %</label>
+                                <input name="candidate_registration_fee_klicvote" id="candidate_registration_fee_klicvote" class="form-control" >
+                            </div>
+                            <div class="col-md-6">
+                                <label for="candidate_registration_start_date" class="form-label">Date de début des inscriptions</label>
+                                <input type="datetime-local" name="candidate_registration_start_date" id="candidate_registration_start_date" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="candidate_registration_end_date" class="form-label">Date de fin des inscriptions</label>
+                                <input type="datetime-local" name="candidate_registration_end_date" id="candidate_registration_end_date" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-3">
+                            <label for="candidate_conditions" class="form-label">Conditions des candidats</label>
+                            <textarea name="candidate_conditions" id="candidate_conditions" class="form-control summernote" rows="5"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary" id="submitButton">Enregistrer</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modale de suppression -->
+    <div id="deleteModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <form id="deleteForm" method="POST" action="#">
+                @csrf
+                @method('DELETE')
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">Suppression</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Voulez-vous vraiment supprimer cet événement ? Cette action est irréversible.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection
+
+@section('js')
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-bs4.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.summernote').summernote({
+                height: 200,
+                toolbar: [
+                    ['style', ['bold', 'italic', 'underline', 'clear']],
+                    ['fontsize', ['fontsize']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['insert', ['link']],
+                    ['view', ['fullscreen', 'codeview']]
+                ]
+            });
+
+            const eventModal = document.getElementById('eventModal');
+            const eventForm = document.getElementById('eventForm');
+            const modalLabel = document.getElementById('eventModalLabel');
+            const formMethodInput = document.getElementById('formMethod');
+            const submitButton = document.getElementById('submitButton');
+
+            $('#event_type_selector').on('change', function() {
+                if ($(this).val() === 'ticketing') {
+                    $('#ticketing_fields').show();
+                    $('#vote_fields').hide();
+                    $('#percentage_field').show();
+                    $('#end_reel_wrapper').show();
+                } else {
+                    $('#ticketing_fields').hide();
+                    $('#vote_fields').show();
+                    $('#end_reel_wrapper').hide();
+                    $('#vote_type').trigger('change');
+                }
+            });
+
+            $('#vote_type').on('change', function() {
+                if ($(this).val() === 'payant') {
+                    $('#vote_cost_fields').show();
+                    $('#percentage_field').show();
+                } else {
+                    $('#vote_cost_fields').hide();
+                    $('#percentage_field').hide();
+                }
+            }).trigger('change');
+
+            eventModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const eventDataJson = $(button).data('event');
+                const updateUrl = $(button).data('update-url');
+
+                if (eventDataJson) { // Mode Édition
+                    const eventData = typeof eventDataJson === 'string' ? JSON.parse(eventDataJson) : eventDataJson;
+                    
+                    modalLabel.textContent = "Modifier l'Événement";
+                    eventForm.action = updateUrl;
+                    formMethodInput.value = 'PUT';
+                    submitButton.textContent = 'Mettre à jour';
+                    
+                    $('#event_type_selector').val(eventData.event_type);
+                    $('#status').val(eventData.status); // Handle Status
+                    $('#archived').prop('checked', eventData.archived == 1); // Handle Archived checkbox
+                    $('#name').val(eventData.name);
+                    $('#subdomain').val(eventData.subdomain);
+                    $('#start').val(eventData.start ? eventData.start.slice(0, 16) : '');
+                    $('#end').val(eventData.end ? eventData.end.slice(0, 16) : '');
+                    $('#vote_type').val(eventData.vote_type);
+                    $('#cost').val(eventData.cost);
+                    $('#percentage').val(eventData.percentage);
+                    $('#description').val(eventData.description);
+                    $('#venue_name').val(eventData.venue_name);
+                    $('#end_reel').val(eventData.end_reel ? eventData.end_reel.slice(0, 16) : '');
+                    $('#candidate_registration_enabled').prop('checked', eventData.candidate_registration_enabled == 1);
+                    $('#candidate_registration_fee').val(eventData.candidate_registration_fee);
+                    $('#candidate_registration_fee_klicvote').val(eventData.candidate_registration_fee_klicvote);
+                    $('#candidate_conditions').summernote('code', eventData.candidate_conditions || '');
+                    $('#candidate_registration_start_date').val(eventData.candidate_registration_start_date ? eventData.candidate_registration_start_date.slice(0,16) : '');
+                    $('#candidate_registration_end_date').val(eventData.candidate_registration_end_date ? eventData.candidate_registration_end_date.slice(0,16) : '');
+                    $('#city').val(eventData.city);
+                    $('#card_payment_delay_days').val(eventData.card_payment_delay_days || 0);
+
+                    $('#event_type_selector').trigger('change');
+
+                    $('input[name^="payment_method"]').prop('checked', false);
+                    if (eventData.payment_method && eventData.payment_method.touchpay) {
+                        for (const country in eventData.payment_method.touchpay) {
+                            if (Array.isArray(eventData.payment_method.touchpay[country])) {
+                                eventData.payment_method.touchpay[country].forEach(function(method) {
+                                    $(`input[name="payment_method[touchpay][${country}][]"][value="${method}"]`).prop('checked', true);
+                                });
+                            }
+                        }
+                    }
+
+                    if(eventData.collaborators) {
+                        $('#collaborators').val(eventData.collaborators.map(collab => collab.id)).trigger('change');
+                    }
+
+                } else { // Mode Création
+                    modalLabel.textContent = "Créer un Nouvel Événement";
+                    eventForm.action = "{{ route('admin.events.store') }}";
+                    formMethodInput.value = 'POST';
+                    submitButton.textContent = 'Enregistrer';
+                    
+                    eventForm.reset();
+                    $('#status').val('active');
+                    $('#archived').prop('checked', false);
+                    $('#candidate_conditions').summernote('code', '');
+                    $('input[name^="payment_method"]').prop('checked', false);
+                    $('#collaborators').val([]).trigger('change');
+                    $('#event_type_selector').trigger('change');
+                }
+            });
+            
+            $('#deleteModal').on('show.bs.modal', function(event) {
+                var button = $(event.relatedTarget);
+                var deleteUrl = button.data('delete-url');
+                $(this).find('#deleteForm').attr('action', deleteUrl);
+            }); 
+
+            $('#collaborators').select2({
+                placeholder: "Sélectionner des collaborateurs",
+                allowClear: true,
+                dropdownParent: $('#eventModal')
+            });
+        });
+    </script>
+@endsection

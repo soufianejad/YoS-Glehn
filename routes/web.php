@@ -138,9 +138,16 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/review/{review}', [App\Http\Controllers\Public\BookController::class, 'deleteReview'])->name('review.destroy');
 
     // Achats individuels
+    Route::get('/purchase/{book}/checkout', [App\Http\Controllers\Public\BookController::class, 'checkout'])->name('purchase.checkout');
     Route::post('/purchase/{book}/pdf', [App\Http\Controllers\Public\BookController::class, 'purchasePdf'])->name('purchase.pdf');
     Route::post('/purchase/{book}/audio', [App\Http\Controllers\Public\BookController::class, 'purchaseAudio'])->name('purchase.audio');
     Route::get('/book/{book}/secure-download', [BookController::class, 'secureDownload'])->name('book.secure_download');
+
+    // Routes de paiement
+    Route::get('/payment/success', [App\Http\Controllers\Public\PaymentController::class, 'success'])->name('payment.success');
+    Route::get('/payment/failed', [App\Http\Controllers\Public\PaymentController::class, 'failed'])->name('payment.failed');
+    Route::get('/payment/pending', [App\Http\Controllers\Public\PaymentController::class, 'pending'])->name('payment.pending');
+    Route::match(['get', 'post'], '/payment/callback/{service}', [App\Http\Controllers\Public\PaymentController::class, 'callback'])->name('payment.callback');
 
     // Tableau de bord utilisateur
     Route::get('/dashboard', [App\Http\Controllers\Public\HomeController::class, 'dashboard'])->name('dashboard');

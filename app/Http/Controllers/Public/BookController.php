@@ -12,6 +12,8 @@ use App\Models\Purchase;
 use App\Models\Review;
 use App\Models\Setting;
 use App\Services\BadgeService;
+use App\Services\PaymentService;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -19,10 +21,12 @@ use Illuminate\Support\Str;
 class BookController extends Controller
 {
     protected $badgeService;
+    protected $paymentService;
 
-    public function __construct(BadgeService $badgeService)
+    public function __construct(BadgeService $badgeService, PaymentService $paymentService)
     {
         $this->badgeService = $badgeService;
+        $this->paymentService = $paymentService;
     }
 
     public function index(Request $request)
@@ -372,65 +376,91 @@ class BookController extends Controller
         return back()->with('success', __('Votre avis a été supprimé.'));
     }
 
-    public function purchasePdf(Book $book)
+    public function checkout(Book $book, Request $request)
     {
-        Purchase::create([
+        $type = $request->input('type', 'pdf');
+        $price = $type === 'pdf' ? $book->pdf_price : $book->audio_price;
+        $methods = $this->paymentService->getAvailablePaymentMethods();
+
+        return view('book.checkout', compact('book', 'type', 'price', 'methods'));
+    }
+
+    public function purchasePdf(Book $book, Request $request)
+    {
+        $request->validate([
+            'phone' => 'required|string',
+            'network' => 'required|string',
+        ]);
+
+        $payment = Payment::create([
             'user_id' => auth()->id(),
+            'transaction_id' => 'BOOK-PDF-' . strtoupper(Str::random(10)),
+            'payment_type' => 'book_purchase',
             'book_id' => $book->id,
-            'type' => 'pdf',
             'amount' => $book->pdf_price,
-            'status' => 'completed',
+            'currency' => 'XOF',
+            'status' => 'pending',
+            'payment_details' => ['purchase_type' => 'pdf'],
         ]);
 
-        return back()->with('success', __('Merci pour votre achat !'));
+        return $this->paymentService->initiatePayment($request, $payment);
     }
 
-    public function purchaseAudio(Book $book)
+    public function purchaseAudio(Book $book, Request $request)
     {
-        Purchase::create([
-            'user_id' => auth()->id(),
-            'book_id' => $book->id,
-            'type' => 'audio',
-            'amount' => $book->audio_price,
-            'status' => 'completed',
+        $request->validate([
+            'phone' => 'required|string',
+            'network' => 'required|string',
         ]);
 
-        return back()->with('success', __('Merci pour votre achat !'));
-    }
-public function secureDownload(Book $book, Request $request)
-{
-    if (!auth()->user()->hasAccessToBook($book)) {
-        abort(403);
+        $payment = Payment::create([
+            'user_id' => auth()->id(),
+            'transaction_id' => 'BOOK-AUDIO-' . strtoupper(Str::random(10)),
+            'payment_type' => 'book_purchase',
+            'book_id' => $book->id,
+            'amount' => $book->audio_price,
+            'currency' => 'XOF',
+            'status' => 'pending',
+            'payment_details' => ['purchase_type' => 'audio'],
+        ]);
+
+        return $this->paymentService->initiatePayment($request, $payment);
     }
 
-    $fileId = $request->query('file_id', 'default');
-    $pdfPath = null;
-    $fileName = $book->slug;
-
-    if ($fileId !== 'default') {
-        $bookFile = BookFile::where('book_id', $book->id)
-                            ->where('id', $fileId)
-                            ->where('file_type', 'pdf')
-                            ->first();
-        if ($bookFile) {
-            $pdfPath = $bookFile->path;
-            $fileName .= '_' . $bookFile->language;
+    public function secureDownload(Book $book, Request $request)
+    {
+        if (!auth()->user()->hasAccessToBook($book)) {
+            abort(403);
         }
-    } else {
-        $pdfPath = $book->pdf_file;
-    }
 
-    if (!$pdfPath) {
-        abort(404, __('Fichier PDF introuvable.'));
-    }
+        $fileId = $request->query('file_id', 'default');
+        $pdfPath = null;
+        $fileName = $book->slug;
 
-    // Ensure we check the correct disk
-    if (Storage::disk('public')->exists($pdfPath)) {
-        return Storage::disk('public')->download($pdfPath, $fileName . '.pdf');
-    } elseif (Storage::exists($pdfPath)) {
-        return Storage::download($pdfPath, $fileName . '.pdf');
-    }
+        if ($fileId !== 'default') {
+            $bookFile = BookFile::where('book_id', $book->id)
+                                ->where('id', $fileId)
+                                ->where('file_type', 'pdf')
+                                ->first();
+            if ($bookFile) {
+                $pdfPath = $bookFile->path;
+                $fileName .= '_' . $bookFile->language;
+            }
+        } else {
+            $pdfPath = $book->pdf_file;
+        }
 
-    abort(404, __('Fichier introuvable sur le serveur.'));
-}
+        if (!$pdfPath) {
+            abort(404, __('Fichier PDF introuvable.'));
+        }
+
+        // Ensure we check the correct disk
+        if (Storage::disk('public')->exists($pdfPath)) {
+            return Storage::disk('public')->download($pdfPath, $fileName . '.pdf');
+        } elseif (Storage::exists($pdfPath)) {
+            return Storage::download($pdfPath, $fileName . '.pdf');
+        }
+
+        abort(404, __('Fichier introuvable sur le serveur.'));
+    }
 }

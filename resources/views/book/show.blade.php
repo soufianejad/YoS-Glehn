@@ -186,13 +186,9 @@
                                                 <del class="text-muted me-2">{{ number_format($book->pdf_price, 0) }} XOF</del>
                                                 <span class="fw-bold text-success fs-4">{{ number_format($finalPdfPrice, 0) }} XOF</span>
                                             </p>
-                                            <form action="{{ route('purchase.pdf', $book) }}" method="POST" id="purchase_pdf_form">
-                                                @csrf
-                                                <input type="hidden" name="book_file_id" id="purchase_pdf_file_id">
-                                                <button type="submit" class="btn btn-info w-100 hover-shadow">
-                                                    <i class="fas fa-download me-2"></i> {{ __('Télécharger') }} ({{ number_format($finalPdfPrice, 0) }} XOF)
-                                                </button>
-                                            </form>
+                                            <a href="{{ route('purchase.checkout', $book) }}?type=pdf" class="btn btn-primary btn-lg w-100 hover-shadow mb-2">
+                                                <i class="fas fa-shopping-cart me-2"></i> {{ __('Acheter le PDF') }}
+                                            </a>
                                         </div>
                                     @endif
 
@@ -200,13 +196,9 @@
                                     <div class="border rounded-3 p-4 text-center bg-light">
                                         <h5 class="mb-2">{{ __('Acheter le PDF') }}</h5>
                                         <p class="fs-4 fw-bold text-primary mb-3">{{ number_format($finalPdfPrice, 0) }} XOF</p>
-                                        <form action="{{ route('purchase.pdf', $book) }}" method="POST" id="purchase_pdf_form">
-                                            @csrf
-                                            <input type="hidden" name="book_file_id" id="purchase_pdf_file_id">
-                                            <button type="submit" class="btn btn-primary w-100 btn-lg hover-shadow">
-                                                <i class="fas fa-shopping-cart me-2"></i> {{ __('Acheter maintenant') }}
-                                            </button>
-                                        </form>
+                                        <a href="{{ route('purchase.checkout', $book) }}?type=pdf" class="btn btn-primary btn-lg w-100 hover-shadow mb-2">
+                                            <i class="fas fa-shopping-cart me-2"></i> {{ __('Acheter le PDF') }}
+                                        </a>
                                     </div>
                                 @endif
                             </div>
@@ -249,13 +241,9 @@
                                 @else
                                     <div class="text-center p-3 border rounded-3 bg-light">
                                         <p class="fs-5 fw-bold text-success mb-3">{{ number_format($book->audio_price, 0) }} XOF</p>
-                                        <form action="{{ route('purchase.audio', $book) }}" method="POST" id="purchase_audio_form">
-                                            @csrf
-                                            <input type="hidden" name="book_file_id" id="purchase_audio_file_id">
-                                            <button type="submit" class="btn btn-outline-success w-100 hover-shadow">
-                                                <i class="fas fa-shopping-cart me-2"></i> {{ __("Acheter l'audio") }}
-                                            </button>
-                                        </form>
+                                        <a href="{{ route('purchase.checkout', $book) }}?type=audio" class="btn btn-outline-success w-100 hover-shadow">
+                                            <i class="fas fa-shopping-cart me-2"></i> {{ __("Acheter l'audio") }}
+                                        </a>
                                     </div>
                                 @endif
                             </div>
