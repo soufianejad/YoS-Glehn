@@ -60,7 +60,7 @@
                     </div>
                     <span class="text-muted small">
                         <strong>{{ number_format($book->average_rating, 1) }}</strong>
-                        ({{ $book->reviews->where('is_approved', true)->count() }} {{ trans_choice('avis', $book->reviews->where('is_approved', true)->count()) }})
+                        ({{ $book->reviews->where('is_approved', true)->count() }} {{ trans_choice(__('avis'), $book->reviews->where('is_approved', true)->count()) }})
                     </span>
                 </div>
 
