@@ -59,7 +59,7 @@
     <!-- Hero Section -->
     <section class="hero text-center d-flex align-items-center justify-content-center">
         <div class="hero-content">
-            <h1 class="display-3 font-weight-bold animate__animated animate__fadeInDown">{{ __('Nos Plans d\'Abonnement') }}</h1>
+            <h1 class="display-3 font-weight-bold animate__animated animate__fadeInDown">{{ __("Nos Plans d'Abonnement") }}</h1>
             <p class="lead my-4 animate__animated animate__fadeInUp">{{ __('Choisissez le plan qui vous convient et débloquez un monde de connaissances.') }}</p>
         </div>
     </section>
