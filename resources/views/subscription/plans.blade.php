@@ -92,7 +92,7 @@
                                 <li><i class="fas {{ $plan->download_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> {{__("Téléchargement")}}</li>
                                 <li><i class="fas {{ $plan->quiz_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> {{__("Accès aux Quiz")}}</li>
                                  @if($plan->max_students)
-                                    <li><i class="fas fa-users"></i> Jusqu'à {{ $plan->max_students }} étudiants</li>
+                                    <li><i class="fas fa-users"></i> {{__("Jusqu'à")}} {{ $plan->max_students }} {{__("étudiants")}}</li>
                                 @endif
                             </ul>
                         </div>
