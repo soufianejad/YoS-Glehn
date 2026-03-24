@@ -46,7 +46,7 @@
     <section class="hero text-center d-flex align-items-center justify-content-center">
         <div class="hero-content">
             <h1 class="display-3 font-weight-bold animate__animated animate__fadeInDown">{{ __('Notre Bibliothèque') }}</h1>
-            <p class="lead my-4 animate__animated animate__fadeInUp">{{ __('Plongez dans un monde de savoir et d\'aventure.') }}</p>
+            <p class="lead my-4 animate__animated animate__fadeInUp">{{ __("Plongez dans un monde de savoir et d'aventure.") }}</p>
         </div>
     </section>
 </div>
