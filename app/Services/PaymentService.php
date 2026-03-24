@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Payment;
+use App\Models\Setting;
 use App\Models\Book;
 use App\Models\Subscription;
 use GuzzleHttp\Client;
@@ -23,6 +24,17 @@ class PaymentService
     public function __construct()
     {
         $this->initializeConfigurations();
+    }
+
+    /**
+     * Get all possible configurations for the admin panel.
+     */
+    public function getGlobalConfigurations()
+    {
+        return [
+            'countries' => $this->countryConfigs,
+            'methods' => $this->supportedMethods
+        ];
     }
 
     private function initializeConfigurations()
@@ -75,13 +87,30 @@ class PaymentService
         $countryCode = strtoupper($countryCode);
 
         $availableMethods = [];
+
+        // Fetch enabled methods from database
+        $dbSettings = Setting::where('key', 'payment_methods')->first();
+        $enabledMethods = $dbSettings ? json_decode($dbSettings->value, true) : null;
+
         foreach ($this->supportedMethods as $methodCode => $details) {
-            if (in_array($countryCode, $details['countries'])) {
-                $availableMethods[] = [
-                    'id' => $methodCode,
-                    'name' => $details['name'],
-                    'icon_color' => $details['icon_color'],
-                ];
+            // If we have DB settings, check if this method is enabled for this country
+            if ($enabledMethods) {
+                if (isset($enabledMethods[$countryCode][$methodCode]) && $enabledMethods[$countryCode][$methodCode] === 'on') {
+                    $availableMethods[] = [
+                        'id' => $methodCode,
+                        'name' => $details['name'],
+                        'icon_color' => $details['icon_color'],
+                    ];
+                }
+            } else {
+                // Fallback to hardcoded logic if no DB settings exist yet
+                if (in_array($countryCode, $details['countries'])) {
+                    $availableMethods[] = [
+                        'id' => $methodCode,
+                        'name' => $details['name'],
+                        'icon_color' => $details['icon_color'],
+                    ];
+                }
             }
         }
 

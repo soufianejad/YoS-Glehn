@@ -254,9 +254,10 @@ Route::prefix('adult-space')->name('adult.')->group(function () {
 */
 Route::prefix('settings')->name('settings.')->group(function () {
     Route::get('/', [SettingsController::class, 'index'])->name('index');
-    Route::put('/', [SettingsController::class, 'update'])->name('update');
+    Route::post('/', [SettingsController::class, 'update'])->name('update');
     Route::get('/general', [SettingsController::class, 'general'])->name('general');
     Route::get('/payment', [SettingsController::class, 'payment'])->name('payment');
+    Route::post('/payment', [SettingsController::class, 'updatePayment'])->name('payment.update');
     Route::get('/email', [SettingsController::class, 'email'])->name('email');
     Route::get('/appearance', [SettingsController::class, 'appearance'])->name('appearance');
     Route::get('/languages', [SettingsController::class, 'languages'])->name('languages');

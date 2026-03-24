@@ -25,8 +25,31 @@ class SettingsController extends Controller
     public function payment()
     {
         $settings = Setting::where('group', 'payment')->pluck('value', 'key');
+        // Decode JSON values if they exist
+        $payment_methods = isset($settings['payment_methods']) ? json_decode($settings['payment_methods'], true) : [];
 
-        return view('admin.settings.payment', compact('settings'));
+        return view('admin.settings.payment', compact('settings', 'payment_methods'));
+    }
+
+    public function updatePayment(Request $request)
+    {
+        // We expect an array of [country_code][method_code] = on
+        $methods = $request->input('methods', []);
+        
+        $setting = Setting::firstOrNew(['key' => 'payment_methods', 'group' => 'payment']);
+        $setting->value = json_encode($methods);
+        $setting->type = 'json';
+        $setting->save();
+
+        // Also update other individual payment settings if any
+        foreach ($request->except(['_token', '_method', 'methods']) as $key => $value) {
+            $s = Setting::firstOrNew(['key' => $key, 'group' => 'payment']);
+            $s->value = $value;
+            $s->type = 'string';
+            $s->save();
+        }
+
+        return back()->with('success', __('Paramètres de paiement mis à jour.'));
     }
 
     public function email()
