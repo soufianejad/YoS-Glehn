@@ -70,7 +70,7 @@
         </a>
         <ul class="p-0 collapse {{ request()->routeIs('admin.subscription-plans*') || request()->routeIs('admin.payments*') || request()->routeIs('admin.revenues*') ? 'show' : '' }}" id="monetizationSubmenu">
             <li style="display:block" class="nav-item {{ request()->routeIs('admin.subscription-plans*') ? 'active' : '' }}">
-                <a class="nav-link " href="{{ route('admin.subscription-plans.index') }}"><i class="fas fa-id-card"></i> {{ __('Plans d\'Abonnement') }}</a>
+                <a class="nav-link " href="{{ route('admin.subscription-plans.index') }}"><i class="fas fa-id-card"></i> {{ __("Plans d'Abonnement")}}</a>
             </li>
             <li style="display:block" class="nav-item {{ request()->routeIs('admin.payments*') ? 'active' : '' }}">
                 <a class="nav-link " href="{{ route('admin.payments.index') }}"><i class="fas fa-money-bill-wave"></i> {{ __('Paiements') }}</a>
