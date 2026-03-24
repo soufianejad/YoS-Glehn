@@ -64,16 +64,19 @@
     <li class="mt-1">
         <a href="#monetizationSubmenu"
            data-bs-toggle="collapse"
-           aria-expanded="{{ request()->routeIs('admin.subscription-plans*') || request()->routeIs('admin.payments*') || request()->routeIs('admin.revenues*') ? 'true' : 'false' }}"
+           aria-expanded="{{ request()->routeIs('admin.subscription-plans*') || request()->routeIs('admin.payments*') || request()->routeIs('admin.revenues*') || request()->routeIs('admin.settings.payment') ? 'true' : 'false' }}"
            class="dropdown-toggle nav-link sidebar-heading text-decoration-none">
             {{ __('Monétisation') }}
         </a>
-        <ul class="p-0 collapse {{ request()->routeIs('admin.subscription-plans*') || request()->routeIs('admin.payments*') || request()->routeIs('admin.revenues*') ? 'show' : '' }}" id="monetizationSubmenu">
+        <ul class="p-0 collapse {{ request()->routeIs('admin.subscription-plans*') || request()->routeIs('admin.payments*') || request()->routeIs('admin.revenues*') || request()->routeIs('admin.settings.payment') ? 'show' : '' }}" id="monetizationSubmenu">
             <li style="display:block" class="nav-item {{ request()->routeIs('admin.subscription-plans*') ? 'active' : '' }}">
                 <a class="nav-link " href="{{ route('admin.subscription-plans.index') }}"><i class="fas fa-id-card"></i> {{ __("Plans d'Abonnement")}}</a>
             </li>
             <li style="display:block" class="nav-item {{ request()->routeIs('admin.payments*') ? 'active' : '' }}">
                 <a class="nav-link " href="{{ route('admin.payments.index') }}"><i class="fas fa-money-bill-wave"></i> {{ __('Paiements') }}</a>
+            </li>
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.settings.payment') ? 'active' : '' }}">
+                <a class="nav-link " href="{{ route('admin.settings.payment') }}"><i class="fas fa-credit-card"></i> {{ __('Paramètres de Paiement') }}</a>
             </li>
             <li style="display:block" class="nav-item {{ request()->routeIs('admin.revenues*') ? 'active' : '' }}">
                 <a class="nav-link " href="{{ route('admin.revenues.index') }}">
@@ -129,6 +132,9 @@
         <ul class="p-0 collapse {{ request()->routeIs('admin.settings*') ? 'show' : '' }}" id="systemSubmenu">
             <li style="display:block" class="nav-item {{ request()->routeIs('admin.settings.general') ? 'active' : '' }}">
                 <a class="nav-link " href="{{ route('admin.settings.general') }}"><i class="fas fa-cog"></i> {{ __('Paramètres Généraux') }}</a>
+            </li>
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.settings.payment') ? 'active' : '' }}">
+                <a class="nav-link " href="{{ route('admin.settings.payment') }}"><i class="fas fa-credit-card"></i> {{ __('Paramètres de Paiement') }}</a>
             </li>
             <li style="display:block" class="nav-item {{ request()->routeIs('admin.settings.languages') ? 'active' : '' }}">
                 <a class="nav-link " href="{{ route('admin.settings.languages') }}"><i class="fas fa-language"></i> {{ __('Langues') }}</a>

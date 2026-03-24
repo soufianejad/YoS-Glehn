@@ -395,7 +395,7 @@ class BookController extends Controller
         $payment = Payment::create([
             'user_id' => auth()->id(),
             'transaction_id' => 'BOOK-PDF-' . strtoupper(Str::random(10)),
-            'payment_type' => 'book_purchase',
+            'payment_type' => 'book_pdf',
             'book_id' => $book->id,
             'amount' => $book->pdf_price,
             'currency' => 'XOF',
@@ -416,7 +416,7 @@ class BookController extends Controller
         $payment = Payment::create([
             'user_id' => auth()->id(),
             'transaction_id' => 'BOOK-AUDIO-' . strtoupper(Str::random(10)),
-            'payment_type' => 'book_purchase',
+            'payment_type' => 'book_audio',
             'book_id' => $book->id,
             'amount' => $book->audio_price,
             'currency' => 'XOF',

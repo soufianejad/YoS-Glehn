@@ -50,7 +50,7 @@ class PaymentController extends Controller
 
     private function finalizePurchase(Payment $payment)
     {
-        if ($payment->payment_type === 'book_purchase') {
+        if (in_array($payment->payment_type, ['book_purchase', 'book_pdf', 'book_audio'])) {
             Purchase::create([
                 'user_id' => $payment->user_id,
                 'book_id' => $payment->book_id,
