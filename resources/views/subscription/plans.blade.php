@@ -129,7 +129,7 @@
                         </h2>
                         <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                Oui, vous pouvez annuler votre abonnement à tout moment depuis votre tableau de bord. Vous conserverez l'accès jusqu'à la fin de votre période de facturation en cours.
+                                {{__("Oui, vous pouvez annuler votre abonnement à tout moment depuis votre tableau de bord. Vous conserverez l'accès jusqu'à la fin de votre période de facturation en cours.")}}
                             </div>
                         </div>
                     </div>
@@ -140,7 +140,7 @@
                         </h2>
                         <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                Nous acceptons les principales cartes de crédit (Visa, MasterCard) ainsi que les paiements mobiles pour certaines régions.
+                                {{__("Nous acceptons les principales cartes de crédit (Visa, MasterCard) ainsi que les paiements mobiles pour certaines régions.")}}
                             </div>
                         </div>
                     </div>
