@@ -124,7 +124,8 @@
                 <div class="accordion" id="faqAccordion">
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="headingOne">
-                            {{ __('Puis-je annuler mon abonnement à tout moment ?') }}
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                {{ __('Puis-je annuler mon abonnement à tout moment ?') }}
                             </button>
                         </h2>
                         <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
@@ -135,7 +136,8 @@
                     </div>
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="headingTwo">
-                            {{ __('Quels sont les moyens de paiement acceptés ?') }}
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                {{ __('Quels sont les moyens de paiement acceptés ?') }}
                             </button>
                         </h2>
                         <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
@@ -146,7 +148,8 @@
                     </div>
                      <div class="accordion-item">
                         <h2 class="accordion-header" id="headingThree">
-                            {{ __('Y a-t-il une différence entre les plans pour écoles et les plans individuels ?') }}
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                {{ __('Y a-t-il une différence entre les plans pour écoles et les plans individuels ?') }}
                             </button>
                         </h2>
                         <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
