@@ -58,7 +58,7 @@
             <div class="row align-items-center">
                 <div class="col-lg-3">
                     <h5 class="mb-0 font-weight-bold text-primary">
-                        <i class="fas fa-users me-2"></i>{{ __('Utilisateurs') }} 
+                        <i class="fas fa-users me-2"></i>{{ __('Liste des Utilisateurs') }} 
                         <span class="badge bg-light text-primary ms-2">{{ $users->total() }}</span>
                     </h5>
                 </div>
@@ -103,10 +103,10 @@
                                     <i class="fas fa-ellipsis-v"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-lg">
-                                    <li><a class="dropdown-item py-2" href="{{ route('admin.users.show', $user) }}"><i class="fas fa-eye me-2 text-info"></i>{{ __('Voir Profil') }}</a></li>
+                                    <li><a class="dropdown-item py-2" href="{{ route('admin.users.show', $user) }}"><i class="fas fa-eye me-2 text-info"></i>{{ __('Voir') }}</a></li>
                                     <li><a class="dropdown-item py-2" href="{{ route('admin.users.edit', $user) }}"><i class="fas fa-pencil-alt me-2 text-warning"></i>{{ __('Modifier') }}</a></li>
                                     @if(Auth::id() !== $user->id)
-                                        <li><a class="dropdown-item py-2" href="{{ route('admin.users.impersonate', $user) }}"><i class="fas fa-user-secret me-2 text-secondary"></i>{{ __('Incarner') }}</a></li>
+                                        <li><a class="dropdown-item py-2" href="{{ route('admin.users.impersonate', $user) }}"><i class="fas fa-user-secret me-2 text-secondary"></i>{{ __('Impersonate') }}</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
                                             <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('{{ __('Êtes-vous sûr ?') }}')">
@@ -144,9 +144,18 @@
                                     'reader' => 'bg-secondary text-white',
                                     'adult_reader' => 'bg-dark text-white'
                                 ][$user->role] ?? 'bg-light text-dark';
+
+                                $roleLabel = [
+                                    'admin' => __('Admin'),
+                                    'author' => __('Auteur'),
+                                    'school' => __('École'),
+                                    'student' => __('Étudiant'),
+                                    'reader' => __('Lecteur'),
+                                    'adult_reader' => __('Lecteur Adulte')
+                                ][$user->role] ?? ucfirst($user->role);
                             @endphp
                             <span class="role-badge {{ $roleClass }}">
-                                {{ str_replace('_', ' ', ucfirst($user->role)) }}
+                                {{ $roleLabel }}
                             </span>
                         </div>
 
