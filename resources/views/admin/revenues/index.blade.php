@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Gestion des Revenus')
-@section('header', 'Gestion des Revenus')
+@section('title', __('Gestion des Revenus'))
+@section('header', __('Gestion des Revenus'))
 
 @section('content')
 <div class="container-fluid">
@@ -47,7 +47,7 @@
             <ul class="nav nav-tabs card-header-tabs">
                 <li class="nav-item">
                     <a class="nav-link @if($currentTab === 'pending') active @endif" href="{{ route('admin.revenues.index', ['tab' => 'pending']) }}">
-                        En Attente <span class="badge bg-warning">{{ $stats['pending_count'] }}</span>
+                        {{__("En Attente")}} <span class="badge bg-warning">{{ $stats['pending_count'] }}</span>
                     </a>
                 </li>
                 <li class="nav-item">
