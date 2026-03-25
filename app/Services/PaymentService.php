@@ -271,7 +271,7 @@ class PaymentService
             );
             
             // Record revenue if it's a book purchase
-            $revenueCalculator = app(\App\Services\RevenueCalculatorService.php ?? \App\Services\RevenueCalculatorService::class);
+            $revenueCalculator = app(\App\Services\RevenueCalculatorService::class);
             $revenueCalculator->recordRevenue($payment);
 
         } elseif (in_array($payment->payment_type, ['subscription', 'subscription_renewal'])) {
