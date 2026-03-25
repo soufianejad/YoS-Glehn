@@ -4,12 +4,21 @@ namespace App\Http\Controllers\Reader;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
 class ReaderController extends Controller
 {
+    protected $paymentService;
+
+    public function __construct(PaymentService $paymentService)
+    {
+        $this->paymentService = $paymentService;
+    }
+
     public function index()
     {
         $user = auth()->user();
@@ -265,37 +274,32 @@ class ReaderController extends Controller
     public function renewSubscription(Request $request)
     {
         $user = auth()->user();
-        $subscription = $user->activeSubscription()->first(); // Get the active subscription
+        $subscription = $user->activeSubscription()->first() ?? $user->subscriptions()->latest()->first();
 
         if (! $subscription) {
-            return back()->with('error', __('You do not have an active subscription to renew.'));
+            return back()->with('error', __('You do not have a subscription to renew.'));
         }
 
-        // In a real application, this would integrate with a payment gateway.
-        // For now, we'll simulate a successful payment and extend the subscription.
+        $request->validate([
+            'phone' => 'required|string',
+            'network' => 'required|string',
+        ]);
 
-        // Create a dummy payment record
-        \App\Models\Payment::create([
+        // Create a pending payment for the renewal
+        $payment = Payment::create([
             'user_id' => $user->id,
             'subscription_id' => $subscription->id,
-            'transaction_id' => __('TRX-').uniqid(),
+            'transaction_id' => 'RENEW-' . strtoupper(Str::random(10)),
             'payment_type' => 'subscription_renewal',
             'amount' => $subscription->subscriptionPlan->price,
-            'currency' => __('XOF'),
-            'payment_method' => 'simulated',
-            'payment_provider' => 'simulated',
-            'status' => 'completed',
-            'paid_at' => now(),
+            'currency' => 'XOF',
+            'payment_method' => $request->network,
+            'payment_provider' => $request->network,
+            'status' => 'pending',
+            'payment_details' => ['subscription_id' => $subscription->id],
         ]);
 
-        // Extend the subscription end date
-        $subscription->update([
-            'end_date' => $subscription->end_date->addDays($subscription->subscriptionPlan->duration_days),
-            'status' => 'active',
-            'cancelled_at' => null, // Clear cancelled status if it was cancelled
-        ]);
-
-        return back()->with('success', __('Subscription renewed successfully!'));
+        return $this->paymentService->initiatePayment($request, $payment, false, route('reader.subscription'));
     }
 
     public function payments()

@@ -46,10 +46,7 @@
                     </div>
                     <div class="col-md-4 text-md-end mt-3 mt-md-0">
                         @if($subscription->status === 'active')
-                            <form action="{{ route('reader.subscription.renew') }}" method="POST" class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-warning me-2 mb-2 mb-md-0">{{ __('Renew Now') }}</button>
-                            </form>
+                            <a href="{{ route('subscription.checkout.renew') }}" class="btn btn-warning me-2 mb-2 mb-md-0">{{ __('Renew Now') }}</a>
                             <form action="{{ route('reader.subscription.cancel', $subscription) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')

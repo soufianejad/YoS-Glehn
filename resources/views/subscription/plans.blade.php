@@ -97,10 +97,7 @@
                             </ul>
                         </div>
                          <div class="card-footer text-center">
-                            <form action="{{ route('subscription.subscribe', $plan) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="btn btn-primary w-100">{{ __("Choisir ce Plan") }}</button>
-                            </form>
+                            <a href="{{ route('subscription.checkout', $plan) }}" class="btn btn-primary w-100">{{ __("Choisir ce Plan") }}</a>
                         </div>
                     </div>
                 </div>

@@ -167,6 +167,8 @@ Route::middleware(['auth'])->group(function () {
 Route::prefix('subscriptions')->name('subscription.')->group(function () {
     Route::get('/', [SubscriptionController::class, 'index'])->name('index');
     Route::get('/plans', [SubscriptionController::class, 'plans'])->name('plans');
+    Route::get('/checkout/{plan}', [SubscriptionController::class, 'checkout'])->name('checkout');
+    Route::get('/checkout-renew', [SubscriptionController::class, 'checkoutRenew'])->name('checkout.renew');
     Route::post('/subscribe/{plan}', [SubscriptionController::class, 'subscribe'])->name('subscribe');
     Route::post('/renew', [SubscriptionController::class, 'renew'])->name('renew');
     Route::post('/cancel', [SubscriptionController::class, 'cancel'])->name('cancel');

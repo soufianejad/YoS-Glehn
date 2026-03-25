@@ -56,7 +56,7 @@ class PaymentController extends Controller
                 ]);
 
                 if ($status === 'completed') {
-                    $this->finalizePurchase($payment);
+                    $this->paymentService->finalizePurchase($payment);
                 }
             }
         }
@@ -64,28 +64,7 @@ class PaymentController extends Controller
         return response('OK', 200);
     }
 
-    private function finalizePurchase(Payment $payment)
-    {
-        if (in_array($payment->payment_type, ['book_purchase', 'book_pdf', 'book_audio'])) {
-            Purchase::create([
-                'user_id' => $payment->user_id,
-                'book_id' => $payment->book_id,
-                'payment_id' => $payment->id,
-                'purchase_type' => $payment->payment_details['purchase_type'] ?? 'pdf',
-                'price' => $payment->amount,
-                'is_active' => true,
-            ]);
-        } elseif ($payment->payment_type === 'subscription') {
-            $subscription = Subscription::find($payment->subscription_id);
-            if ($subscription) {
-                $subscription->update([
-                    'status' => 'active',
-                    'start_date' => now(),
-                    'end_date' => now()->addMonths($subscription->plan->duration_months ?? 1),
-                ]);
-            }
-        }
-    }
+    // Removed local finalizePurchase method in favor of PaymentService
 
     public function success()
     {

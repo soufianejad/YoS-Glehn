@@ -255,6 +255,40 @@ class PaymentService
         return $this->handleError("Mode de paiement non supporté ({$network})", $returnAsJson, $errorLink);
     }
 
+    public function finalizePurchase(Payment $payment)
+    {
+        if (in_array($payment->payment_type, ['book_purchase', 'book_pdf', 'book_audio'])) {
+            // Check if purchase already exists to avoid duplicates
+            \App\Models\Purchase::updateOrCreate(
+                ['payment_id' => $payment->id],
+                [
+                    'user_id' => $payment->user_id,
+                    'book_id' => $payment->book_id,
+                    'purchase_type' => $payment->payment_details['purchase_type'] ?? ($payment->payment_type === 'book_audio' ? 'audio' : 'pdf'),
+                    'price' => $payment->amount,
+                    'is_active' => true,
+                ]
+            );
+            
+            // Record revenue if it's a book purchase
+            $revenueCalculator = app(\App\Services\RevenueCalculatorService.php ?? \App\Services\RevenueCalculatorService::class);
+            $revenueCalculator->recordRevenue($payment);
+
+        } elseif (in_array($payment->payment_type, ['subscription', 'subscription_renewal'])) {
+            $subscription = $payment->subscription ?? Subscription::find($payment->subscription_id);
+            if ($subscription) {
+                $plan = $subscription->subscriptionPlan;
+                $duration = $plan->duration_days ?? 30;
+
+                $subscription->update([
+                    'status' => 'active',
+                    'start_date' => $subscription->start_date ?? now(),
+                    'end_date' => now()->addDays($duration),
+                ]);
+            }
+        }
+    }
+
     private function handleError($message, $returnAsJson, $errorLink)
     {
         if ($returnAsJson) {

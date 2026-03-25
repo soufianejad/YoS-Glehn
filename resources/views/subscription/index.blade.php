@@ -21,10 +21,7 @@
                     @csrf
                     <button type="submit" class="btn btn-warning">{{ __('Cancel Subscription') }}</button>
                 </form>
-                <form action="{{ route('subscription.renew') }}" method="POST" class="d-inline ms-2">
-                    @csrf
-                    <button type="submit" class="btn btn-success">{{ __('Renew Subscription') }}</button>
-                </form>
+                <a href="{{ route('subscription.checkout.renew') }}" class="btn btn-success ms-2">{{ __('Renew Subscription') }}</a>
             </div>
         </div>
     @else

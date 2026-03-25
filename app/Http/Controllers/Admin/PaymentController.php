@@ -6,15 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Purchase;
 use App\Services\RevenueCalculatorService;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
     protected $revenueCalculator;
+    protected $paymentService;
 
-    public function __construct(RevenueCalculatorService $revenueCalculator)
+    public function __construct(RevenueCalculatorService $revenueCalculator, PaymentService $paymentService)
     {
         $this->revenueCalculator = $revenueCalculator;
+        $this->paymentService = $paymentService;
     }
 
     public function index(Request $request)
@@ -64,22 +67,15 @@ class PaymentController extends Controller
     public function validatePayment(Payment $payment)
     {
         // 1. Update payment status
-        $payment->update(['status' => 'completed', 'paid_at' => now()]);
+        $payment->update([
+            'status' => 'completed',
+            'paid_at' => now()
+        ]);
 
-        // 2. Find and activate the associated purchase record
-        $purchase = Purchase::where('payment_id', $payment->id)->first();
-        if ($purchase) {
-            $purchase->update(['is_active' => true]);
-        }
+        // 2. Use unified finalization logic from PaymentService
+        $this->paymentService->finalizePurchase($payment);
 
-        // 3. Record the revenue
-        // This should only be done for one-time purchases, not subscriptions,
-        // as subscriptions are handled by a separate job.
-        if ($payment->payment_type === 'book_pdf' || $payment->payment_type === 'book_audio') {
-            $this->revenueCalculator->recordRevenue($payment);
-        }
-
-        return back()->with('success', __('Payment validated and revenue recorded successfully.'));
+        return back()->with('success', __('Payment validated, access granted, and revenue recorded successfully.'));
     }
 
     public function refund(Payment $payment)
