@@ -257,6 +257,9 @@ class PaymentService
 
     public function finalizePurchase(Payment $payment)
     {
+        $notificationService = app(\App\Services\NotificationService::class);
+        $user = $payment->user;
+
         if (in_array($payment->payment_type, ['book_purchase', 'book_pdf', 'book_audio'])) {
             // Check if purchase already exists to avoid duplicates
             \App\Models\Purchase::updateOrCreate(
@@ -274,6 +277,16 @@ class PaymentService
             $revenueCalculator = app(\App\Services\RevenueCalculatorService::class);
             $revenueCalculator->recordRevenue($payment);
 
+            // Notify User
+            $book = $payment->book;
+            $notificationService->sendNotification(
+                $user,
+                __('Achat confirmé'),
+                __('Votre achat pour le livre ":title" a été validé. Vous pouvez maintenant le lire dans votre bibliothèque.', ['title' => $book->title]),
+                route('book.show', $book->slug),
+                'success'
+            );
+
         } elseif (in_array($payment->payment_type, ['subscription', 'subscription_renewal'])) {
             $subscription = $payment->subscription ?? Subscription::find($payment->subscription_id);
             if ($subscription) {
@@ -285,6 +298,15 @@ class PaymentService
                     'start_date' => $subscription->start_date ?? now(),
                     'end_date' => now()->addDays($duration),
                 ]);
+
+                // Notify User
+                $notificationService->sendNotification(
+                    $user,
+                    __('Abonnement activé'),
+                    __('Votre abonnement au plan ":plan" a été activé avec succès.', ['plan' => $plan->name]),
+                    route('subscription.index'),
+                    'success'
+                );
             }
         }
     }

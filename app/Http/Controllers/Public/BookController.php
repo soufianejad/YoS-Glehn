@@ -13,7 +13,9 @@ use App\Models\Review;
 use App\Models\Setting;
 use App\Services\BadgeService;
 use App\Services\PaymentService;
+use App\Services\NotificationService;
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -22,11 +24,13 @@ class BookController extends Controller
 {
     protected $badgeService;
     protected $paymentService;
+    protected $notificationService;
 
-    public function __construct(BadgeService $badgeService, PaymentService $paymentService)
+    public function __construct(BadgeService $badgeService, PaymentService $paymentService, NotificationService $notificationService)
     {
         $this->badgeService = $badgeService;
         $this->paymentService = $paymentService;
+        $this->notificationService = $notificationService;
     }
 
     public function index(Request $request)
@@ -347,7 +351,36 @@ class BookController extends Controller
         $review->status = 'pending';
         $review->save();
 
-        return back()->with('success', __('Votre avis a été soumis.'));
+        // 1. Notify the Author
+        if ($book->author_id) {
+            $author = User::find($book->author_id);
+            if ($author) {
+                $this->notificationService->sendNotification(
+                    $author,
+                    __('Nouvel avis reçu'),
+                    __('Un lecteur a laissé un avis sur votre livre ":title". Il est en attente de validation.', ['title' => $book->title]),
+                    route('author.books.show', $book->id),
+                    'info'
+                );
+            }
+        }
+
+        // 2. Notify the Admins
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            $this->notificationService->sendNotification(
+                $admin,
+                __('Nouvel avis à modérer'),
+                __('Un nouvel avis a été posté sur le livre ":title" par :user.', [
+                    'title' => $book->title,
+                    'user' => auth()->user()->name
+                ]),
+                route('admin.books.index'), // Link to moderation or book management
+                'warning'
+            );
+        }
+
+        return back()->with('success', __('Votre avis a été soumis avec succès et est en cours de validation par l\'équipe.'));
     }
 
     public function updateReview(Request $request, Review $review)
@@ -399,6 +432,8 @@ class BookController extends Controller
             'book_id' => $book->id,
             'amount' => $book->pdf_price,
             'currency' => 'XOF',
+            'payment_method' => $request->network === 'CARD' ? 'card' : 'mobile_money',
+            'payment_provider' => $request->network,
             'status' => 'pending',
             'payment_details' => ['purchase_type' => 'pdf'],
         ]);
@@ -420,6 +455,8 @@ class BookController extends Controller
             'book_id' => $book->id,
             'amount' => $book->audio_price,
             'currency' => 'XOF',
+            'payment_method' => $request->network === 'CARD' ? 'card' : 'mobile_money',
+            'payment_provider' => $request->network,
             'status' => 'pending',
             'payment_details' => ['purchase_type' => 'audio'],
         ]);
