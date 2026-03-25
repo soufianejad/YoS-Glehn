@@ -348,7 +348,7 @@ class BookController extends Controller
         $review->book_id = $book->id;
         $review->rating = $request->rating;
         $review->comment = $request->comment;
-        $review->status = 'pending';
+        $review->is_approved = false; // Moderation required
         $review->save();
 
         // 1. Notify the Author
@@ -395,10 +395,10 @@ class BookController extends Controller
         $review->update([
             'rating' => $request->rating,
             'comment' => $request->comment,
-            'status' => 'pending',
+            'is_approved' => false, // Reset moderation
         ]);
 
-        return back()->with('success', __('Votre avis a été mis à jour.'));
+        return back()->with('success', __('Votre avis a été mis à jour et est en cours de validation.'));
     }
 
     public function deleteReview(Review $review)
