@@ -102,7 +102,7 @@ class SubscriptionController extends Controller
             'payment_type' => 'subscription',
             'amount' => $plan->price,
             'currency' => 'XOF',
-            'payment_method' => $request->network,
+            'payment_method' => $request->network === 'CARD' ? 'card' : 'mobile_money',
             'payment_provider' => $request->network,
             'status' => 'pending',
             'payment_details' => ['plan_id' => $plan->id],
