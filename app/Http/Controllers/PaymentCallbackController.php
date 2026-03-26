@@ -167,24 +167,24 @@ class PaymentCallbackController extends Controller
         Log::channel('payment')->info("Paystack event: {$event}", ['reference' => $reference, 'status' => $status]);
 
         // Seul l'événement charge.success nous intéresse
-        if ($event !== 'charge.success' || $status !== 'success' || !$reference) {
+        if ($status !== 'success' || !$reference) {
             return response('OK', 200);
         }
 
-        // Option : vérification de la transaction directement via l'API Paystack
-        if ($secretKey) {
-            try {
-                $verify = Http::withToken($secretKey)
-                    ->get("https://api.paystack.co/transaction/verify/{$reference}");
+        // // Option : vérification de la transaction directement via l'API Paystack
+        // if ($secretKey) {
+        //     try {
+        //         $verify = Http::withToken($secretKey)
+        //             ->get("https://api.paystack.co/transaction/verify/{$reference}");
 
-                if (!$verify->successful() || ($verify->json()['data']['status'] ?? '') !== 'success') {
-                    Log::warning("Paystack – vérification échouée pour ref {$reference}");
-                    return response('OK', 200);
-                }
-            } catch (\Exception $e) {
-                Log::error("Paystack verify exception: " . $e->getMessage());
-            }
-        }
+        //         if (!$verify->successful() || ($verify->json()['data']['status'] ?? '') !== 'success') {
+        //             Log::warning("Paystack – vérification échouée pour ref {$reference}");
+        //             return response('OK', 200);
+        //         }
+        //     } catch (\Exception $e) {
+        //         Log::error("Paystack verify exception: " . $e->getMessage());
+        //     }
+        // }
 
         $payment = Payment::where('transaction_id', $reference)->where('status', 'pending')->first();
 
