@@ -152,7 +152,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/payment/success', [App\Http\Controllers\Public\PaymentController::class, 'success'])->name('payment.success');
     Route::get('/payment/failed', [App\Http\Controllers\Public\PaymentController::class, 'failed'])->name('payment.failed');
     Route::get('/payment/pending', [App\Http\Controllers\Public\PaymentController::class, 'pending'])->name('payment.pending');
-    Route::match(['get', 'post'], '/payment/callback/{service}', [App\Http\Controllers\Public\PaymentController::class, 'callback'])->name('payment.callback');
+    // Route::match(['get', 'post'], '/payment/callback/{service}', [App\Http\Controllers\Public\PaymentController::class, 'callback'])->name('payment.callback');
 
     // Tableau de bord utilisateur
     Route::get('/dashboard', [App\Http\Controllers\Public\HomeController::class, 'dashboard'])->name('dashboard');
