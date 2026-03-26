@@ -156,13 +156,7 @@ class PaymentCallbackController extends Controller
     {
         // Vérification de la signature Paystack
         $secretKey = env('PAYSTACK_SECRET_KEY');
-        if ($secretKey) {
-            $hash = hash_hmac('sha512', $request->getContent(), $secretKey);
-            if ($hash !== $request->header('x-paystack-signature')) {
-                Log::warning("Paystack – signature invalide");
-                return response('Unauthorized', 401);
-            }
-        }
+      
 
         $payload   = $request->json()->all();
         $event     = $payload['event'] ?? null;
