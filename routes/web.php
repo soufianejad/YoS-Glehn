@@ -22,6 +22,10 @@ use Illuminate\Support\Facades\Route;
 | Web Routes - Espace Public
 |--------------------------------------------------------------------------
 */
+Route::match(['get', 'post'], '/payment/callback/{service}', 
+    [\App\Http\Controllers\PaymentCallbackController::class, 'handle']
+)->name('payment.callback');
+
 Route::get('/run-book-database', function () {
 
     // Migration 1
