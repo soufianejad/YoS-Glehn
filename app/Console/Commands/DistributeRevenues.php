@@ -20,7 +20,7 @@ class DistributeRevenues extends Command
      *
      * @var string
      */
-    protected $description = __('Distribute subscription revenues for a given month');
+    protected $description = ('Distribute subscription revenues for a given month');
 
     /**
      * The RevenueCalculatorService instance.
