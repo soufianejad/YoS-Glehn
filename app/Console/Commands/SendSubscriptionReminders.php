@@ -21,7 +21,7 @@ class SendSubscriptionReminders extends Command
      *
      * @var string
      */
-    protected $description = __('Send reminders to users whose subscriptions are about to expire.');
+    protected $description = 'Send reminders to users whose subscriptions are about to expire.';
 
     /**
      * The notification service instance.
