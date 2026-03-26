@@ -33,6 +33,7 @@ class DashboardController extends Controller
 
         // Recent Reviews
         $recentReviews = Review::whereIn('book_id', $author->books()->pluck('id'))
+            ->where('is_approved', true) // Only approved reviews for dashboard overview
             ->with('book', 'user')
             ->latest()
             ->take(5)

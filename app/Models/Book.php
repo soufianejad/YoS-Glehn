@@ -97,6 +97,14 @@ class Book extends Model
     }
 
     /**
+     * Avis/reviews approuvés
+     */
+    public function approvedReviews(): HasMany
+    {
+        return $this->hasMany(Review::class)->where('is_approved', true);
+    }
+
+    /**
      * Revenus
      */
     public function revenues(): HasMany

@@ -70,7 +70,7 @@
             @endauth
 
             <h3>{{ __('Reviews') }}</h3>
-            @forelse($book->reviews as $review)
+            @forelse($book->approvedReviews as $review)
                 <div class="card mb-2">
                     <div class="card-body">
                         <h5 class="card-title">{{ $review->user->name }} - {{ __('Rating:') }} {{ $review->rating }}/5</h5>

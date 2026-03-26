@@ -62,52 +62,72 @@
 
     <!-- Reviews Section -->
     <div class="card shadow-sm mt-4">
-        <div class="card-header">
-            <h4 class="h5 mb-0">{{ __('Avis des lecteurs') }}</h4>
+        <div class="card-header bg-white">
+            <h4 class="h5 mb-0"><i class="fas fa-comments me-2 text-primary"></i> {{ __('Avis des lecteurs') }} <span class="badge bg-primary ms-1">{{ $book->approvedReviews->count() }}</span></h4>
         </div>
         <div class="card-body">
             @auth
-                <div class="mb-4">
-                    <h5>{{ __('Laisser un avis') }}</h5>
-                    {{-- Assuming a route 'adult.review.store' needs to be created --}}
-                    <form action="{{ route('adult.library.review.store', $book) }}" method="POST">
-                        @csrf
-                        <div class="mb-2">
-                            <label for="rating" class="form-label">{{ __('Note') }}</label>
-                            <select class="form-select" style="max-width: 150px;" id="rating" name="rating">
-                                <option value="5">{{ __('5 étoiles') }}</option>
-                                <option value="4">{{ __('4 étoiles') }}</option>
-                                <option value="3">{{ __('3 étoiles') }}</option>
-                                <option value="2">{{ __('2 étoiles') }}</option>
-                                <option value="1">{{ __('1 étoile') }}</option>
-                            </select>
-                        </div>
-                        <div class="mb-2">
-                            <label for="comment" class="form-label">{{ __('Commentaire') }}</label>
-                            <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
-                        </div>
-                        {{ __("Envoyer l'avis") }}</button>
-                    </form>
-                </div>
-                <hr>
+                @php
+                    $userPendingReview = $book->reviews()->where('user_id', auth()->id())->where('is_approved', false)->first();
+                @endphp
+
+                @if($userPendingReview)
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i> {{ __('Votre avis est en cours de validation par l\'équipe.') }}
+                    </div>
+                @elseif($book->approvedReviews()->where('user_id', auth()->id())->exists())
+                     <div class="alert alert-light mb-4 border">
+                        <i class="fas fa-check-circle me-2 text-success"></i> {{ __('Vous avez déjà laissé un avis pour ce livre.') }}
+                    </div>
+                @else
+                    <div class="mb-4">
+                        <h5 class="mb-3">{{ __('Laisser un avis') }}</h5>
+                        <form action="{{ route('adult.library.review.store', $book) }}" method="POST">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="rating" class="form-label">{{ __('Note') }}</label>
+                                <select class="form-select" style="max-width: 150px;" id="rating" name="rating" required>
+                                    <option value="5">5 {{ __('étoiles') }}</option>
+                                    <option value="4">4 {{ __('étoiles') }}</option>
+                                    <option value="3">3 {{ __('étoiles') }}</option>
+                                    <option value="2">2 {{ __('étoiles') }}</option>
+                                    <option value="1">1 {{ __('étoile') }}</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="comment" class="form-label">{{ __('Commentaire') }}</label>
+                                <textarea class="form-control" id="comment" name="comment" rows="3" placeholder="{{ __('Partagez votre avis sur ce livre...') }}" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i> {{ __("Envoyer l'avis") }}
+                            </button>
+                        </form>
+                    </div>
+                @endif
+                <hr class="my-4">
             @endauth
 
-            @forelse($book->reviews()->latest()->get() as $review)
-                <div class="d-flex mb-3 border-bottom pb-3">
-                    <img src="{{ $review->user->avatar_url }}" class="rounded-circle" style="width: 50px; height: 50px;" alt="{{ $review->user->name }}">
-                    <div class="ms-3">
-                        <h6 class="mb-0">{{ $review->user->name }}</h6>
-                        <div class="text-warning">
+            @forelse($book->approvedReviews()->latest()->get() as $review)
+                <div class="d-flex mb-4 last-border-0">
+                    <img src="{{ $review->user->avatar_url }}" class="rounded-circle shadow-sm" style="width: 50px; height: 50px; object-fit: cover;" alt="{{ $review->user->name }}">
+                    <div class="ms-3 flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <h6 class="mb-0 fw-bold">{{ $review->user->name }}</h6>
+                            <small class="text-muted">{{ $review->created_at->diffForHumans() }}</small>
+                        </div>
+                        <div class="text-warning small mb-2">
                             @for ($i = 0; $i < 5; $i++)
                                 <i class="fas fa-star{{ $i < $review->rating ? '' : '-regular' }}"></i>
                             @endfor
                         </div>
-                        <p class="mt-1 mb-0">{{ $review->comment }}</p>
-                        <small class="text-muted">{{ $review->created_at->diffForHumans() }}</small>
+                        <p class="text-dark mb-0">{{ $review->comment }}</p>
                     </div>
                 </div>
             @empty
-                <p>{{ __('Aucun avis pour le moment.') }}</p>
+                <div class="text-center py-4">
+                    <i class="far fa-comment-dots fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">{{ __('Aucun avis approuvé pour le moment.') }}</p>
+                </div>
             @endforelse
         </div>
     </div>

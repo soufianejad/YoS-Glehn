@@ -226,15 +226,19 @@ class PaymentService
                     'countryCurrencyCode' => '952',
                     'amount' => $amount,
                     'channel' => $network,
-                    'customerEmail' => $payment->user->email,
-                    'customerFirstName' => $payment->user->first_name,
-                    'customerLastname' => $payment->user->last_name,
-                    'customerPhoneNumber' => $request->phone,
+                    'customerEmail' => $payment->user->email ?? 'no-email@example.com', // Fallback email
+                    'customerFirstName' => $payment->user->first_name ?? 'N/A',
+                    'customerLastname' => $payment->user->last_name ?? '',
                     'referenceNumber' => $refNumber,
                     'notificationURL' => route('payment.callback', ['service' => 'paiementpro']),
                     'returnURL' => $returnLink,
                     'description' => "Achat sur ".config('platform.name'),
                 ];
+
+                // Conditionally add customerPhoneNumber for non-CARD payments
+                if ($network !== 'CARD') {
+                    $paiementProArray['customerPhoneNumber'] = $request->phone;
+                }
 
                 $context = stream_context_create(['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]]);
                 $soapClient = new SoapClient('https://www.paiementpro.net/webservice/OnlineServicePayment_v2.php?wsdl', ['stream_context' => $context]);

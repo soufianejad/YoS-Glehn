@@ -70,7 +70,7 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         $adultBookIds = Book::where('space', 'adult')->pluck('id');
-        $reviews = $user->reviews()->whereIn('book_id', $adultBookIds)->with('book')->latest()->paginate(10);
+        $reviews = $user->reviews()->whereIn('book_id', $adultBookIds)->where('is_approved', true)->with('book')->latest()->paginate(10);
         return view('adult.dashboard.reviews', compact('reviews'));
     }
 

@@ -375,7 +375,7 @@ class BookController extends Controller
                     'title' => $book->title,
                     'user' => auth()->user()->name
                 ]),
-                route('admin.books.index'), // Link to moderation or book management
+                route('admin.reviews.pending'), // Link to moderation
                 'warning'
             );
         }

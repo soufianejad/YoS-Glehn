@@ -8,16 +8,20 @@ use App\Models\Category;
 use App\Models\Payment;
 use App\Models\Purchase;
 use App\Models\Review;
+use App\Models\User;
 use App\Services\RevenueCalculatorService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class LibraryController extends Controller
 {
     protected $revenueCalculator;
+    protected $notificationService;
 
-    public function __construct(RevenueCalculatorService $revenueCalculator)
+    public function __construct(RevenueCalculatorService $revenueCalculator, NotificationService $notificationService)
     {
         $this->revenueCalculator = $revenueCalculator;
+        $this->notificationService = $notificationService;
     }
 
     public function index(Request $request)
@@ -216,13 +220,42 @@ class LibraryController extends Controller
             'comment' => 'required|string|max:1000',
         ]);
 
-        $book->reviews()->create([
+        $review = $book->reviews()->create([
             'user_id' => auth()->id(),
             'rating' => $request->rating,
             'comment' => $request->comment,
-            'is_approved' => true, // Automatically approve for now
+            'is_approved' => false, // Moderation required
         ]);
 
-        return back()->with('success', __('Your review has been submitted successfully!'));
+        // 1. Notify the Author
+        if ($book->author_id) {
+            $author = User::find($book->author_id);
+            if ($author) {
+                $this->notificationService->sendNotification(
+                    $author,
+                    __('Nouvel avis reçu (Espace Adulte)'),
+                    __('Un lecteur a laissé un avis sur votre livre ":title" dans l\'Espace Adulte. Il est en attente de validation.', ['title' => $book->title]),
+                    route('author.books.show', $book->id),
+                    'info'
+                );
+            }
+        }
+
+        // 2. Notify the Admins
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            $this->notificationService->sendNotification(
+                $admin,
+                __('Nouvel avis Adulte à modérer'),
+                __('Un nouvel avis a été posté sur le livre Adulte ":title" par :user.', [
+                    'title' => $book->title,
+                    'user' => auth()->user()->name
+                ]),
+                route('admin.reviews.pending'), // Link to moderation
+                'warning'
+            );
+        }
+
+        return back()->with('success', __('Votre avis a été soumis avec succès et est en cours de validation par l\'équipe.'));
     }
 }
