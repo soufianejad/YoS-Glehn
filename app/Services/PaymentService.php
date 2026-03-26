@@ -20,6 +20,41 @@ class PaymentService
 {
     protected $countryConfigs;
     protected $supportedMethods;
+    protected $currencyToPaiementProCode = [
+        'XOF' => '952', // West African CFA franc
+        'EUR' => '978', // Euro
+        // These are educated guesses, need to verify with PaiementPro documentation
+        'CDF' => '976', // Congolese Franc
+        'XAF' => '950', // Central African CFA franc
+        'KES' => '404', // Kenyan Shilling
+        'MWK' => '454', // Malawian Kwacha
+        'RWF' => '646', // Rwandan Franc
+        'SLL' => '694', // Sierra Leonean Leone
+        'GHS' => '936', // Ghanaian Cedi
+        'TZS' => '834', // Tanzanian Shilling
+        'UGX' => '800', // Ugandan Shilling
+        'ZMW' => '967', // Zambian Kwacha
+        'NGN' => '566', // Nigerian Naira
+        'MAD' => '504', // Moroccan Dirham
+        'MZN' => '943', // Mozambican Metical
+    ];
+    protected $currencyToPaiementProCode = [
+        'XOF' => '952', // West African CFA franc
+        'EUR' => '978', // Euro
+        'CDF' => '976', // Congolese Franc - common in central Africa
+        'XAF' => '950', // Central African CFA franc - common in central Africa
+        'KES' => '404', // Kenyan Shilling - East Africa
+        'MWK' => '454', // Malawian Kwacha - Southern Africa
+        'RWF' => '646', // Rwandan Franc - East Africa
+        'SLL' => '694', // Sierra Leonean Leone - West Africa
+        'GHS' => '936', // Ghanaian Cedi - West Africa
+        'TZS' => '834', // Tanzanian Shilling - East Africa
+        'UGX' => '800', // Ugandan Shilling - East Africa
+        'ZMW' => '967', // Zambian Kwacha - Southern Africa
+        'NGN' => '566', // Nigerian Naira - West Africa
+        'MAD' => '504', // Moroccan Dirham - North Africa
+        'MZN' => '943', // Mozambican Metical - Southern Africa
+    ];
 
     public function __construct()
     {
@@ -36,7 +71,28 @@ class PaymentService
             'methods' => $this->supportedMethods
         ];
     }
+...
+                if ($network === 'CARD') { $amount = ($amount * 1.05) + 780; }
 
+                // Determine country and currency for PaiementPro
+                $userPhone = $payment->user->phone ?? $request->phone;
+                $detectedCountryIso = $this->detectCountryFromPhone($userPhone);
+                $currencyIso = $this->countryConfigs[$detectedCountryIso]['currency'] ?? 'XOF';
+                $paiementProCurrencyCode = $this->currencyToPaiementProCode[$currencyIso] ?? '952'; // Default to XOF if not found
+
+                $paiementProArray = [
+                    'merchantId' => env('PAIEMENTPRO_MERCHANT_ID'),
+                    'countryCurrencyCode' => $paiementProCurrencyCode,
+                    'amount' => $amount,
+                    'channel' => $network,
+                    'customerEmail' => $payment->user->email ?? 'no-email@example.com', // Fallback email
+                    'customerFirstName' => $payment->user->first_name ?? 'N/A',
+                    'customerLastname' => $payment->user->last_name ?? '',
+                    'referenceNumber' => $refNumber,
+                    'notificationURL' => route('payment.callback', ['service' => 'paiementpro']),
+                    'returnURL' => $returnLink,
+                    'description' => "Achat sur ".config('platform.name'),
+                ];
     private function initializeConfigurations()
     {
         $this->countryConfigs = [
@@ -221,9 +277,15 @@ class PaymentService
                 // Surcharge pour carte
                 if ($network === 'CARD') { $amount = ($amount * 1.05) + 780; }
 
+                // Determine country and currency for PaiementPro
+                $userPhone = $payment->user->phone ?? $request->phone;
+                $detectedCountryIso = $this->detectCountryFromPhone($userPhone);
+                $currencyIso = $this->countryConfigs[$detectedCountryIso]['currency'] ?? 'XOF';
+                $paiementProCurrencyCode = $this->currencyToPaiementProCode[$currencyIso] ?? '952'; // Default to XOF if not found
+
                 $paiementProArray = [
                     'merchantId' => env('PAIEMENTPRO_MERCHANT_ID'),
-                    'countryCurrencyCode' => '952',
+                    'countryCurrencyCode' => $paiementProCurrencyCode,
                     'amount' => $amount,
                     'channel' => $network,
                     'customerEmail' => $payment->user->email ?? 'no-email@example.com', // Fallback email
