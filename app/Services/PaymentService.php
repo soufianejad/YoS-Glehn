@@ -38,24 +38,7 @@ class PaymentService
         'MAD' => '504', // Moroccan Dirham
         'MZN' => '943', // Mozambican Metical
     ];
-    protected $currencyToPaiementProCode = [
-        'XOF' => '952', // West African CFA franc
-        'EUR' => '978', // Euro
-        // These are educated guesses, need to verify with PaiementPro documentation
-        'CDF' => '976', // Congolese Franc
-        'XAF' => '950', // Central African CFA franc
-        'KES' => '404', // Kenyan Shilling
-        'MWK' => '454', // Malawian Kwacha
-        'RWF' => '646', // Rwandan Franc
-        'SLL' => '694', // Sierra Leonean Leone
-        'GHS' => '936', // Ghanaian Cedi
-        'TZS' => '834', // Tanzanian Shilling
-        'UGX' => '800', // Ugandan Shilling
-        'ZMW' => '967', // Zambian Kwacha
-        'NGN' => '566', // Nigerian Naira
-        'MAD' => '504', // Moroccan Dirham
-        'MZN' => '943', // Mozambican Metical
-    ];
+
 
 
     public function __construct()
@@ -73,28 +56,8 @@ class PaymentService
             'methods' => $this->supportedMethods
         ];
     }
-...
-                if ($network === 'CARD') { $amount = ($amount * 1.05) + 780; }
 
-                // Determine country and currency for PaiementPro
-                $userPhone = $payment->user->phone ?? $request->phone;
-                $detectedCountryIso = $this->detectCountryFromPhone($userPhone);
-                $currencyIso = $this->countryConfigs[$detectedCountryIso]['currency'] ?? 'XOF';
-                $paiementProCurrencyCode = $this->currencyToPaiementProCode[$currencyIso] ?? '952'; // Default to XOF if not found
 
-                $paiementProArray = [
-                    'merchantId' => env('PAIEMENTPRO_MERCHANT_ID'),
-                    'countryCurrencyCode' => $paiementProCurrencyCode,
-                    'amount' => $amount,
-                    'channel' => $network,
-                    'customerEmail' => $payment->user->email ?? 'no-email@example.com', // Fallback email
-                    'customerFirstName' => $payment->user->first_name ?? 'N/A',
-                    'customerLastname' => $payment->user->last_name ?? '',
-                    'referenceNumber' => $refNumber,
-                    'notificationURL' => route('payment.callback', ['service' => 'paiementpro']),
-                    'returnURL' => $returnLink,
-                    'description' => "Achat sur ".config('platform.name'),
-                ];
     private function initializeConfigurations()
     {
         $this->countryConfigs = [
