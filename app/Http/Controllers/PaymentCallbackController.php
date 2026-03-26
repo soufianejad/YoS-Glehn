@@ -6,6 +6,7 @@ use App\Models\Payment;
 use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class PaymentCallbackController extends Controller
@@ -18,13 +19,11 @@ class PaymentCallbackController extends Controller
     }
 
     /**
-     * Point d'entrée unique pour tous les callbacks de prestataires de paiement.
+     * Route unique : GET|POST /payment/callback/{service}
+     * name         : payment.callback
      *
-     * Route : GET|POST /payment/callback/{service}
-     *         name    : payment.callback
-     *
-     * Prestataires supportés : wave | touchpay | pawapay | paiementpro
-     * Types de paiements gérés : book_pdf | book_audio | book_purchase | subscription | subscription_renewal
+     * Services gérés : wave | touchpay | pawapay | paiementpro | paystack
+     * Types de paiements : book_pdf | book_audio | book_purchase | subscription | subscription_renewal
      */
     public function handle(Request $request, string $service)
     {
@@ -39,6 +38,7 @@ class PaymentCallbackController extends Controller
             'touchpay'    => $this->handleTouchPay($request),
             'pawapay'     => $this->handlePawaPay($request),
             'paiementpro' => $this->handlePaiementPro($request),
+            'paystack'    => $this->handlePaystack($request),
             default       => response('Service non géré', 404),
         };
     }
@@ -67,7 +67,7 @@ class PaymentCallbackController extends Controller
         if ($payment) {
             $this->validateAndFinalize($payment);
         } else {
-            Log::warning("Wave callback – aucun paiement pending trouvé pour session {$sessionId}");
+            Log::warning("Wave – aucun paiement pending pour session {$sessionId}");
         }
 
         return response('OK', 200);
@@ -87,15 +87,12 @@ class PaymentCallbackController extends Controller
             return response('OK', 200);
         }
 
-        $payment = Payment::where('transaction_id', $reference)
-            ->where('status', 'pending')
-            ->first();
+        $payment = Payment::where('transaction_id', $reference)->where('status', 'pending')->first();
 
         if ($payment) {
-            $providerRef = $body['gu_transaction_id'] ?? null;
-            $this->validateAndFinalize($payment, $providerRef);
+            $this->validateAndFinalize($payment, $body['gu_transaction_id'] ?? null);
         } else {
-            Log::warning("TouchPay callback – aucun paiement pending trouvé pour ref {$reference}");
+            Log::warning("TouchPay – aucun paiement pending pour ref {$reference}");
         }
 
         return response('OK', 200);
@@ -115,21 +112,19 @@ class PaymentCallbackController extends Controller
             return response('OK', 200);
         }
 
-        $payment = Payment::where('transaction_id', $depositId)
-            ->where('status', 'pending')
-            ->first();
+        $payment = Payment::where('transaction_id', $depositId)->where('status', 'pending')->first();
 
         if ($payment) {
             $this->validateAndFinalize($payment);
         } else {
-            Log::warning("PawaPay callback – aucun paiement pending trouvé pour deposit {$depositId}");
+            Log::warning("PawaPay – aucun paiement pending pour deposit {$depositId}");
         }
 
         return response('OK', 200);
     }
 
     // =========================================================================
-    // PAIEMENTPRO
+    // PAIEMENTPRO (redirect navigateur)
     // =========================================================================
 
     private function handlePaiementPro(Request $request)
@@ -142,72 +137,102 @@ class PaymentCallbackController extends Controller
             return redirect()->route('home');
         }
 
-        $payment = Payment::where('transaction_id', $reference)
-            ->where('status', 'pending')
-            ->first();
+        $payment = Payment::where('transaction_id', $reference)->where('status', 'pending')->first();
 
         if ($payment && $responseCode == '0') {
             $this->validateAndFinalize($payment, $payId);
-
-            // PaiementPro redirige le navigateur de l'utilisateur → on renvoie vers une page de succès
-            return redirect()->route('payment.success')
-                ->with('success', 'Paiement validé avec succès !');
+            return redirect()->route('payment.success')->with('success', 'Paiement validé avec succès !');
         }
 
-        Log::warning("PaiementPro callback – paiement non trouvé ou code refus", [
-            'reference'     => $reference,
-            'response_code' => $responseCode,
-        ]);
+        Log::warning("PaiementPro – paiement non trouvé ou refusé", ['ref' => $reference, 'code' => $responseCode]);
+        return redirect()->route('payment.failed')->with('danger', 'Transaction refusée ou introuvable.');
+    }
 
-        return redirect()->route('payment.failed')
-            ->with('danger', 'Transaction refusée ou introuvable.');
+    // =========================================================================
+    // PAYSTACK (webhook JSON)
+    // =========================================================================
+
+    private function handlePaystack(Request $request)
+    {
+        // Vérification de la signature Paystack
+        $secretKey = env('PAYSTACK_SECRET_KEY');
+        if ($secretKey) {
+            $hash = hash_hmac('sha512', $request->getContent(), $secretKey);
+            if ($hash !== $request->header('x-paystack-signature')) {
+                Log::warning("Paystack – signature invalide");
+                return response('Unauthorized', 401);
+            }
+        }
+
+        $payload   = $request->json()->all();
+        $event     = $payload['event'] ?? null;
+        $reference = $payload['data']['reference'] ?? null;
+        $paystackId = $payload['data']['id'] ?? null;
+        $status    = $payload['data']['status'] ?? null;
+
+        Log::channel('payment')->info("Paystack event: {$event}", ['reference' => $reference, 'status' => $status]);
+
+        // Seul l'événement charge.success nous intéresse
+        if ($event !== 'charge.success' || $status !== 'success' || !$reference) {
+            return response('OK', 200);
+        }
+
+        // Option : vérification de la transaction directement via l'API Paystack
+        if ($secretKey) {
+            try {
+                $verify = Http::withToken($secretKey)
+                    ->get("https://api.paystack.co/transaction/verify/{$reference}");
+
+                if (!$verify->successful() || ($verify->json()['data']['status'] ?? '') !== 'success') {
+                    Log::warning("Paystack – vérification échouée pour ref {$reference}");
+                    return response('OK', 200);
+                }
+            } catch (\Exception $e) {
+                Log::error("Paystack verify exception: " . $e->getMessage());
+            }
+        }
+
+        $payment = Payment::where('transaction_id', $reference)->where('status', 'pending')->first();
+
+        if ($payment) {
+            $this->validateAndFinalize($payment, (string) $paystackId);
+        } else {
+            Log::warning("Paystack – aucun paiement pending pour ref {$reference}");
+        }
+
+        return response('OK', 200);
     }
 
     // =========================================================================
     // VALIDATION & FINALISATION (commune à tous les prestataires)
     // =========================================================================
 
-    /**
-     * Valide le paiement en base (statut pending → completed) puis
-     * appelle PaymentService::finalizePurchase() qui active le bon objet
-     * métier selon payment_type (livre ou abonnement).
-     */
     private function validateAndFinalize(Payment $payment, ?string $providerRef = null): void
     {
         DB::transaction(function () use ($payment, $providerRef) {
-
-            // Verrou pour éviter la double validation en cas de callback dupliqué
+            // Verrou pour éviter la double validation
             $fresh = Payment::where('id', $payment->id)->lockForUpdate()->first();
 
             if (!$fresh || $fresh->status !== 'pending') {
-                Log::warning("Paiement déjà traité ou introuvable – abandon", [
-                    'id'     => $payment->id,
-                    'status' => $fresh->status ?? 'NULL',
+                Log::warning("Paiement déjà traité ou introuvable", [
+                    'id' => $payment->id, 'status' => $fresh->status ?? 'NULL',
                 ]);
                 return;
             }
 
-            // Mise à jour du statut + référence provider si disponible
             $details = $fresh->payment_details ?? [];
-            if ($providerRef) {
-                $details['provider_ref'] = $providerRef;
-            }
+            if ($providerRef) $details['provider_ref'] = $providerRef;
 
-            $fresh->update([
-                'status'          => 'completed',
-                'payment_details' => $details,
-            ]);
+            $fresh->update(['status' => 'completed', 'payment_details' => $details]);
 
             Log::channel('payment')->info("Paiement validé", [
                 'id'             => $fresh->id,
                 'transaction_id' => $fresh->transaction_id,
                 'payment_type'   => $fresh->payment_type,
                 'amount'         => $fresh->amount,
-                'provider_ref'   => $providerRef,
             ]);
 
-            // Délégation de la logique métier à PaymentService
-            // (crée le Purchase, active l'abonnement, envoie les notifications…)
+            // Délégation métier : Purchase, Subscription, notifications…
             $this->paymentService->finalizePurchase($fresh);
         });
     }
