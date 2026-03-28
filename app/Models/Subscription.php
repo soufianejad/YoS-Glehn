@@ -48,7 +48,8 @@ class Subscription extends Model
 
     public function daysRemaining()
     {
-        return max(0, now()->diffInDays($this->end_date, false));
+        $diff = now()->diffInDays($this->end_date, false);
+        return (int) max(0, round($diff));
     }
     public function payments()
 {

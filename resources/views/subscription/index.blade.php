@@ -147,7 +147,7 @@
                     <div class="card-body p-4 p-md-5">
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start mb-4">
                             <div class="mb-3 mb-md-0">
-                                <span class="badge bg-white bg-opacity-20 text-white mb-2 px-3 py-2 rounded-pill">{{ strtoupper(__('Plan actuel')) }}</span>
+                                <span class="badge bg-opacity-20 text-white mb-2 px-3 py-2 rounded-pill">{{ strtoupper(__('Plan actuel')) }}</span>
                                 <h2 class="display-5 fw-bold text-white mb-0">{{ $subscription->subscriptionPlan->name }}</h2>
                             </div>
                             <div class="d-flex align-items-center gap-2">
@@ -180,7 +180,7 @@
                             </div>
                             <div class="col-6 col-md-3">
                                 <div class="opacity-75 small mb-1">{{ __('Statut') }}</div>
-                                <div class="fw-bold h5 text-white mb-0">{{ $subscription->daysRemaining() }} {{ __('jours') }}</div>
+                                <div class="fw-bold h5 text-white mb-0">{{ number_format($subscription->daysRemaining(), 0) }} {{ __('jours') }}</div>
                             </div>
                         </div>
 
