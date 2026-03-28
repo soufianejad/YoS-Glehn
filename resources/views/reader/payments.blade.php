@@ -52,7 +52,7 @@
                                         @if ($payment->book)
                                             <a href="{{ route('book.show', $payment->book->slug) }}" class="btn btn-sm btn-outline-secondary">{{ __('View Book') }}</a>
                                         @elseif ($payment->subscription)
-                                            <a href="{{ route('reader.subscription') }}" class="btn btn-sm btn-outline-secondary">{{ __('View Subscription') }}</a>
+                                            <a href="{{ route('subscription.index') }}" class="btn btn-sm btn-outline-secondary">{{ __('View Subscription') }}</a>
                                         @else
                                             -
                                         @endif

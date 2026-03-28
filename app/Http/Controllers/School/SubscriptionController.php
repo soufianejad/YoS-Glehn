@@ -15,23 +15,7 @@ class SubscriptionController extends Controller
      */
     public function index()
     {
-        $user = auth()->user();
-        $school = $user->managedSchool;
-
-        if (! $school) {
-            // Using correct route name and providing meaningful error message
-            return redirect()->route('school.dashboard')->with('error', 'Vous n\'êtes associé à aucune école.');
-        }
-
-        $subscription = $school->subscription;
-        // Eager load plan details with subscription
-        if ($subscription) {
-            $subscription->load('subscriptionPlan');
-        }
-
-        $payments = $school->payments()->latest()->paginate(10);
-
-        return view('school.subscription.index', compact('school', 'subscription', 'payments'));
+        return redirect()->route('subscription.index');
     }
 
     /**
@@ -39,12 +23,7 @@ class SubscriptionController extends Controller
      */
     public function showPlans()
     {
-        $plans = \App\Models\SubscriptionPlan::where('type', 'school')
-            ->where('is_active', true)
-            ->orderBy('order')
-            ->get();
-
-        return view('school.subscription.plans', compact('plans'));
+        return redirect()->route('subscription.plans');
     }
 
     /**

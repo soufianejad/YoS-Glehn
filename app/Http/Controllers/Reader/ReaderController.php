@@ -215,12 +215,7 @@ class ReaderController extends Controller
 
     public function subscription()
     {
-        $user = auth()->user();
-        $subscription = $user->activeSubscription()->with('subscriptionPlan')->first();
-        $subscriptionPlans = \App\Models\SubscriptionPlan::where('is_active', true)->orderBy('price')->get();
-        $subscriptionHistory = $user->subscriptions()->with('subscriptionPlan')->latest()->get();
-
-        return view('reader.subscription', compact('subscription', 'subscriptionPlans', 'subscriptionHistory'));
+        return redirect()->route('subscription.index');
     }
 
     public function quizzes()
@@ -268,7 +263,7 @@ class ReaderController extends Controller
             'cancelled_at' => now(),
         ]);
 
-        return back()->with('success', __('Subscription cancelled successfully.'));
+        return redirect()->route('subscription.index')->with('success', __('Subscription cancelled successfully.'));
     }
 
     public function renewSubscription(Request $request)
@@ -277,7 +272,7 @@ class ReaderController extends Controller
         $subscription = $user->activeSubscription()->first() ?? $user->subscriptions()->latest()->first();
 
         if (! $subscription) {
-            return back()->with('error', __('You do not have a subscription to renew.'));
+            return redirect()->route('subscription.index')->with('error', __('You do not have a subscription to renew.'));
         }
 
         $request->validate([
@@ -299,7 +294,7 @@ class ReaderController extends Controller
             'payment_details' => ['subscription_id' => $subscription->id],
         ]);
 
-        return $this->paymentService->initiatePayment($request, $payment, false, route('reader.subscription'));
+        return $this->paymentService->initiatePayment($request, $payment, false, route('subscription.index'));
     }
 
     public function payments()

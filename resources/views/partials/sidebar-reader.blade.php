@@ -59,16 +59,16 @@
     <li class="mt-1">
         <a href="#accountSubmenu"
            data-bs-toggle="collapse"
-           aria-expanded="{{ request()->routeIs('reader.profile') || request()->routeIs('reader.subscription') || request()->routeIs('reader.payments') ? 'true' : 'false' }}"
+           aria-expanded="{{ request()->routeIs('reader.profile') || request()->routeIs('subscription.index') || request()->routeIs('reader.payments') ? 'true' : 'false' }}"
            class="dropdown-toggle nav-link sidebar-heading text-decoration-none">
             {{ __('Mon Compte') }}
         </a>
-        <ul class="p-0 collapse {{ request()->routeIs('reader.profile') || request()->routeIs('reader.subscription') || request()->routeIs('reader.payments') ? 'show' : '' }}" id="accountSubmenu">
+        <ul class="p-0 collapse {{ request()->routeIs('reader.profile') || request()->routeIs('subscription.index') || request()->routeIs('reader.payments') ? 'show' : '' }}" id="accountSubmenu">
             <li style="display:block" class="nav-item {{ request()->routeIs('reader.profile') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('reader.profile') }}"><i class="fas fa-user"></i> {{ __('Mon Profil') }}</a>
             </li>
-            <li style="display:block" class="nav-item {{ request()->routeIs('reader.subscription') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('reader.subscription') }}"><i class="fas fa-credit-card"></i> {{ __('Mon Abonnement') }}</a>
+            <li style="display:block" class="nav-item {{ request()->routeIs('subscription.index') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('subscription.index') }}"><i class="fas fa-credit-card"></i> {{ __('Mon Abonnement') }}</a>
             </li>
             <li style="display:block" class="nav-item {{ request()->routeIs('reader.payments') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('reader.payments') }}"><i class="fas fa-money-bill-wave"></i> {{ __('Mes Paiements') }}</a>

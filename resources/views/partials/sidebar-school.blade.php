@@ -52,10 +52,10 @@
     </li>
 
     <li class="nav-item">
-        <a href="#configSubmenu" data-bs-toggle="collapse" aria-expanded="{{ request()->routeIs('school.settings*') || request()->routeIs('school.qrcode*') || request()->routeIs('school.subscription*') ? 'true' : 'false' }}" class="dropdown-toggle nav-link">
+        <a href="#configSubmenu" data-bs-toggle="collapse" aria-expanded="{{ request()->routeIs('school.settings*') || request()->routeIs('school.qrcode*') || request()->routeIs('subscription.index') ? 'true' : 'false' }}" class="dropdown-toggle nav-link">
             <i class="fas fa-cogs"></i> {{ __('Configuration') }}
         </a>
-        <ul class="collapse list-unstyled {{ request()->routeIs('school.settings*') || request()->routeIs('school.qrcode*') || request()->routeIs('school.subscription*') ? 'show' : '' }}" id="configSubmenu">
+        <ul class="collapse list-unstyled {{ request()->routeIs('school.settings*') || request()->routeIs('school.qrcode*') || request()->routeIs('subscription.index') ? 'show' : '' }}" id="configSubmenu">
             <li class="nav-item {{ request()->routeIs('school.settings*') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('school.settings') }}">
                     <i class="fas fa-cog"></i> {{ __('Paramètres') }}
@@ -66,8 +66,8 @@
                     <i class="fas fa-qrcode"></i> {{ __('Inscription par QR Code') }}
                 </a>
             </li>
-            <li class="nav-item {{ request()->routeIs('school.subscription*') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('school.subscription.index') }}">
+            <li class="nav-item {{ request()->routeIs('subscription.index') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('subscription.index') }}">
                     <i class="fas fa-credit-card"></i> {{ __('Abonnement') }}
                 </a>
             </li>

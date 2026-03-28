@@ -32,15 +32,29 @@ class SubscriptionController extends Controller
         $user         = auth()->user();
         $subscription = $user->activeSubscription;
         $history      = $user->subscriptions()->with('subscriptionPlan')->latest()->paginate(10);
-        $plans        = SubscriptionPlan::where('is_active', true)->orderBy('order')->get(); // Fetch available plans
-        $currentSubscription = $user->activeSubscription; // Fetch current subscription again for highlighting in plans list
+        
+        // Filter plans by type
+        $type = $user->isSchool() ? 'school' : 'individual';
+        $plans = SubscriptionPlan::where('is_active', true)
+            ->where('type', $type)
+            ->orderBy('order')
+            ->get();
+            
+        $currentSubscription = $user->activeSubscription;
 
         return view('subscription.index', compact('subscription', 'history', 'plans', 'currentSubscription'));
     }
 
     public function plans()
     {
-        $plans = SubscriptionPlan::where('is_active', true)->orderBy('order')->get();
+        $user = auth()->user();
+        $type = ($user && $user->isSchool()) ? 'school' : 'individual';
+        
+        $plans = SubscriptionPlan::where('is_active', true)
+            ->where('type', $type)
+            ->orderBy('order')
+            ->get();
+            
         $currentSubscription = auth()->check() ? auth()->user()->activeSubscription : null;
 
         return view('subscription.plans', compact('plans', 'currentSubscription'));

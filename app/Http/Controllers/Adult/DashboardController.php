@@ -101,8 +101,7 @@ class DashboardController extends Controller
 
     public function subscription()
     {
-        // Placeholder for adult subscription
-        return view('adult.dashboard.subscription');
+        return redirect()->route('subscription.index');
     }
 
     public function payments()
