@@ -189,7 +189,7 @@
                                     </div>
                                 </div>
                                 <div class="p-2 border-top text-center bg-light">
-                                    <a class="dropdown-item small text-primary fw-bold" href="{{ route('notifications.index') }}">{{ __('Voir toutes les notifications') }}</a>
+                                    <a class="dropdown-item small text-primary fw-bold" href="{{ route('admin.notifications.index') }}">{{ __('Voir toutes les notifications') }}</a>
                                 </div>
                             </div>
                         </li>

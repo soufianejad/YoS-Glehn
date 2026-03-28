@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
+class QuizController extends Controller
+{
     public function create(Book $book)
     {
         // Authorization: Ensure the teacher can only create quizzes for educational books.

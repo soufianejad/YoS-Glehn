@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <h1>{{ __('Notification History') }}</h1>
-    <p>{{ __('A log of all notifications sent by the system.') }}</p>
+
 
     <table class="table table-striped">
         <thead>
