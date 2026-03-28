@@ -31,8 +31,9 @@ class SubscriptionController extends Controller
     {
         $user         = auth()->user();
         $subscription = $user->activeSubscription;
+        $history      = $user->subscriptions()->with('subscriptionPlan')->latest()->paginate(10);
 
-        return view('subscription.index', compact('subscription'));
+        return view('subscription.index', compact('subscription', 'history'));
     }
 
     public function plans()
@@ -94,12 +95,16 @@ class SubscriptionController extends Controller
 
         $user = auth()->user();
 
-        // 1. Création de l'abonnement en attente
+        // 1. Déterminer la date de début (extension ou nouveau)
+        $activeSub = $user->activeSubscription;
+        $startDate = $activeSub ? $activeSub->end_date->addDay() : now();
+
+        // 2. Création de l'abonnement en attente
         $subscription = Subscription::create([
             'user_id'              => $user->id,
             'subscription_plan_id' => $plan->id,
-            'start_date'           => now(),
-            'end_date'             => now()->addDays($plan->duration_days),
+            'start_date'           => $startDate,
+            'end_date'             => $startDate->copy()->addDays($plan->duration_days),
             'status'               => 'pending',
             'auto_renew'           => true,
         ]);
