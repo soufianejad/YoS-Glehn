@@ -17,10 +17,6 @@ Route::prefix('library')->name('library.')->group(function () {
     Route::post('/{book:slug}/review', [AdultLibraryController::class, 'storeReview'])->name('review.store');
 });
 
-// Achats
-Route::post('/purchase/{book}/pdf', [AdultLibraryController::class, 'purchasePdf'])->name('purchase.pdf');
-Route::post('/purchase/{book}/audio', [AdultLibraryController::class, 'purchaseAudio'])->name('purchase.audio');
-
 // Profil adulte
 Route::get('/bookmarks', [AdultDashboardController::class, 'bookmarks'])->name('bookmarks');
 Route::get('/reviews', [AdultDashboardController::class, 'reviews'])->name('reviews');
@@ -30,5 +26,3 @@ Route::get('/profile', [AdultDashboardController::class, 'profile'])->name('prof
 Route::get('/favorites', [AdultDashboardController::class, 'favorites'])->name('favorites');
 Route::get('/quizzes', [AdultDashboardController::class, 'quizzes'])->name('quizzes');
 Route::get('/badges', [AdultDashboardController::class, 'badges'])->name('badges');
-Route::get('/subscription', [AdultDashboardController::class, 'subscription'])->name('subscription');
-Route::get('/payments', [AdultDashboardController::class, 'payments'])->name('payments');

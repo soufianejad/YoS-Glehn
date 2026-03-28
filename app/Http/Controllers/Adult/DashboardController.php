@@ -89,24 +89,11 @@ class DashboardController extends Controller
 
     public function quizzes()
     {
-        // Placeholder for adult quizzes
-        return view('adult.dashboard.quizzes');
+        return redirect()->route('reader.quizzes');
     }
 
     public function badges()
     {
-        // Placeholder for adult badges
-        return view('adult.dashboard.badges');
-    }
-
-    public function subscription()
-    {
-        return redirect()->route('subscription.index');
-    }
-
-    public function payments()
-    {
-        // Placeholder for adult payments
-        return view('adult.dashboard.payments');
+        return redirect()->route('reader.badges');
     }
 }
