@@ -33,10 +33,9 @@ class SubscriptionController extends Controller
         $subscription = $user->activeSubscription;
         $history      = $user->subscriptions()->with('subscriptionPlan')->latest()->paginate(10);
         
-        // Filter plans by type
-        $type = $user->isSchool() ? 'school' : 'individual';
+        // Show all active plans
         $plans = SubscriptionPlan::where('is_active', true)
-            ->where('type', $type)
+            ->orderBy('type', 'desc') // Individual first, then School
             ->orderBy('order')
             ->get();
             
@@ -47,11 +46,9 @@ class SubscriptionController extends Controller
 
     public function plans()
     {
-        $user = auth()->user();
-        $type = ($user && $user->isSchool()) ? 'school' : 'individual';
-        
+        // Show all active plans
         $plans = SubscriptionPlan::where('is_active', true)
-            ->where('type', $type)
+            ->orderBy('type', 'desc')
             ->orderBy('order')
             ->get();
             

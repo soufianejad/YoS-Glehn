@@ -345,6 +345,9 @@
                             @endif
 
                             <div class="text-center mb-4">
+                                <span class="badge {{ $plan->type === 'school' ? 'bg-info' : 'bg-secondary' }} mb-2 rounded-pill opacity-75">
+                                    {{ $plan->type === 'school' ? __('École') : __('Individual') }}
+                                </span>
                                 <h4 class="fw-bold text-dark mb-3">{{ $plan->name }}</h4>
                                 <div class="price-tag">
                                     {{ number_format($plan->price, 0) }}<span class="h6 fw-normal text-muted ms-1">XOF</span>
