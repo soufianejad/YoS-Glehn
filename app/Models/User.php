@@ -120,6 +120,11 @@ class User extends Authenticatable
         return $this->role === 'adult_reader';
     }
 
+    public function adultAccess()
+    {
+        return $this->hasOne(AdultAccess::class);
+    }
+
     // Relations
 
     // Livres publiés (si auteur)

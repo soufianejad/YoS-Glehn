@@ -167,6 +167,14 @@
                         <span class="ms-2 d-none d-md-inline">{{ __('Menu') }}</span>
                     </button>
                     <ul class="navbar-nav ms-auto">
+                        @if(Auth::user()->isAdultReader() && Auth::user()->adultAccess)
+                            <li class="nav-item me-3 d-flex align-items-center">
+                                <span class="badge bg-success">
+                                    <i class="bi bi-clock-history me-1"></i>
+                                    {{ __('Jours restants :') }} {{ now()->diffInDays(Auth::user()->adultAccess->expires_at) }}
+                                </span>
+                            </li>
+                        @endif
                         <!-- Notifications Dropdown -->
                         <li class="nav-item dropdown me-2">
                             <a id="navbarDropdownNotifications" class="nav-link dropdown-toggle position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
