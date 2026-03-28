@@ -366,8 +366,3 @@
     @stack('scripts')
 </body>
 </html>
-@endauth
-    </script>
-    @stack('scripts')
-</body>
-</html>
