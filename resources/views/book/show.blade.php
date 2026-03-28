@@ -36,7 +36,7 @@
                     <h1 class="display-5 fw-bold text-dark mb-2">{{ $book->title }}</h1>
                     <p class="fs-5 text-muted mb-1">
                         {{ __('par') }}
-                        <a href=""
+                        <a href="{{ route('public.author.show', $book->author) }}"
                            class="text-decoration-none text-primary fw-medium hover-underline">
                             {{ $book->author->name }}
                         </a>
@@ -430,7 +430,11 @@
                         </a>
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title"><a href="{{ route('book.show', $relatedBook->slug) }}" class="text-dark">{{ Str::limit($relatedBook->title, 50) }}</a></h5>
-                            <p class="card-text text-muted mb-2">{{ $relatedBook->author->name }}</p>
+                            <p class="card-text text-muted mb-2">
+                                <a href="{{ route('public.author.show', $relatedBook->author) }}" class="text-decoration-none text-muted">
+                                    {{ $relatedBook->author->name }}
+                                </a>
+                            </p>
                             <div class="star-rating mb-3">
                                 @php $rating = $relatedBook->reviews->avg('rating'); @endphp
                                 @for ($i = 1; $i <= 5; $i++)

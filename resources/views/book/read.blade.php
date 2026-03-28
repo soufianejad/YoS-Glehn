@@ -67,7 +67,7 @@
             <div class="col-12">
                 <h1 class="h3 fw-bold text-primary mb-1">{{ $book->title }}</h1>
                 @if ($book->author)
-                    <p class="text-muted mb-0"><i class="fas fa-user-feather me-1"></i> {{ __('par') }} {{ $book->author->name }}</p>
+                    <p class="text-muted mb-0"><i class="fas fa-user-feather me-1"></i> {{ __('par') }} <a href="{{ route('public.author.show', $book->author) }}" class="text-decoration-none text-muted">{{ $book->author->name }}</a></p>
                 @endif
             </div>
         </div>

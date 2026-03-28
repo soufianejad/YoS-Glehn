@@ -132,7 +132,7 @@
                                     </a>
                                     <div class="card-body p-2 text-center">
                                          <h6 class="card-title small font-weight-bold mt-2"><a href="{{ route('book.show', $book) }}" class="text-gray-800">{{ Str::limit($book->title, 25) }}</a></h6>
-                                        <p class="card-text small text-muted mb-1">{{ $book->author->name }}</p>
+                                        <p class="card-text small mb-1"><a href="{{ route('public.author.show', $book->author) }}" class="text-decoration-none text-muted">{{ $book->author->name }}</a></p>
                                         <div class="star-rating small">
                                             @for ($i = 1; $i <= 5; $i++)
                                                 <i class="fas fa-star {{ $i <= $book->average_rating ? 'text-warning' : 'text-gray-300' }}"></i>

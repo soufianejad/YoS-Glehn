@@ -16,7 +16,7 @@
                     
                     <div class="text-center mb-4">
                         <h1 class="card-title h2">{{ $book->title }}</h1>
-                        <p class="text-muted">{{ __('par') }} {{ $book->author->name }}</p>
+                        <p class="text-muted">{{ __('par') }} <a href="{{ route('public.author.show', $book->author) }}" class="text-decoration-none text-muted">{{ $book->author->name }}</a></p>
                     </div>
 
                     @if($book->files->where('file_type', 'audio')->count() > 0 || $book->audio_file)

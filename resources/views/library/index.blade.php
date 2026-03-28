@@ -134,7 +134,7 @@
                             </a>
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title"><a href="{{ route('book.show', $book->slug) }}" class="text-dark">{{ Str::limit($book->title, 50) }}</a></h5>
-                                <p class="card-text text-muted mb-2">{{ $book->author->name }}</p>
+                                <p class="card-text mb-2"><a href="{{ route('public.author.show', $book->author) }}" class="text-decoration-none text-muted">{{ $book->author->name }}</a></p>
                                 <div class="star-rating mb-3">
                                     @php $rating = $book->reviews->avg('rating'); @endphp
                                     @for ($i = 1; $i <= 5; $i++)

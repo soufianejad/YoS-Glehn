@@ -67,7 +67,7 @@
                     <div class="card-body d-flex flex-column p-3">
                         <h6 class="card-title font-weight-bold mb-1"><a href="{{ route('student.book.show', $book->slug) }}" class="text-gray-900">{{ Str::limit($book->title, 40) }}</a></h6>
                         @if($book->author)
-                            <p class="small text-muted mb-2">{{ $book->author->name }}</p>
+                            <p class="small mb-2"><a href="{{ route('public.author.show', $book->author) }}" class="text-decoration-none text-muted">{{ $book->author->name }}</a></p>
                         @endif
 
                         @php
