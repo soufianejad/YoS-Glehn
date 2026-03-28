@@ -60,7 +60,7 @@ class ReviewController extends Controller
                 'Nouvel avis sur votre livre',
                 "Un nouvel avis a été approuvé et publié sur votre livre '{$review->book->title}'.",
                 route('book.show', $review->book->slug),
-                'info'
+                'new_review'
             );
         }
 

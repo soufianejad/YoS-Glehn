@@ -115,7 +115,7 @@ class QuizController extends Controller
             'Résultat du Quiz',
             $message,
             route('quiz.result', $attempt),
-            $isPassed ? 'success' : 'info'
+            'quiz_result'
         );
 
         // Notify the school if this was an assigned book
@@ -133,7 +133,7 @@ class QuizController extends Controller
                         'Quiz terminé par un étudiant',
                         "L'étudiant {$user->name} a terminé le quiz pour le livre '{$quiz->book->title}' avec un score de {$score} points.",
                         route('quiz.result', $attempt), // Maybe a school-specific result view in the future
-                        'info'
+                        'quiz_result'
                     );
                 }
             }

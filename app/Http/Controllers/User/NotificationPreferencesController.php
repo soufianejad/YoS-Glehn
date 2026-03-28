@@ -16,9 +16,14 @@ class NotificationPreferencesController extends Controller
         return [
             'new_message' => __('New Messages'),
             'quiz_result' => __('Quiz Results'),
+            'book_purchase' => __('Book Purchases'),
             'subscription_update' => __('Subscription Updates'),
+            'subscription_reminder' => __('Subscription Reminders'),
+            'book_assignment' => __('New Book Assignments'),
             'badge_unlocked' => __('New Badges Unlocked'),
-            'book_assignment' => __('New Book Assignments'), // For students
+            'new_review' => __('New Reviews'),
+            'book_approved' => __('Book Approved'),
+            'payout_processed' => __('Payouts Processed'),
         ];
     }
 

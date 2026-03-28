@@ -131,7 +131,7 @@ class MessagingController extends Controller
                     'Nouveau message reçu',
                     "Vous avez reçu un nouveau message de {$sender->name}.",
                     route('messaging.index', ['conversation' => $conversation->id]),
-                    'info'
+                    'new_message'
                 );
             }
         }

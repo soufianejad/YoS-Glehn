@@ -71,7 +71,7 @@ class SendSubscriptionReminders extends Command
                     'Votre abonnement arrive à expiration',
                     "Votre abonnement '{$subscription->subscriptionPlan->name}' expire dans {$reminderDays} jours. Renouvelez-le pour ne pas perdre l'accès.",
                     route('subscription.plans'),
-                    'warning'
+                    'subscription_reminder'
                 );
                 $this->line("Reminder sent to: {$subscription->user->email}");
             }

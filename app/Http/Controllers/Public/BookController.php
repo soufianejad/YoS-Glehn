@@ -323,7 +323,7 @@ class BookController extends Controller
                     __('Nouvel avis reçu'),
                     __('Un lecteur a laissé un avis sur votre livre ":title". Il est en attente de validation.', ['title' => $book->title]),
                     route('author.books.show', $book->id),
-                    'info'
+                    'new_review'
                 );
             }
         }
@@ -335,7 +335,7 @@ class BookController extends Controller
                 __('Nouvel avis à modérer'),
                 __('Un nouvel avis a été posté sur le livre ":title" par :user.', ['title' => $book->title, 'user' => auth()->user()->name]),
                 route('admin.reviews.pending'),
-                'warning'
+                'new_review'
             );
         }
 

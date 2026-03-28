@@ -441,13 +441,13 @@ class PaymentService
             ]);
             app(\App\Services\RevenueCalculatorService::class)->recordRevenue($payment);
             $book=$payment->book;
-            $ns->sendNotification($user,__('Achat confirmé'),__('Votre achat pour le livre ":title" a été validé.',['title'=>$book->title]),route('book.show',$book->slug),'success');
+            $ns->sendNotification($user,__('Achat confirmé'),__('Votre achat pour le livre ":title" a été validé.',['title'=>$book->title]),route('book.show',$book->slug),'book_purchase');
         } elseif (in_array($payment->payment_type,['subscription','subscription_renewal'])) {
             $sub=$payment->subscription??Subscription::find($payment->subscription_id);
             if ($sub) {
                 $plan=$sub->subscriptionPlan;
                 $sub->update(['status'=>'active','start_date'=>$sub->start_date??now(),'end_date'=>now()->addDays($plan->duration_days??30)]);
-                $ns->sendNotification($user,__('Abonnement activé'),__('Votre abonnement ":plan" est actif.',['plan'=>$plan->name]),route('subscription.index'),'success');
+                $ns->sendNotification($user,__('Abonnement activé'),__('Votre abonnement ":plan" est actif.',['plan'=>$plan->name]),route('subscription.index'),'subscription_update');
             }
         }
     }

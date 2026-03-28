@@ -94,7 +94,7 @@ class BookAssignmentController extends Controller
                     'Nouveau livre assigné',
                     "Le livre '{$book->title}' a été assigné à votre classe '{$class->name}'.",
                     route('book.show', $book->slug),
-                    'info'
+                    'book_assignment'
                 );
             }
         }

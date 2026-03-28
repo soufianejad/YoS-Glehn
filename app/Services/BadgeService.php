@@ -85,11 +85,11 @@ class BadgeService
 
         // Send a notification for the new badge
         $this->notificationService->sendNotification(
-            user: $user,
-            title: 'Félicitations ! Vous avez gagné un nouveau badge.',
-            message: "Vous avez débloqué le badge : {$badge->name}. {$badge->description}",
-            link: route('reader.badges'),
-            type: 'info'
+            $user,
+            'Félicitations ! Vous avez gagné un nouveau badge.',
+            "Vous avez débloqué le badge : {$badge->name}. {$badge->description}",
+            route('reader.badges'),
+            'badge_unlocked'
         );
     }
 

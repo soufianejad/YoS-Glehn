@@ -344,7 +344,7 @@ class BookManagementController extends Controller
                 'Votre livre a été publié !',
                 "Félicitations ! Votre livre '{$book->title}' a été approuvé et est maintenant visible sur la plateforme.",
                 route('book.show', $book->slug),
-                'success'
+                'book_approved'
             );
         }
 

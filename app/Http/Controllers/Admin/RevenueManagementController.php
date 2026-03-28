@@ -132,7 +132,7 @@ class RevenueManagementController extends Controller
                 'Paiement de revenus effectué',
                 "Votre paiement de revenus d'un montant de {$payout->amount} {$payout->currency} a été traité avec succès.",
                 route('author.revenues'), // Assuming this route exists for authors
-                'success'
+                'payout_processed'
             );
         }
 
