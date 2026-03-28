@@ -74,6 +74,7 @@ class PaymentController extends Controller
             $lastPayment = Payment::where('user_id', $user->id)
                 ->where('status', 'completed')
                 ->where('created_at', '>=', now()->subMinutes(30))
+                ->with('book')
                 ->latest()
                 ->first();
         }

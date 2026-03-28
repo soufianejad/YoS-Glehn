@@ -408,6 +408,7 @@ class PaymentCallbackController extends Controller
 
             $fresh->update([
                 'status'          => 'completed',
+                'paid_at'         => now(),
                 'payment_details' => $details,
             ]);
 

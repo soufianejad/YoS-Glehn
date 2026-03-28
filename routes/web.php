@@ -85,7 +85,7 @@ Route::prefix('library')->name('library.')->group(function () {
 // Détails d'un livre
 Route::prefix('book')->name('book.')->group(function () {
     Route::get('/{book:slug}', [BookController::class, 'show'])->name('show');
-    Route::post('/{book}/increment-views', [BookController::class, 'incrementViews'])->name('increment-views');
+    Route::post('/{book:slug}/increment-views', [BookController::class, 'incrementViews'])->name('increment-views');
 });
 
 // Authentification
@@ -112,12 +112,12 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('read')->name('read.')->group(function () {
         Route::get('/pdf-content/{book:slug}', [BookController::class, 'servePdfContent'])->name('pdf.content');
         Route::get('/{book:slug}/{file_id?}', [BookController::class, 'read'])->name('book');
-        Route::post('/{book}/progress', [BookController::class, 'updateReadingProgress'])->name('progress');
-        // Route::post('/{book}/download', [BookController::class, 'download'])->name('download');
+        Route::post('/{book:slug}/progress', [BookController::class, 'updateReadingProgress'])->name('progress');
+        // Route::post('/{book:slug}/download', [BookController::class, 'download'])->name('download');
     });
 
     // Gestion des marque-pages (bookmarks)
-    Route::prefix('books/{book}/bookmarks')->name('bookmarks.')->group(function () {
+    Route::prefix('books/{book:slug}/bookmarks')->name('bookmarks.')->group(function () {
         Route::get('/', [BookmarkController::class, 'index'])->name('index');
         Route::post('/', [BookmarkController::class, 'store'])->name('store');
     });
@@ -130,22 +130,22 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('listen')->name('listen.')->group(function () {
         Route::get('/secure-audio/{book:slug}', [BookController::class, 'serveAudioContent'])->name('audio.content');
         Route::get('/{book:slug}/{file_id?}', [BookController::class, 'listen'])->name('book');
-        Route::post('/{book}/progress', [BookController::class, 'updateAudioProgress'])->name('progress');
+        Route::post('/{book:slug}/progress', [BookController::class, 'updateAudioProgress'])->name('progress');
     });
 
     // Favoris
-    Route::post('/favorites/{book}/toggle', [App\Http\Controllers\FavoriteController::class, 'toggleFavorite'])->name('favorites.toggle');
+    Route::post('/favorites/{book:slug}/toggle', [App\Http\Controllers\FavoriteController::class, 'toggleFavorite'])->name('favorites.toggle');
 
     // Avis
-    Route::post('/book/{book}/review', [App\Http\Controllers\Public\BookController::class, 'storeReview'])->name('review.store');
+    Route::post('/book/{book:slug}/review', [App\Http\Controllers\Public\BookController::class, 'storeReview'])->name('review.store');
     Route::put('/review/{review}', [App\Http\Controllers\Public\BookController::class, 'updateReview'])->name('review.update');
     Route::delete('/review/{review}', [App\Http\Controllers\Public\BookController::class, 'deleteReview'])->name('review.destroy');
 
     // Achats individuels
-    Route::get('/purchase/{book}/checkout', [App\Http\Controllers\Public\BookController::class, 'checkout'])->name('purchase.checkout');
-    Route::post('/purchase/{book}/pdf', [App\Http\Controllers\Public\BookController::class, 'purchasePdf'])->name('purchase.pdf');
-    Route::post('/purchase/{book}/audio', [App\Http\Controllers\Public\BookController::class, 'purchaseAudio'])->name('purchase.audio');
-    Route::get('/book/{book}/secure-download', [BookController::class, 'secureDownload'])->name('book.secure_download');
+    Route::get('/purchase/{book:slug}/checkout', [App\Http\Controllers\Public\BookController::class, 'checkout'])->name('purchase.checkout');
+    Route::post('/purchase/{book:slug}/pdf', [App\Http\Controllers\Public\BookController::class, 'purchasePdf'])->name('purchase.pdf');
+    Route::post('/purchase/{book:slug}/audio', [App\Http\Controllers\Public\BookController::class, 'purchaseAudio'])->name('purchase.audio');
+    Route::get('/book/{book:slug}/secure-download', [BookController::class, 'secureDownload'])->name('book.secure_download');
 
     // Routes de paiement
     Route::get('/payment/methods', [App\Http\Controllers\Public\PaymentController::class, 'getMethodsByCountry'])->name('payment.methods');
@@ -160,7 +160,7 @@ Route::middleware(['auth'])->group(function () {
 
     // General Quiz Routes
     Route::middleware(['auth'])->prefix('quiz')->name('quiz.')->group(function () {
-        Route::get('/book/{book}', [App\Http\Controllers\QuizController::class, 'show'])->name('show');
+        Route::get('/book/{book:slug}', [App\Http\Controllers\QuizController::class, 'show'])->name('show');
         Route::get('/{quiz}/start', [App\Http\Controllers\QuizController::class, 'start'])->name('start');
         Route::post('/{quiz}', [App\Http\Controllers\QuizController::class, 'submit'])->name('submit');
         Route::get('/result/{attempt}', [App\Http\Controllers\QuizController::class, 'result'])->name('result');
