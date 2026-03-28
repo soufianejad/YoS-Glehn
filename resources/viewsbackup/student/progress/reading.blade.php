@@ -67,7 +67,7 @@
                                 </td>
                                 <td class="text-center">{{ floor($progress->time_spent / 60) }} min</td>
                                 <td class="text-center">{{ $progress->last_read_at ? $progress->last_read_at->format('d/m/Y') : 'N/A' }}</td>
-                                <td class="text-center">{!! $progress->completed_at ? '<span class="badge badge-success">Terminé</span>' : '<span class="badge badge-secondary">En cours</span>' !!}</td>
+                                <td class="text-center">{!! $progress->completed_at ? '<span class="badge bg-success">Terminé</span>' : '<span class="badge bg-secondary">En cours</span>' !!}</td>
                                 <td class="text-center">
                                     @if($progress->book)
                                         <a href="{{ route('read.book', $progress->book->slug) }}" class="btn btn-sm btn-primary">

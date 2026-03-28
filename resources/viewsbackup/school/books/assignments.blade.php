@@ -52,9 +52,9 @@
                                 <td class="text-center">{{ $assignment->due_date ? $assignment->due_date->format('d/m/Y') : 'N/A' }}</td>
                                 <td class="text-center">
                                     @if($assignment->is_mandatory)
-                                        <span class="badge badge-danger">{{ __('Oui') }}</span>
+                                        <span class="badge bg-danger">{{ __('Oui') }}</span>
                                     @else
-                                        <span class="badge badge-secondary">{{ __('Non') }}</span>
+                                        <span class="badge bg-secondary">{{ __('Non') }}</span>
                                     @endif
                                 </td>
                                 <td class="text-center">

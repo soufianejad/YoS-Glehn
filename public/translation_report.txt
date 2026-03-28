@@ -15346,7 +15346,7 @@ Rechercher un livre...
 resources/views\student\progress\reading.blade.php
 
 --- STR ---
-<span class="badge badge-secondary">En cours</span>
+<span class="badge bg-secondary">En cours</span>
 --- FILES ---
 resources/views\student\progress\reading.blade.php
 

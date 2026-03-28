@@ -28,7 +28,7 @@
                     <img src="{{ $book->cover_image_url }}" class="img-fluid rounded" alt="{{ $book->title }}" style="max-height: 200px;">
                 </div>
                 <div class="col-md-10">
-                    <span class="badge badge-{{ \App\Helpers\StatusHelper::bookStatusColor($book->status) }} mb-2">{{ ucfirst($book->status) }}</span>
+                    <span class="badge bg-{{ \App\Helpers\StatusHelper::bookStatusColor($book->status) }} mb-2">{{ ucfirst($book->status) }}</span>
                     <h1 class="h3 font-weight-bold mb-1">{{ $book->title }}</h1>
                     <p class="text-muted">{{ $book->category->name ?? 'N/A' }}</p>
                     <div class="mt-3">

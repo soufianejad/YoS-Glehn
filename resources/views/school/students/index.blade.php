@@ -59,9 +59,9 @@
                                 <td class="text-center">{{ $student->classes()->count() }}</td>
                                 <td class="text-center">
                                     @if($student->is_active)
-                                        <span class="badge badge-success">{{ __('Actif') }}</span>
+                                        <span class="badge bg-success">{{ __('Actif') }}</span>
                                     @else
-                                        <span class="badge badge-danger">{{ __('Inactif') }}</span>
+                                        <span class="badge bg-danger">{{ __('Inactif') }}</span>
                                     @endif
                                 </td>
                                 <td class="text-center">{{ $student->created_at->format('d/m/Y') }}</td>

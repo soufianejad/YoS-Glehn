@@ -13,7 +13,7 @@
                     <img class="img-fluid rounded-circle mb-3" src="{{ $user->avatar_url }}" alt="{{ $user->name }}" style="width: 150px; height: 150px; object-fit: cover;">
                     <h4 class="card-title mb-0">{{ $user->name }}</h4>
                     <p class="text-muted">{{ $user->email }}</p>
-                    <span class="badge badge-{{ \App\Helpers\StatusHelper::userRoleColor($user->role) }}">{{ ucfirst($user->role) }}</span>
+                    <span class="badge bg-{{ \App\Helpers\StatusHelper::userRoleColor($user->role) }}">{{ ucfirst($user->role) }}</span>
                     @if($user->is_active)
                         <span class="badge bg-success">Actif</span>
                     @else
@@ -100,7 +100,7 @@
                                             @endif
                                         </td>
                                         <td class="text-end">{{ number_format($payment->amount, 2) }} €</td>
-                                        <td class="text-center"><span class="badge badge-{{ \App\Helpers\StatusHelper::paymentStatusColor($payment->status) }}">{{ ucfirst($payment->status) }}</span></td>
+                                        <td class="text-center"><span class="badge bg-{{ \App\Helpers\StatusHelper::paymentStatusColor($payment->status) }}">{{ ucfirst($payment->status) }}</span></td>
                                     </tr>
                                 @empty
                                     <tr><td colspan="4" class="text-center text-muted">Aucun paiement trouvé.</td></tr>

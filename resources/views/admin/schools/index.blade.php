@@ -55,7 +55,7 @@
                                 <td><a href="mailto:{{ $school->email }}">{{ $school->email }}</a></td>
                                 <td class="text-center">{{ $school->students()->count() }}</td>
                                 <td class="text-center">
-                                     <span class="badge badge-{{ \App\Helpers\StatusHelper::bookStatusColor($school->status) }}">{{ ucfirst($school->status) }}</span>
+                                     <span class="badge bg-{{ \App\Helpers\StatusHelper::bookStatusColor($school->status) }}">{{ ucfirst($school->status) }}</span>
                                 </td>
                                 <td class="text-center">{{ $school->created_at->format('d/m/Y') }}</td>
                                 <td class="text-center">

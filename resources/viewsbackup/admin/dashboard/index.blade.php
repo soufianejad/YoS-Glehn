@@ -211,15 +211,15 @@
                 <div class="list-group list-group-flush">
                     <a href="{{ route('admin.books.pending') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                         <span><i class="fas fa-book fa-fw mr-2 text-gray-400"></i>{{ __('Livres en attente') }}</span>
-                        <span class="badge badge-danger badge-pill">{{ $pendingBooks }}</span>
+                        <span class="badge bg-danger badge-pill">{{ $pendingBooks }}</span>
                     </a>
                     <a href="{{ route('admin.reviews.pending') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                         <span><i class="fas fa-star-half-alt fa-fw mr-2 text-gray-400"></i>{{ __('Avis en attente') }}</span>
-                        <span class="badge badge-danger badge-pill">{{ $pendingReviews }}</span>
+                        <span class="badge bg-danger badge-pill">{{ $pendingReviews }}</span>
                     </a>
                     <a href="{{ route('admin.revenues.payouts.index') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                          <span><i class="fas fa-hand-holding-usd fa-fw mr-2 text-gray-400"></i>{{ __('Paiements en attente') }}</span>
-                        <span class="badge badge-danger badge-pill">{{ $pendingPayouts }}</span>
+                        <span class="badge bg-danger badge-pill">{{ $pendingPayouts }}</span>
                     </a>
                 </div>
             </div>

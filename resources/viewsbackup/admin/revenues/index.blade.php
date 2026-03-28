@@ -88,7 +88,7 @@
                                 <td class="text-end">{{ number_format($revenue->platform_amount, 2) }} €</td>
                                 <td class="text-center">{{ $revenue->revenue_type }}</td>
                                 <td class="text-center">
-                                    <span class="badge badge-{{ \App\Helpers\StatusHelper::revenueStatusColor($revenue->status) }}">{{ ucfirst($revenue->status) }}</span>
+                                    <span class="badge bg-{{ \App\Helpers\StatusHelper::revenueStatusColor($revenue->status) }}">{{ ucfirst($revenue->status) }}</span>
                                 </td>
                                 <td class="text-center">
                                     @if($revenue->status === 'pending')

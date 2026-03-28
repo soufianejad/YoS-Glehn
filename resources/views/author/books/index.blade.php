@@ -85,7 +85,7 @@
                                     @endif
                                 </td>
                                 <td class="text-center align-middle">
-                                    <span class="badge badge-{{ \App\Helpers\StatusHelper::bookStatusColor($book->status) }}">{{ ucfirst($book->status) }}</span>
+                                    <span class="badge bg-{{ \App\Helpers\StatusHelper::bookStatusColor($book->status) }}">{{ ucfirst($book->status) }}</span>
                                 </td>
                                 <td class="text-center align-middle">
                                     <a href="{{ route('author.books.show', $book) }}" class="btn btn-info btn-circle btn-sm" title="{{__('Voir')}}">

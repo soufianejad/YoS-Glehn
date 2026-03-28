@@ -92,7 +92,7 @@
                                 <td class="text-right font-weight-bold">{{ number_format($revenue->author_amount, 2) }} F</td>
                                 <td class="text-center">{{ ucfirst(str_replace('_', ' ', $revenue->revenue_type)) }}</td>
                                 <td class="text-center">
-                                     <span class="badge badge-{{ \App\Helpers\StatusHelper::bookStatusColor($revenue->status) }}">{{ ucfirst($revenue->status) }}</span>
+                                     <span class="badge bg-{{ \App\Helpers\StatusHelper::bookStatusColor($revenue->status) }}">{{ ucfirst($revenue->status) }}</span>
                                 </td>
                                 <td class="text-center">{{ $revenue->created_at->format('d/m/Y') }}</td>
                             </tr>

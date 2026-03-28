@@ -63,9 +63,9 @@
                                 </td>
                                 <td class="text-center">
                                     @if($attempt->is_passed)
-                                        <span class="badge badge-success">{{ __('Réussi') }}</span>
+                                        <span class="badge bg-success">{{ __('Réussi') }}</span>
                                     @else
-                                        <span class="badge badge-danger">{{ __('Échoué') }}</span>
+                                        <span class="badge bg-danger">{{ __('Échoué') }}</span>
                                     @endif
                                 </td>
                                 <td class="text-center">{{ $attempt->created_at->format('d/m/Y H:i') }}</td>

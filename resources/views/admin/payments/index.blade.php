@@ -92,7 +92,7 @@
                                 </td>
                                 <td class="text-end">{{ number_format($payment->amount, 2) }} {{ strtoupper($payment->currency) }}</td>
                                 <td class="text-center">
-                                    <span class="badge badge-{{ \App\Helpers\StatusHelper::paymentStatusColor($payment->status) }}">{{ ucfirst($payment->status) }}</span>
+                                    <span class="badge bg-{{ \App\Helpers\StatusHelper::paymentStatusColor($payment->status) }}">{{ ucfirst($payment->status) }}</span>
                                 </td>
                                 <td class="text-center">
                                     <a href="{{ route('admin.payments.show', $payment) }}" class="btn btn-info btn-sm" title="{{ __('Voir') }}">
