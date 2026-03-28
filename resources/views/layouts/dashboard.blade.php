@@ -99,6 +99,10 @@
           #content .navbar {
               background: var(--text-white);
               box-shadow: var(--shadow-sm);
+              position: sticky;
+              top: 0;
+              /* Au-dessus du <main> / cartes ; sous modales Bootstrap (~1055). Sidebar reste à z-index 1000. */
+              z-index: 1040;
           }
           
           #sidebarCollapse {
