@@ -102,9 +102,16 @@ class UserManagementController extends Controller
             'phone' => 'nullable|string|max:255',
             'school_id' => 'nullable|exists:schools,id',
             'is_active' => 'boolean',
+            'password' => 'nullable|string|min:8|confirmed',
         ]);
 
-        $user->update($request->only('first_name', 'last_name', 'email', 'role', 'phone', 'school_id', 'is_active'));
+        $data = $request->only('first_name', 'last_name', 'email', 'role', 'phone', 'school_id', 'is_active');
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        $user->update($data);
 
         return redirect()->route('admin.users.index')->with('success', __('User updated successfully.'));
     }
