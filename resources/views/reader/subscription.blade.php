@@ -1,212 +1,155 @@
 @extends('layouts.dashboard')
 
-@section('title', __('Mon Abonnement'))
-
-@push('styles')
-<style>
-    .sub-card {
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-        border: none;
-        border-radius: 1.5rem;
-        color: white;
-        overflow: hidden;
-        position: relative;
-    }
-    .sub-card::before {
-        content: '';
-        position: absolute;
-        top: -50px;
-        right: -50px;
-        width: 200px;
-        height: 200px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-    }
-    .status-badge {
-        padding: 0.5rem 1rem;
-        border-radius: 2rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-    }
-    .feature-icon {
-        width: 40px;
-        height: 40px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 15px;
-    }
-</style>
-@endpush
+@section('title', __('My Subscription'))
 
 @section('content')
 <div class="container py-4">
-    <div class="row g-4">
-        <!-- Carte Abonnement Actuel -->
-        <div class="col-lg-7">
+<h1 class="mb-4">{{ __('My Subscription') }}</h1>
+    @if (session('success'))
+        <div class="alert alert-success text-center" role="alert">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger text-center" role="alert">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    {{-- Current Subscription Section --}}
+    <div class="card shadow-sm mb-5">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0">{{ __('Current Plan') }}</h2>
+        </div>
+        <div class="card-body">
             @if($subscription)
-                <div class="card sub-card shadow-lg mb-4">
-                    <div class="card-body p-4 p-md-5">
-                        <div class="d-flex justify-content-between align-items-start mb-4">
-                            <div>
-                                <h4 class="mb-1 text-white opacity-75">{{ __('Plan Actuel') }}</h4>
-                                <h2 class="display-6 fw-bold text-white mb-0">{{ $subscription->subscriptionPlan->name }}</h2>
-                            </div>
-                            <span class="status-badge bg-white text-primary shadow-sm">
-                                <i class="fas fa-check-circle me-1"></i> {{ strtoupper($subscription->status) }}
-                            </span>
-                        </div>
-
-                        <div class="row g-3 mb-4">
-                            <div class="col-6 col-md-4">
-                                <div class="small opacity-75 mb-1">{{ __('Date de début') }}</div>
-                                <div class="fw-bold h5 mb-0">{{ $subscription->start_date->format('d M Y') }}</div>
-                            </div>
-                            <div class="col-6 col-md-4">
-                                <div class="small opacity-75 mb-1">{{ __('Prochaine échéance') }}</div>
-                                <div class="fw-bold h5 mb-0">{{ $subscription->end_date->format('d M Y') }}</div>
-                            </div>
-                            <div class="col-12 col-md-4">
-                                <div class="small opacity-75 mb-1">{{ __('Temps restant') }}</div>
-                                <div class="fw-bold h5 mb-0">{{ $subscription->daysRemaining() }} {{ __('jours') }}</div>
-                            </div>
-                        </div>
-
-                        <div class="progress bg-white bg-opacity-25 mb-4" style="height: 10px; border-radius: 5px;">
-                            @php
-                                $totalDays = $subscription->start_date->diffInDays($subscription->end_date);
-                                $usedDays = $subscription->start_date->diffInDays(now());
-                                $percent = $totalDays > 0 ? min(100, max(0, ($usedDays / $totalDays) * 100)) : 0;
-                            @endphp
-                            <div class="progress-bar bg-white" role="progressbar" style="width: {{ $percent }}%" aria-valuenow="{{ $percent }}" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-
-                        <div class="d-flex flex-wrap gap-2">
-                            @if($subscription->auto_renew)
-                                <form action="{{ route('subscription.cancel') }}" method="POST" onsubmit="return confirm('{{ __('Voulez-vous vraiment annuler le renouvellement automatique ?') }}')">
-                                    @csrf
-                                    <button type="submit" class="btn btn-light text-primary fw-bold rounded-pill px-4">
-                                        <i class="fas fa-times-circle me-2"></i>{{ __('Désactiver le renouvellement') }}
-                                    </button>
-                                </form>
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h3 class="card-title text-primary">{{ $subscription->subscriptionPlan->name }}</h3>
+                        <p class="card-text mb-1"><strong>{{ __('Status:') }}</strong>
+                            @if($subscription->status === 'active')
+                                <span class="badge bg-success">{{ __('Active') }}</span>
+                            @elseif($subscription->status === 'cancelled')
+                                <span class="badge bg-warning text-dark">{{ __('Cancelled') }}</span>
                             @else
-                                <a href="{{ route('subscription.checkout.renew') }}" class="btn btn-white fw-bold rounded-pill px-4" style="background: white; color: #4f46e5;">
-                                    <i class="fas fa-redo me-2"></i>{{ __('Réactiver / Renouveler') }}
-                                </a>
+                                <span class="badge bg-danger">{{ ucfirst($subscription->status) }}</span>
                             @endif
-                        </div>
+                        </p>
+                        <p class="card-text mb-1"><strong>{{ __('Price:') }}</strong> {{ number_format($subscription->subscriptionPlan->price, 0) }} XOF / {{ $subscription->subscriptionPlan->duration_days }} {{ __('days') }}</p>
+                        <p class="card-text mb-1"><strong>{{ __('Starts On:') }}</strong> {{ $subscription->start_date->format('Y-m-d') }}</p>
+                        <p class="card-text mb-1"><strong>{{ __('Ends On:') }}</strong> {{ $subscription->end_date->format('Y-m-d') }}</p>
+                        @if($subscription->auto_renew)
+                            <p class="card-text text-muted"><em>{{ __('Auto-renewal is enabled.') }}</em></p>
+                        @else
+                            <p class="card-text text-muted"><em>{{ __('Auto-renewal is disabled.') }}</em></p>
+                        @endif
                     </div>
-                </div>
-
-                <!-- Avantages du plan -->
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold mb-4">{{ __('Vos Avantages Inclus') }}</h5>
-                        <div class="row g-4">
-                            <div class="col-md-6 d-flex align-items-center">
-                                <div class="feature-icon text-primary"><i class="fas fa-file-pdf"></i></div>
-                                <div>
-                                    <div class="fw-bold">{{ __('Accès PDF') }}</div>
-                                    <div class="small text-muted">{{ $subscription->subscriptionPlan->pdf_access ? __('Lecture illimitée') : __('Non inclus') }}</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 d-flex align-items-center">
-                                <div class="feature-icon text-success"><i class="fas fa-headphones"></i></div>
-                                <div>
-                                    <div class="fw-bold">{{ __('Accès Audio') }}</div>
-                                    <div class="small text-muted">{{ $subscription->subscriptionPlan->audio_access ? __('Écoute illimitée') : __('Non inclus') }}</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 d-flex align-items-center">
-                                <div class="feature-icon text-warning"><i class="fas fa-download"></i></div>
-                                <div>
-                                    <div class="fw-bold">{{ __('Téléchargement') }}</div>
-                                    <div class="small text-muted">{{ $subscription->subscriptionPlan->download_access ? __('Remises exclusives') : __('Non inclus') }}</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 d-flex align-items-center">
-                                <div class="feature-icon text-info"><i class="fas fa-question-circle"></i></div>
-                                <div>
-                                    <div class="fw-bold">{{ __('Accès Quiz') }}</div>
-                                    <div class="small text-muted">{{ $subscription->subscriptionPlan->quiz_access ? __('Certification incluse') : __('Non inclus') }}</div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        @if($subscription->status === 'active')
+                            <a href="{{ route('subscription.checkout.renew') }}" class="btn btn-warning me-2 mb-2 mb-md-0">{{ __('Renew Now') }}</a>
+                            <form action="{{ route('reader.subscription.cancel', $subscription) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('{{ __('Are you sure you want to cancel your subscription?') }}')">{{ __('Cancel Subscription') }}</button>
+                            </form>
+                        @endif
+                        <a href="{{ route('reader.payments') }}" class="btn btn-outline-secondary mt-3 w-100">{{ __('View Payment History') }}</a>
                     </div>
                 </div>
             @else
-                <div class="card border-0 shadow-sm rounded-4 text-center p-5">
-                    <div class="mb-4">
-                        <i class="fas fa-ghost fa-4x text-light"></i>
-                    </div>
-                    <h3 class="fw-bold">{{ __('Aucun abonnement actif') }}</h3>
-                    <p class="text-muted mb-4">{{ __('Abonnez-vous à l\'un de nos plans pour débloquer l\'accès complet à notre bibliothèque de livres.') }}</p>
-                    <a href="{{ route('subscription.plans') }}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">
-                        {{ __('Découvrir les Plans') }}
-                    </a>
+                <div class="alert alert-info text-center mb-0" role="alert">
+                    <h4 class="alert-heading">{{ __('No Active Subscription') }}</h4>
+                    <p>{{ __('It looks like you do not have an active subscription. Subscribe today to get unlimited access to our library!') }}</p>
+                    <hr>
+                    <a href="{{ route('subscription.plans') }}" class="btn btn-primary">{{ __('Browse Plans') }}</a>
                 </div>
             @endif
         </div>
+    </div>
 
-        <!-- Historique -->
-        <div class="col-lg-5">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
-                    <h5 class="fw-bold mb-0">{{ __('Historique des Abonnements') }}</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="ps-4 py-3 small text-uppercase text-muted">{{ __('Plan') }}</th>
-                                    <th class="py-3 small text-uppercase text-muted">{{ __('Fin') }}</th>
-                                    <th class="pe-4 py-3 text-end small text-uppercase text-muted">{{ __('Statut') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($history as $sub)
-                                    <tr>
-                                        <td class="ps-4">
-                                            <div class="fw-bold">{{ $sub->subscriptionPlan->name }}</div>
-                                            <div class="small text-muted">{{ number_format($sub->subscriptionPlan->price, 0) }} XOF</div>
-                                        </td>
-                                        <td>
-                                            <div class="small">{{ $sub->end_date->format('d/m/Y') }}</div>
-                                        </td>
-                                        <td class="pe-4 text-end">
-                                            @php
-                                                $statusClass = match($sub->status) {
-                                                    'active' => 'bg-success',
-                                                    'pending' => 'bg-warning text-dark',
-                                                    'cancelled' => 'bg-secondary',
-                                                    'expired' => 'bg-danger',
-                                                    default => 'bg-info'
-                                                };
-                                            @endphp
-                                            <span class="badge {{ $statusClass }} rounded-pill">{{ __($sub->status) }}</span>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="3" class="text-center py-5 text-muted">
-                                            {{ __('Aucun historique disponible.') }}
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    @if($history->hasPages())
-                        <div class="p-4 border-top">
-                            {{ $history->links() }}
+    {{-- Available Plans Section --}}
+    <div class="mb-5">
+        <h2 class="h4 mb-4">{{ __('Available Subscription Plans') }}</h2>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach($subscriptionPlans as $plan)
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-{{ $subscription && $subscription->subscription_plan_id === $plan->id ? 'primary' : 'light' }}">
+                        <div class="card-header text-center bg-light">
+                            <h3 class="h5 my-2">{{ $plan->name }}</h3>
                         </div>
-                    @endif
+                        <div class="card-body d-flex flex-column">
+                            <div class="text-center mb-3">
+                                <span class="display-6 fw-bold text-primary">{{ number_format($plan->price, 0) }}</span>
+                                <span class="text-muted">XOF / {{ $plan->duration_days }} {{ __('days') }}</span>
+                            </div>
+                            <p class="text-center text-muted">{{ $plan->description }}</p>
+                            <ul class="list-unstyled flex-grow-1">
+                                {{-- Dynamically list features if available --}}
+                                @if($plan->features)
+                                    @foreach(json_decode($plan->features) as $feature)
+                                        <li><i class="fas fa-check-circle text-success me-2"></i>{{ $feature }}</li>
+                                    @endforeach
+                                @else
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>{{ __('Unlimited access to books') }}</li>
+                                @endif
+                            </ul>
+                            <div class="mt-auto">
+                                @if($subscription && $subscription->subscription_plan_id === $plan->id)
+                                    <button class="btn btn-primary w-100" disabled>{{ __('Current Plan') }}</button>
+                                @else
+                                    <a href="{{ route('subscription.plans') }}" class="btn btn-outline-primary w-100">{{ __('Choose Plan') }}</a>
+                                    {{-- The 'subscribe' route handles the actual purchase/upgrade logic --}}
+                                @endif
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            @endforeach
+        </div>
+    </div>
+
+    {{-- Subscription History Section --}}
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h2 class="h5 mb-0">{{ __('Subscription History') }}</h2>
+        </div>
+        <div class="card-body">
+            @if($subscriptionHistory->count())
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>{{ __('Plan') }}</th>
+                                <th>{{ __('Price') }}</th>
+                                <th>{{ __('Start Date') }}</th>
+                                <th>{{ __('End Date') }}</th>
+                                <th>{{ __('Status') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($subscriptionHistory as $hist)
+                                <tr>
+                                    <td>{{ $hist->subscriptionPlan->name }}</td>
+                                    <td>{{ number_format($hist->subscriptionPlan->price, 0) }} XOF</td>
+                                    <td>{{ $hist->start_date->format('Y-m-d') }}</td>
+                                    <td>{{ $hist->end_date->format('Y-m-d') }}</td>
+                                    <td>
+                                        @if($hist->status === 'active')
+                                            <span class="badge bg-success">{{ __('Active') }}</span>
+                                        @elseif($hist->status === 'cancelled')
+                                            <span class="badge bg-warning text-dark">{{ __('Cancelled') }}</span>
+                                        @else
+                                            <span class="badge bg-danger">{{ ucfirst($hist->status) }}</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <p class="text-center text-muted mb-0">{{ __('No past subscriptions found.') }}</p>
+            @endif
         </div>
     </div>
 </div>
