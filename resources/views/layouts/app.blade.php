@@ -41,38 +41,73 @@
                     <img src="{{ asset('images/logo.jpg') }}" alt="{{ __('Logo') }}" height="32" class="me-2">
                 </a>
                 
-                <!-- Right Side - Always Visible Mobile (Notifications & Profile) -->
+                <!-- Right Side - Notifications & Profile -->
                 <div class="d-flex align-items-center order-md-last gap-2">
                     @auth
+                        <!-- Notifications Dropdown Amélioré -->
                         <div class="dropdown">
-                            <a class="nav-link position-relative p-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" v-pre>
-                                <i class="bi bi-bell"></i>
-                                <span class="badge bg-danger d-none" id="unread-notifications-count" style="position: absolute; top: 0; right: 0; padding: 3px 6px; border-radius: 50%; font-size: 0.6rem; z-index: 1;">0</span>
+                            <a class="nav-link position-relative p-2" href="#" 
+                               role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-bell fs-5"></i>
+                                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle d-none rounded-pill" 
+                                      id="unread-notifications-count"
+                                      style="font-size: 0.65rem; padding: 4px 7px; min-width: 18px; text-align: center;">
+                                    0
+                                </span>
                             </a>
-                            <div class="dropdown-menu dropdown-menu-end shadow border" id="notifications-dropdown-menu" style="width: 300px; max-height: 400px; overflow-y: auto; z-index: 1060; background-color: #ffffff !important;">
-                                <div class="dropdown-header border-bottom bg-light fw-bold py-2">{{ __('Notifications') }}</div>
-                                <div id="notifications-list" class="bg-white">
-                                    <!-- Notifications load here -->
+                            
+                            <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-0" 
+                                 id="notifications-dropdown-menu" 
+                                 style="width: 360px; max-height: 75vh; overflow: hidden; border-radius: 12px; z-index: 1060;">
+                                
+                                <!-- Header fixe -->
+                                <div class="dropdown-header d-flex justify-content-between align-items-center border-bottom px-3 py-3 bg-light">
+                                    <h6 class="mb-0 fw-semibold text-dark">{{ __('Notifications') }}</h6>
+                                    <button type="button" id="mark-all-read" 
+                                            class="btn btn-sm btn-link text-primary text-decoration-none p-0 fw-medium">
+                                        {{ __('Tout marquer lu') }}
+                                    </button>
+                                </div>
+
+                                <!-- Zone de scroll -->
+                                <div id="notifications-list" 
+                                     style="max-height: calc(75vh - 118px); overflow-y: auto; overscroll-behavior: contain;">
+                                    <!-- Notifications chargées par JS -->
+                                </div>
+
+                                <!-- Footer fixe -->
+                                <div class="border-top bg-light p-2">
+                                    <a href="{{ route('notifications.index') ?? '#' }}" 
+                                       class="btn btn-outline-primary btn-sm w-100">
+                                        {{ __('Voir toutes les notifications') }}
+                                    </a>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Profile Dropdown -->
                         <div class="dropdown">
-                            <a id="navbarDropdown" class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}" class="rounded-circle me-1" style="width: 28px; height: 28px; object-fit: cover;">
+                            <a id="navbarDropdown" class="nav-link dropdown-toggle d-flex align-items-center" 
+                               href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <img src="{{ Auth::user()->avatar_url }}" 
+                                     alt="{{ Auth::user()->name }}" 
+                                     class="rounded-circle me-1" 
+                                     style="width: 28px; height: 28px; object-fit: cover;">
                                 <span class="d-none d-sm-inline">{{ Auth::user()->name }}</span>
                             </a>
                             @include('partials.user-dropdown')
                         </div>
                     @endauth
 
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+                            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" 
+                            aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                         <span class="navbar-toggler-icon"></span>
                     </button>
                 </div>
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <!-- Left Side Of Navbar -->
+                    <!-- Left Side -->
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('library.index') }}">{{ __('Bibliothèque') }}</a>
@@ -98,15 +133,18 @@
                         @endauth
                     </ul>
 
-                    <!-- Right Side Of Navbar -->
+                    <!-- Right Side Language -->
                     <ul class="navbar-nav ms-auto align-items-center">
                         <li class="nav-item dropdown">
-                            <a id="navbarDropdownLang" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                            <a id="navbarDropdownLang" class="nav-link dropdown-toggle" 
+                               href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="bi bi-translate"></i> {{ strtoupper(app()->getLocale()) }}
                             </a>
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownLang">
-                                <a class="dropdown-item @if(app()->getLocale() == 'en') active @endif" href="{{ route('change.language', 'en') }}">English</a>
-                                <a class="dropdown-item @if(app()->getLocale() == 'fr') active @endif" href="{{ route('change.language', 'fr') }}">Français</a>
+                                <a class="dropdown-item @if(app()->getLocale() == 'en') active @endif" 
+                                   href="{{ route('change.language', 'en') }}">English</a>
+                                <a class="dropdown-item @if(app()->getLocale() == 'fr') active @endif" 
+                                   href="{{ route('change.language', 'fr') }}">Français</a>
                             </div>
                         </li>
 
@@ -178,42 +216,76 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     <script>
-        $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
+        $.ajaxSetup({ 
+            headers: { 
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') 
+            } 
+        });
 
         @auth
         function fetchNotifications() {
             $.get("{{ route('api.notifications.index') }}", function(res) {
-                let countEl = $('#unread-notifications-count');
-                countEl.text(res.unread_count);
-                res.unread_count > 0 ? countEl.removeClass('d-none') : countEl.addClass('d-none');
+                const countEl = $('#unread-notifications-count');
+                countEl.text(res.unread_count || 0);
+                countEl.toggleClass('d-none', (res.unread_count || 0) === 0);
 
-                let list = $('#notifications-list');
+                const list = $('#notifications-list');
                 list.empty();
-                if (res.notifications.length > 0) {
+
+                if (res.notifications && res.notifications.length > 0) {
                     res.notifications.forEach(n => {
-                        list.append(`<a class="dropdown-item border-bottom notification-item" href="${n.link ?? '#'}" data-id="${n.id}"><strong>${n.title}</strong><br><small class="text-muted">${n.message}</small></a>`);
+                        const isUnread = !n.read_at;
+                        const html = `
+                            <a href="${n.link ?? '#'}" 
+                               class="notification-item ${isUnread ? 'unread' : ''}" 
+                               data-id="${n.id}">
+                                <strong>${n.title}</strong>
+                                <small class="text-muted d-block mt-1">${n.message}</small>
+                                ${n.created_at ? `<small class="text-muted d-block mt-2">${n.created_at}</small>` : ''}
+                            </a>`;
+                        list.append(html);
                     });
-                    list.append('<a class="dropdown-item text-center small py-2" href="#">{{ __("Tout voir") }}</a>');
                 } else {
-                    list.append('<span class="dropdown-item text-center text-muted small py-3">{{ __("Aucune notification") }}</span>');
+                    list.append(`
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-bell-slash fs-1 mb-3 opacity-50"></i>
+                            <p class="mb-0 small">{{ __('Aucune notification pour le moment') }}</p>
+                        </div>
+                    `);
                 }
             });
         }
+
+        // Charger les notifications au démarrage
         fetchNotifications();
         setInterval(fetchNotifications, 60000);
 
+        // Marquer une notification comme lue
         $(document).on('click', '.notification-item', function(e) {
             e.preventDefault();
-            let id = $(this).data('id');
-            let link = $(this).attr('href');
+            const id = $(this).data('id');
+            const link = $(this).attr('href');
+
             $.post(`/api/notifications/${id}/mark-as-read`).done(() => {
-                if (link && link !== '#') window.location.href = link;
-                else fetchNotifications();
+                if (link && link !== '#') {
+                    window.location.href = link;
+                } else {
+                    fetchNotifications();
+                }
             });
+        });
+
+        // Marquer toutes les notifications comme lues
+        $(document).on('click', '#mark-all-read', function() {
+            $.post("{{ route('api.notifications.mark-all-read') ?? '/api/notifications/mark-all-read' }}")
+             .done(() => {
+                 fetchNotifications();
+                 toastr.success("{{ __('Toutes les notifications ont été marquées comme lues') }}");
+             });
         });
         @endauth
 
-        // AJAX Favorites
+        // AJAX Favorites (inchangé)
         $(document).on('submit', '.favorite-form', function(e) {
             e.preventDefault();
             let form = $(this);
@@ -221,14 +293,19 @@
             $.post(form.attr('action'), form.serialize()).done(function(res) {
                 toastr.success(res.message);
                 if (res.status === 'favorited') {
-                    btn.removeClass('btn-outline-danger').addClass('btn-danger').find('i').removeClass('far').addClass('fas');
+                    btn.removeClass('btn-outline-danger').addClass('btn-danger')
+                       .find('i').removeClass('far').addClass('fas');
                 } else {
-                    btn.removeClass('btn-danger').addClass('btn-outline-danger').find('i').removeClass('fas').addClass('far');
-                    if (form.closest('.book-card-col').length) form.closest('.book-card-col').fadeOut();
+                    btn.removeClass('btn-danger').addClass('btn-outline-danger')
+                       .find('i').removeClass('fas').addClass('far');
+                    if (form.closest('.book-card-col').length) {
+                        form.closest('.book-card-col').fadeOut();
+                    }
                 }
             });
         });
     </script>
+
     @stack('scripts')
 </body>
 </html>
