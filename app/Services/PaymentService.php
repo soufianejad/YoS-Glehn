@@ -294,134 +294,447 @@ class PaymentService
         $errorLink  = route('payment.failed');
 
         Session::put('payment_return_url', $successUrl ?? route('home'));
-        Log::channel('payment')->info("Initiation paiement", ['ref'=>$refNumber,'network'=>$network,'amount'=>$amount]);
 
-        // ── WAVE ──────────────────────────────────────────────────────────
+        Log::channel('payment')->info("🚀 Initiation paiement", [
+            'ref'     => $refNumber,
+            'network' => $network,
+            'amount'  => $amount,
+        ]);
+
+        // =====================================================================
+        // 1. WAVE
+        // =====================================================================
         if ($network === 'WAVECI') {
             try {
                 $resp = Http::withToken(env('WAVE_API_KEY'))
                     ->post('https://api.wave.com/v1/checkout/sessions', [
-                        'amount'=>(string)$amount,'currency'=>'XOF',
-                        'aggregated_merchant_id'=>env('WAVE_AGGREGATED_MERCHANT_ID'),
-                        'error_url'=>$errorLink,'success_url'=>$returnLink,
+                        'amount'                 => (string) $amount,
+                        'currency'               => 'XOF',
+                        'aggregated_merchant_id' => env('WAVE_AGGREGATED_MERCHANT_ID'),
+                        'error_url'              => $errorLink,
+                        'success_url'            => $returnLink,
                     ]);
+
+                Log::channel('payment')->info("Wave réponse", [
+                    'status' => $resp->status(),
+                    'body'   => $resp->json(),
+                ]);
+
                 if ($resp->successful() && isset($resp->json()['wave_launch_url'])) {
-                    $payment->update(['payment_details'=>array_merge($payment->payment_details??[],['wave_id'=>$resp->json()['id']])]);
+                    $payment->update([
+                        'payment_details' => array_merge($payment->payment_details ?? [], [
+                            'wave_id' => $resp->json()['id'],
+                        ]),
+                    ]);
                     $url = $resp->json()['wave_launch_url'];
-                    return $returnAsJson ? ['success'=>true,'redirect_url'=>$url] : Redirect::away($url);
+                    return $returnAsJson ? ['success' => true, 'redirect_url' => $url] : Redirect::away($url);
                 }
-                throw new \Exception('Erreur Wave API');
+
+                // Extraire le message d'erreur Wave
+                $waveError = $resp->json()['message']
+                    ?? $resp->json()['error']
+                    ?? $resp->json()['detail']
+                    ?? ('Erreur Wave (HTTP ' . $resp->status() . ')');
+
+                return $this->handleError($waveError, $returnAsJson, $errorLink);
+
             } catch (\Exception $e) {
-                return $this->handleError($e->getMessage(), $returnAsJson, $errorLink);
+                Log::error("Wave exception [{$refNumber}]", ['error' => $e->getMessage()]);
+                return $this->handleError('Erreur de connexion Wave : ' . $e->getMessage(), $returnAsJson, $errorLink);
             }
         }
 
-        // ── TOUCHPAY ──────────────────────────────────────────────────────
-        if (in_array($network, ['MOMOCI','OMCIV2','FLOOZ'])) {
+        // =====================================================================
+        // 2. TOUCHPAY  (MTN CI, Orange CI, Moov CI)
+        // =====================================================================
+        if (in_array($network, ['MOMOCI', 'OMCIV2', 'FLOOZ'])) {
             try {
-                $login = env('TOUCHPAY_LOGIN_AGENT'); $pass = env('TOUCHPAY_PASSWORD_AGENT');
-                if (!$login||!$pass) throw new \Exception("Credentials TouchPay manquants.");
-                $tpUrl = "https://api.gutouch.com/dist/api/touchpayapi/v1/RIKAC8213/transaction?loginAgent={$login}&passwordAgent={$pass}";
-                $svc = match($network){'OMCIV2'=>'PAIEMENTMARCHANDOMPAYCIDIRECT','MOMOCI'=>'PAIEMENTMARCHAND_MTN_CI','FLOOZ'=>'PAIEMENTMARCHAND_MOOV_CI',default=>null};
-                $data = [
-                    'idFromClient'=>$refNumber,
-                    'additionnalInfos'=>['recipientEmail'=>$payment->user->email??'','recipientFirstName'=>$payment->user->first_name??'N/A','recipientLastName'=>$payment->user->last_name??'','destinataire'=>$request->phone],
-                    'amount'=>$amount,'callback'=>route('payment.callback',['service'=>'touchpay']),'recipientNumber'=>$request->phone,'serviceCode'=>$svc,
-                ];
-                if ($network==='OMCIV2') $data['additionnalInfos']['otp']=$request->otp;
-                $resp = json_decode((new Client())->put($tpUrl,['headers'=>['Content-Type'=>'application/json'],'auth'=>[env('TOUCHPAY_API_KEY'),env('TOUCHPAY_API_SECRET'),'digest'],'json'=>$data])->getBody()->getContents(),true);
-                if (in_array($network,['MOMOCI','FLOOZ'])&&in_array(strtoupper($resp['status']??''),['INITIATED','PENDING'])) {
-                    Session::put('payment_reference',$refNumber);
-                    return $returnAsJson?['success'=>true,'redirect_url'=>route('payment.pending')]:Redirect::route('payment.pending');
-                }
-                if (strtoupper($resp['status']??'')==='SUCCESSFUL') return $returnAsJson?['success'=>true,'redirect_url'=>$returnLink]:Redirect::to($returnLink);
-                throw new \Exception($resp['message']??'Échec TouchPay');
-            } catch (\Exception $e) { return $this->handleError($e->getMessage(),$returnAsJson,$errorLink); }
-        }
+                $login = env('TOUCHPAY_LOGIN_AGENT');
+                $pass  = env('TOUCHPAY_PASSWORD_AGENT');
 
-        // ── PAWAPAY ───────────────────────────────────────────────────────
-        $pawaNetworks=['MTN_MOMO_CIV','ORANGE_CIV','WAVE_CIV','MTN_MOMO_BEN','MOOV_BEN','MOOV_BFA','ORANGE_BFA','MTN_MOMO_CMR','ORANGE_CMR','FREE_SEN','WAVE_SEN','WAVESN','VODACOM_MPESA_COD','AIRTEL_COD','ORANGE_COD','AIRTEL_GAB','AIRTEL_COG','MTN_MOMO_COG','MPESA_KEN','AIRTEL_MWI','TNM_MWI','AIRTEL_RWA','MTN_MOMO_RWA','ORANGE_SLE','MTN_MOMO_GHA','AIRTELTIGO_GHA','VODAFONE_GHA','AIRTEL_TZA','VODACOM_TZA','TIGO_TZA','HALOTEL_TZA','AIRTEL_OAPI_UGA','MTN_MOMO_UGA','AIRTEL_OAPI_ZMB','MTN_MOMO_ZMB','ZAMTEL_ZMB','AIRTEL_NGA','MTN_MOMO_NGA','VODACOM_MOZ'];
-        if (in_array($network,$pawaNetworks)) {
-            $token=env('PAWAPAY_API_TOKEN'); $base=env('PAWAPAY_BASE_URL','https://api.pawapay.io');
-            if (!$token) return $this->handleError('Config PawaPay manquante.',$returnAsJson,$errorLink);
-            $cc=$this->getPawaPayCountryConfig($network);
-            if (!$cc) return $this->handleError('Réseau PawaPay invalide.',$returnAsJson,$errorLink);
-            if ($this->checkPawaPayProviderAvailability($cc['country'],$network)!=='OPERATIONAL') {
-                $payment->update(['status'=>'failed']);
-                return $this->handleError("Provider {$network} indisponible.",$returnAsJson,$errorLink);
+                if (!$login || !$pass) {
+                    return $this->handleError('Identifiants TouchPay manquants dans .env', $returnAsJson, $errorLink);
+                }
+
+                $tpUrl = "https://api.gutouch.com/dist/api/touchpayapi/v1/RIKAC8213/transaction"
+                       . "?loginAgent={$login}&passwordAgent={$pass}";
+
+                $serviceCode = match ($network) {
+                    'OMCIV2' => 'PAIEMENTMARCHANDOMPAYCIDIRECT',
+                    'MOMOCI' => 'PAIEMENTMARCHAND_MTN_CI',
+                    'FLOOZ'  => 'PAIEMENTMARCHAND_MOOV_CI',
+                    default  => null,
+                };
+
+                $touchData = [
+                    'idFromClient'     => $refNumber,
+                    'additionnalInfos' => [
+                        'recipientEmail'     => $payment->user->email      ?? '',
+                        'recipientFirstName' => $payment->user->first_name ?? 'N/A',
+                        'recipientLastName'  => $payment->user->last_name  ?? '',
+                        'destinataire'       => $request->phone,
+                    ],
+                    'amount'          => $amount,
+                    'callback'        => route('payment.callback', ['service' => 'touchpay']),
+                    'recipientNumber' => $request->phone,
+                    'serviceCode'     => $serviceCode,
+                ];
+
+                if ($network === 'OMCIV2') {
+                    $touchData['additionnalInfos']['otp'] = $request->otp;
+                }
+
+                Log::channel('payment')->info("TouchPay payload envoyé", $touchData);
+
+                // http_errors => false : on lit TOUJOURS la réponse, même si HTTP 4xx/5xx
+                $rawResponse = (new Client())->put($tpUrl, [
+                    'headers'     => ['Content-Type' => 'application/json'],
+                    'auth'        => [env('TOUCHPAY_API_KEY'), env('TOUCHPAY_API_SECRET'), 'digest'],
+                    'json'        => $touchData,
+                    'http_errors' => false,
+                    'timeout'     => 30,
+                ]);
+
+                $respRaw  = $rawResponse->getBody()->getContents();
+                $resp     = json_decode($respRaw, true);
+                $httpCode = $rawResponse->getStatusCode();
+
+                Log::channel('payment')->info("TouchPay réponse brute", [
+                    'http_code' => $httpCode,
+                    'response'  => $resp,
+                ]);
+
+                $tpStatus = strtoupper($resp['status'] ?? '');
+
+                // Succès immédiat (Orange Money)
+                if ($tpStatus === 'SUCCESSFUL') {
+                    return $returnAsJson
+                        ? ['success' => true, 'redirect_url' => $returnLink]
+                        : Redirect::to($returnLink);
+                }
+
+                // En attente de confirmation (MTN, Moov → push mobile)
+                if (in_array($network, ['MOMOCI', 'FLOOZ']) && in_array($tpStatus, ['INITIATED', 'PENDING'])) {
+                    Session::put('payment_reference', $refNumber);
+                    return $returnAsJson
+                        ? ['success' => true, 'redirect_url' => route('payment.pending')]
+                        : Redirect::route('payment.pending');
+                }
+
+                // Erreur provider — extraire le message le plus précis possible
+                $errorMsg = $resp['message']
+                    ?? $resp['detailMessage']
+                    ?? $resp['description']
+                    ?? $resp['error']
+                    ?? null;
+
+                // Si aucun champ message, construire un message à partir du statut
+                if (!$errorMsg) {
+                    $errorMsg = $tpStatus
+                        ? "TouchPay a retourné le statut : {$tpStatus}"
+                        : "Réponse TouchPay invalide (HTTP {$httpCode})";
+                }
+
+                Log::error("❌ TouchPay échec [{$refNumber}]", [
+                    'network'   => $network,
+                    'http_code' => $httpCode,
+                    'status'    => $tpStatus,
+                    'message'   => $errorMsg,
+                    'full_resp' => $resp,
+                ]);
+
+                return $this->handleError($errorMsg, $returnAsJson, $errorLink);
+
+            } catch (\Exception $e) {
+                Log::error("TouchPay exception [{$refNumber}]", ['error' => $e->getMessage()]);
+                return $this->handleError('Erreur de connexion TouchPay : ' . $e->getMessage(), $returnAsJson, $errorLink);
             }
-            $cfg=$this->getPawaPayProviderConfig($cc['country'],$network);
-            if (!$cfg||$cfg['status']!=='OPERATIONAL') return $this->handleError('Config provider PawaPay invalide.',$returnAsJson,$errorLink);
-            $rawPhone=preg_replace('/[^0-9]/','',request()->input('phone',''));
-            if (str_starts_with($rawPhone,$cc['countryCode'])) $rawPhone=substr($rawPhone,strlen($cc['countryCode']));
-            $depositId=Uuid::uuid4()->toString();
-            $payment->update(['transaction_id'=>$depositId,'payment_details'=>array_merge($payment->payment_details??[],['original_ref'=>$refNumber,'pawapay_deposit_id'=>$depositId])]);
-            try {
-                $resp=Http::withToken($token)->timeout(25)->post("{$base}/deposits",['depositId'=>$depositId,'amount'=>(string)$amount,'currency'=>$cc['currency'],'country'=>$cc['country'],'correspondent'=>$network,'payer'=>['type'=>'MSISDN','address'=>['value'=>$cc['countryCode'].$rawPhone]],'customerTimestamp'=>now()->toISOString(),'statementDescription'=>Str::limit('Achat '.substr($refNumber,-10),22,''),'notificationUrl'=>$cfg['callbackUrl']??route('payment.callback',['service'=>'pawapay'])]);
-                if ($resp->successful()&&($resp->json()['status']??null)==='ACCEPTED') {
-                    Session::put('payment_reference',$depositId);
-                    $msg='Confirmez le paiement sur votre mobile.';
-                    return $returnAsJson?['success'=>true,'redirect_url'=>route('payment.pending'),'message'=>$msg]:redirect()->route('payment.pending')->with('info',$msg);
-                }
-                $reason=$resp->json()['rejectionReason']['rejectionMessage']??'Raison inconnue';
-                return $this->handleError("PawaPay: {$reason}",$returnAsJson,$errorLink);
-            } catch (\Exception $e) { return $this->handleError('Erreur technique PawaPay.',$returnAsJson,$errorLink); }
         }
 
-        // ── PAYSTACK (tous les codes PS_*) ────────────────────────────────
-        if (str_starts_with($network,'PS_')) {
+        // =====================================================================
+        // 3. PAWAPAY
+        // =====================================================================
+        $pawaNetworks = [
+            'MTN_MOMO_CIV','ORANGE_CIV','WAVE_CIV','MTN_MOMO_BEN','MOOV_BEN',
+            'MOOV_BFA','ORANGE_BFA','MTN_MOMO_CMR','ORANGE_CMR','FREE_SEN','WAVE_SEN','WAVESN',
+            'VODACOM_MPESA_COD','AIRTEL_COD','ORANGE_COD','AIRTEL_GAB',
+            'AIRTEL_COG','MTN_MOMO_COG','MPESA_KEN','AIRTEL_MWI','TNM_MWI',
+            'AIRTEL_RWA','MTN_MOMO_RWA','ORANGE_SLE','MTN_MOMO_GHA','AIRTELTIGO_GHA',
+            'VODAFONE_GHA','AIRTEL_TZA','VODACOM_TZA','TIGO_TZA','HALOTEL_TZA',
+            'AIRTEL_OAPI_UGA','MTN_MOMO_UGA','AIRTEL_OAPI_ZMB','MTN_MOMO_ZMB',
+            'ZAMTEL_ZMB','AIRTEL_NGA','MTN_MOMO_NGA','VODACOM_MOZ',
+        ];
+
+        if (in_array($network, $pawaNetworks)) {
+            $token = env('PAWAPAY_API_TOKEN');
+            $base  = env('PAWAPAY_BASE_URL', 'https://api.pawapay.io');
+
+            if (!$token) {
+                return $this->handleError('Clé API PawaPay manquante dans .env (PAWAPAY_API_TOKEN)', $returnAsJson, $errorLink);
+            }
+
+            $cc = $this->getPawaPayCountryConfig($network);
+            if (!$cc) {
+                return $this->handleError("Réseau PawaPay non reconnu : {$network}", $returnAsJson, $errorLink);
+            }
+
+            // Vérification disponibilité
+            $providerStatus = $this->checkPawaPayProviderAvailability($cc['country'], $network);
+            if ($providerStatus !== 'OPERATIONAL') {
+                $msg = "Le provider {$network} est actuellement indisponible"
+                     . ($providerStatus ? " (statut : {$providerStatus})" : '') . '.';
+                $payment->update(['status' => 'failed']);
+                return $this->handleError($msg, $returnAsJson, $errorLink);
+            }
+
+            $cfg = $this->getPawaPayProviderConfig($cc['country'], $network);
+            if (!$cfg || $cfg['status'] !== 'OPERATIONAL') {
+                return $this->handleError("Configuration PawaPay invalide pour {$network}.", $returnAsJson, $errorLink);
+            }
+
+            $rawPhone = preg_replace('/[^0-9]/', '', $request->input('phone', ''));
+            if (str_starts_with($rawPhone, $cc['countryCode'])) {
+                $rawPhone = substr($rawPhone, strlen($cc['countryCode']));
+            }
+
+            $depositId = Uuid::uuid4()->toString();
+            $payment->update([
+                'transaction_id'  => $depositId,
+                'payment_details' => array_merge($payment->payment_details ?? [], [
+                    'original_ref'       => $refNumber,
+                    'pawapay_deposit_id' => $depositId,
+                ]),
+            ]);
+
             try {
-                $secretKey=env('PAYSTACK_SECRET_KEY');
-                if (!$secretKey) throw new \Exception("Clé Paystack manquante.");
-                $userPhone=$payment->user->phone??$request->phone??'';
-                $countryIso=$this->detectCountryFromPhone($userPhone);
-                $currency=$this->countryConfigs[$countryIso]['currency']??'XOF';
-                $amountFinal=in_array($currency,$this->paystackKoboCurrencies)?$amount*100:$amount;
-                $channelMap=['PS_CARD'=>'card','PS_MTN'=>'mobile_money','PS_ORANGE'=>'mobile_money','PS_WAVE'=>'mobile_money','PS_MPESA'=>'mobile_money','PS_ATL'=>'mobile_money','PS_VOD'=>'mobile_money'];
-                $payload=[
-                    'email'=>$payment->user->email??$request->email??'no-reply@example.com',
-                    'amount'=>(int)$amountFinal,'currency'=>$currency,'reference'=>$refNumber,
-                    'callback_url'=>route('payment.callback',['service'=>'paystack']),
-                    'channels'=>[$channelMap[$network]??'card'],
-                    'metadata'=>['payment_id'=>$payment->id,'payment_type'=>$payment->payment_type,'cancel_action'=>$errorLink],
+                $pawaPayload = [
+                    'depositId'            => $depositId,
+                    'amount'               => (string) $amount,
+                    'currency'             => $cc['currency'],
+                    'country'              => $cc['country'],
+                    'correspondent'        => $network,
+                    'payer'                => ['type' => 'MSISDN', 'address' => ['value' => $cc['countryCode'] . $rawPhone]],
+                    'customerTimestamp'    => now()->toISOString(),
+                    'statementDescription' => Str::limit('Achat ' . substr($refNumber, -10), 22, ''),
+                    'notificationUrl'      => $cfg['callbackUrl'] ?? route('payment.callback', ['service' => 'pawapay']),
                 ];
-                if ($request->phone) $payload['phone']=$request->phone;
-                $resp=Http::withToken($secretKey)->post('https://api.paystack.co/transaction/initialize',$payload);
-                if ($resp->successful()&&$resp->json()['status']===true) {
-                    $url=$resp->json()['data']['authorization_url'];
-                    return $returnAsJson?['success'=>true,'redirect_url'=>$url]:Redirect::away($url);
+
+                Log::channel('payment')->info("PawaPay payload", $pawaPayload);
+
+                $resp = Http::withToken($token)->timeout(25)->post("{$base}/deposits", $pawaPayload);
+
+                Log::channel('payment')->info("PawaPay réponse", [
+                    'status' => $resp->status(),
+                    'body'   => $resp->json(),
+                ]);
+
+                if ($resp->successful() && ($resp->json()['status'] ?? null) === 'ACCEPTED') {
+                    Session::put('payment_reference', $depositId);
+                    $msg = 'Veuillez confirmer le paiement sur votre téléphone.';
+                    return $returnAsJson
+                        ? ['success' => true, 'redirect_url' => route('payment.pending'), 'message' => $msg]
+                        : redirect()->route('payment.pending')->with('info', $msg);
                 }
-                throw new \Exception($resp->json()['message']??'Erreur Paystack');
-            } catch (\Exception $e) { return $this->handleError("Paystack: ".$e->getMessage(),$returnAsJson,$errorLink); }
+
+                // Extraire l'erreur PawaPay la plus précise
+                $pawaError = $resp->json()['rejectionReason']['rejectionMessage']
+                    ?? $resp->json()['rejectionReason']['rejectionCode']
+                    ?? $resp->json()['message']
+                    ?? $resp->json()['error']
+                    ?? null;
+
+                if (!$pawaError) {
+                    $pawaStatus = $resp->json()['status'] ?? null;
+                    $pawaError  = $pawaStatus
+                        ? "PawaPay a retourné le statut : {$pawaStatus} (HTTP {$resp->status()})"
+                        : "Réponse PawaPay invalide (HTTP {$resp->status()})";
+                }
+
+                Log::error("❌ PawaPay échec [{$depositId}]", [
+                    'network'   => $network,
+                    'http_code' => $resp->status(),
+                    'error'     => $pawaError,
+                    'full_resp' => $resp->json(),
+                ]);
+
+                return $this->handleError($pawaError, $returnAsJson, $errorLink);
+
+            } catch (\Exception $e) {
+                Log::error("PawaPay exception [{$depositId}]", ['error' => $e->getMessage()]);
+                return $this->handleError('Erreur de connexion PawaPay : ' . $e->getMessage(), $returnAsJson, $errorLink);
+            }
         }
 
-        // ── PAIEMENTPRO (CARD + Mobile Money) ─────────────────────────────
-        $ppNetworks=['CARD','MOMOBJ','FLOOZBJ','OMBF','FLOOZ_BFA','OMCM','MOMOCM','OMCIV2','MOMOCI','FLOOZ','OMGN','OMML','AIRTELNG','OMSN','WAVESN','MOOTG','TOGOCEL'];
-        if (in_array($network,$ppNetworks)) {
+        // =====================================================================
+        // 4. PAYSTACK  (tous les codes commençant par PS_)
+        // =====================================================================
+        if (str_starts_with($network, 'PS_')) {
             try {
-                if ($network==='CARD') $amount=($amount*1.05)+780;
-                $userPhone=$payment->user->phone??$request->phone??'';
-                $currency=$this->countryConfigs[$this->detectCountryFromPhone($userPhone)]['currency']??'XOF';
-                $currCode=$this->currencyToPaiementProCode[$currency]??'952';
-                $payload=[
-                    'merchantId'=>env('PAIEMENTPRO_MERCHANT_ID','PP-F1278'),'countryCurrencyCode'=>$currCode,'amount'=>$amount,'channel'=>$network,
-                    'customerEmail'=>$payment->user->email??$request->email??'no-reply@example.com','customerFirstName'=>$payment->user->first_name??$request->firstname??'N/A','customerLastname'=>$payment->user->last_name??$request->lastname??'',
-                    'referenceNumber'=>$refNumber,'notificationURL'=>route('payment.callback',['service'=>'paiementpro']),'returnURL'=>$returnLink,'description'=>'Achat sur '.config('app.name'),
-                ];
-                if ($network!=='CARD') $payload['customerPhoneNumber']=$request->phone;
-                $ctx=stream_context_create(['ssl'=>['verify_peer'=>false,'verify_peer_name'=>false,'allow_self_signed'=>true]]);
-                $soap=new SoapClient('https://www.paiementpro.net/webservice/OnlineServicePayment_v2.php?wsdl',['stream_context'=>$ctx]);
-                $resp=$soap->initTransact($payload);
-                if (isset($resp->Sessionid)&&$resp->Description==='SUCCESS') {
-                    $payment->update(['payment_details'=>array_merge($payment->payment_details??[],['session_id'=>$resp->Sessionid])]);
-                    $url="https://www.paiementpro.net/webservice/onlinepayment/processing_v2.php?sessionid={$resp->Sessionid}";
-                    return $returnAsJson?['success'=>true,'redirect_url'=>$url]:Redirect::away($url);
+                $secretKey = env('PAYSTACK_SECRET_KEY');
+                if (!$secretKey) {
+                    return $this->handleError('Clé API Paystack manquante dans .env (PAYSTACK_SECRET_KEY)', $returnAsJson, $errorLink);
                 }
-                throw new \Exception($resp->Description??'Erreur PaiementPro');
-            } catch (\Exception $e) { return $this->handleError("PaiementPro: ".$e->getMessage(),$returnAsJson,$errorLink); }
+
+                $userPhone    = $payment->user->phone ?? $request->phone ?? '';
+                $countryIso   = $this->detectCountryFromPhone($userPhone);
+                $currency     = $this->countryConfigs[$countryIso]['currency'] ?? 'XOF';
+                $amountFinal  = in_array($currency, $this->paystackKoboCurrencies) ? $amount * 100 : $amount;
+
+                $channelMap = [
+                    'PS_CARD'   => 'card',
+                    'PS_MTN'    => 'mobile_money',
+                    'PS_ORANGE' => 'mobile_money',
+                    'PS_WAVE'   => 'mobile_money',
+                    'PS_MPESA'  => 'mobile_money',
+                    'PS_ATL'    => 'mobile_money',
+                    'PS_VOD'    => 'mobile_money',
+                ];
+
+                $payload = [
+                    'email'        => $payment->user->email ?? $request->email ?? 'no-reply@example.com',
+                    'amount'       => (int) $amountFinal,
+                    'currency'     => $currency,
+                    'reference'    => $refNumber,
+                    'callback_url' => route('payment.callback', ['service' => 'paystack']),
+                    'channels'     => [$channelMap[$network] ?? 'card'],
+                    'metadata'     => [
+                        'payment_id'    => $payment->id,
+                        'payment_type'  => $payment->payment_type,
+                        'cancel_action' => $errorLink,
+                    ],
+                ];
+
+                if ($request->phone) {
+                    $payload['phone'] = $request->phone;
+                }
+
+                Log::channel('payment')->info("Paystack payload", $payload);
+
+                $resp = Http::withToken($secretKey)
+                    ->post('https://api.paystack.co/transaction/initialize', $payload);
+
+                Log::channel('payment')->info("Paystack réponse", [
+                    'status' => $resp->status(),
+                    'body'   => $resp->json(),
+                ]);
+
+                if ($resp->successful() && ($resp->json()['status'] ?? false) === true) {
+                    $url = $resp->json()['data']['authorization_url'];
+                    return $returnAsJson ? ['success' => true, 'redirect_url' => $url] : Redirect::away($url);
+                }
+
+                // Message d'erreur Paystack
+                $psError = $resp->json()['message']
+                    ?? $resp->json()['error']
+                    ?? "Erreur Paystack (HTTP {$resp->status()})";
+
+                Log::error("❌ Paystack échec [{$refNumber}]", [
+                    'network'   => $network,
+                    'http_code' => $resp->status(),
+                    'error'     => $psError,
+                    'full_resp' => $resp->json(),
+                ]);
+
+                return $this->handleError($psError, $returnAsJson, $errorLink);
+
+            } catch (\Exception $e) {
+                Log::error("Paystack exception [{$refNumber}]", ['error' => $e->getMessage()]);
+                return $this->handleError('Erreur de connexion Paystack : ' . $e->getMessage(), $returnAsJson, $errorLink);
+            }
         }
 
-        return $this->handleError("Mode de paiement non supporté ({$network})",$returnAsJson,$errorLink);
+        // =====================================================================
+        // 5. PAIEMENTPRO  (Carte + Mobile Money Afrique Ouest/Centre)
+        // =====================================================================
+        $ppNetworks = [
+            'CARD', 'MOMOBJ', 'FLOOZBJ', 'OMBF', 'FLOOZ_BFA',
+            'OMCM', 'MOMOCM', 'OMCIV2', 'MOMOCI', 'FLOOZ',
+            'OMGN', 'OMML', 'AIRTELNG', 'OMSN', 'WAVESN', 'MOOTG', 'TOGOCEL',
+        ];
+
+        if (in_array($network, $ppNetworks)) {
+            try {
+                if ($network === 'CARD') {
+                    $amount = ($amount * 1.05) + 780;
+                }
+
+                $userPhone   = $payment->user->phone ?? $request->phone ?? '';
+                $currency    = $this->countryConfigs[$this->detectCountryFromPhone($userPhone)]['currency'] ?? 'XOF';
+                $currCode    = $this->currencyToPaiementProCode[$currency] ?? '952';
+
+                $payload = [
+                    'merchantId'          => env('PAIEMENTPRO_MERCHANT_ID', 'PP-F1278'),
+                    'countryCurrencyCode' => $currCode,
+                    'amount'              => $amount,
+                    'channel'             => $network,
+                    'customerEmail'       => $payment->user->email      ?? $request->email     ?? 'no-reply@example.com',
+                    'customerFirstName'   => $payment->user->first_name ?? $request->firstname ?? 'N/A',
+                    'customerLastname'    => $payment->user->last_name  ?? $request->lastname  ?? '',
+                    'referenceNumber'     => $refNumber,
+                    'notificationURL'     => route('payment.callback', ['service' => 'paiementpro']),
+                    'returnURL'           => route('payment.callback', ['service' => 'paiementpro']),
+                    'description'         => 'Achat sur ' . config('app.name'),
+                ];
+
+                if ($network !== 'CARD') {
+                    $payload['customerPhoneNumber'] = $request->phone;
+                }
+
+                Log::channel('payment')->info("PaiementPro payload", $payload);
+
+                $ctx  = stream_context_create([
+                    'ssl' => ['verify_peer' => false, 'verify_peer_name' => false, 'allow_self_signed' => true],
+                ]);
+                $soap = new SoapClient(
+                    'https://www.paiementpro.net/webservice/OnlineServicePayment_v2.php?wsdl',
+                    ['stream_context' => $ctx]
+                );
+                $resp = $soap->initTransact($payload);
+
+                Log::channel('payment')->info("PaiementPro réponse brute", (array) $resp);
+
+                if (isset($resp->Sessionid) && $resp->Description === 'SUCCESS') {
+                    $payment->update([
+                        'payment_details' => array_merge($payment->payment_details ?? [], [
+                            'session_id' => $resp->Sessionid,
+                        ]),
+                    ]);
+                    $url = "https://www.paiementpro.net/webservice/onlinepayment/processing_v2.php?sessionid={$resp->Sessionid}";
+                    return $returnAsJson ? ['success' => true, 'redirect_url' => $url] : Redirect::away($url);
+                }
+
+                // Message d'erreur PaiementPro
+                $ppError = $resp->Description
+                    ?? $resp->message
+                    ?? $resp->Message
+                    ?? 'Erreur inconnue PaiementPro';
+
+                // Enrichir si la description est trop générique
+                if (in_array(strtolower($ppError), ['error', 'failed', 'failure', ''])) {
+                    $ppError = "PaiementPro a refusé la transaction (réseau : {$network})";
+                }
+
+                Log::error("❌ PaiementPro échec [{$refNumber}]", [
+                    'network'   => $network,
+                    'error'     => $ppError,
+                    'full_resp' => (array) $resp,
+                ]);
+
+                return $this->handleError($ppError, $returnAsJson, $errorLink);
+
+            } catch (\SoapFault $e) {
+                // SoapFault contient souvent le message du serveur dans faultstring
+                $soapMsg = $e->faultstring ?? $e->getMessage();
+                Log::error("PaiementPro SoapFault [{$refNumber}]", ['fault' => $soapMsg]);
+                return $this->handleError("PaiementPro (SOAP) : {$soapMsg}", $returnAsJson, $errorLink);
+
+            } catch (\Exception $e) {
+                Log::error("PaiementPro exception [{$refNumber}]", ['error' => $e->getMessage()]);
+                return $this->handleError('Erreur de connexion PaiementPro : ' . $e->getMessage(), $returnAsJson, $errorLink);
+            }
+        }
+
+        return $this->handleError("Mode de paiement non supporté : {$network}", $returnAsJson, $errorLink);
     }
 
     // =========================================================================
@@ -441,13 +754,13 @@ class PaymentService
             ]);
             app(\App\Services\RevenueCalculatorService::class)->recordRevenue($payment);
             $book=$payment->book;
-            $ns->sendNotification($user,__('Achat confirmé'),__('Votre achat pour le livre ":title" a été validé.',['title'=>$book->title]),route('book.show',$book->slug),'book_purchase');
+            $ns->sendNotification($user,__('Achat confirmé'),__('Votre achat pour le livre ":title" a été validé.',['title'=>$book->title]),route('book.show',$book->slug),'success');
         } elseif (in_array($payment->payment_type,['subscription','subscription_renewal'])) {
             $sub=$payment->subscription??Subscription::find($payment->subscription_id);
             if ($sub) {
                 $plan=$sub->subscriptionPlan;
                 $sub->update(['status'=>'active','start_date'=>$sub->start_date??now(),'end_date'=>now()->addDays($plan->duration_days??30)]);
-                $ns->sendNotification($user,__('Abonnement activé'),__('Votre abonnement ":plan" est actif.',['plan'=>$plan->name]),route('subscription.index'),'subscription_update');
+                $ns->sendNotification($user,__('Abonnement activé'),__('Votre abonnement ":plan" est actif.',['plan'=>$plan->name]),route('subscription.index'),'success');
             }
         }
     }
