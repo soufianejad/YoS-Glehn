@@ -116,6 +116,18 @@
                 </div>
             </div>
         </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-bold text-info"><i class="fas fa-id-card me-2"></i>{{ __('Nouveaux abonnements par mois') }}</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-wrap">
+                        <canvas id="subscriptionsChart" aria-label="{{ __('Graphique abonnements') }}"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="col-12">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom py-3">
@@ -239,6 +251,23 @@ document.addEventListener('DOMContentLoaded', function () {
                     },
                 },
             },
+        });
+    }
+});
+</script>
+@endpush
+             ...commonOptions,
+                scales: {
+                    x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } },
+                    y: { beginAtZero: true, ticks: { precision: 0 } },
+                },
+            },
+        });
+    }
+});
+</script>
+@endpush
+},
         });
     }
 });

@@ -163,17 +163,55 @@
             </div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-0 shadow h-100 stat-card border-start border-danger border-4">
+            <div class="card border-0 shadow h-100 stat-card border-start border-info border-4">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="text-xs fw-bold text-danger text-uppercase mb-1">{{ __('Abonnements actifs') }}</div>
+                        <div class="text-xs fw-bold text-info text-uppercase mb-1">{{ __('Abonnements actifs') }}</div>
                         <div class="h5 mb-0 fw-bold text-gray-800">{{ $activeSubscriptions }}</div>
+                        <small class="text-muted">{{ __('Total abonnements :') }} {{ $totalSubscriptions }}</small>
                     </div>
-                    <div class="stat-icon-wrap bg-danger bg-opacity-10 text-danger"><i class="fas fa-id-card fa-lg"></i></div>
+                    <div class="stat-icon-wrap bg-info bg-opacity-10 text-info"><i class="fas fa-id-card fa-lg"></i></div>
                 </div>
             </div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow h-100 stat-card border-start border-success border-4">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="text-xs fw-bold text-success text-uppercase mb-1">{{ __('Nouveaux abonnements (mois)') }}</div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">{{ $newSubscriptionsThisMonth }}</div>
+                        <small class="text-muted">{{ __('Annulations (mois) :') }} {{ $cancelledSubscriptionsThisMonth }}</small>
+                    </div>
+                    <div class="stat-icon-wrap bg-success bg-opacity-10 text-success"><i class="fas fa-plus-circle fa-lg"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow h-100">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="m-0 fw-bold text-primary"><i class="fas fa-tag me-2"></i>{{ __('Abonnements actifs par plan') }}</h6>
+                </div>
+                <div class="card-body p-0">
+                    @forelse($subscriptionsByPlan as $plan)
+                        <div class="d-flex align-items-center px-3 py-3 border-bottom">
+                            <div class="flex-grow-1 min-width-0">
+                                <p class="fw-bold text-gray-800 text-decoration-none d-block text-truncate mb-0">{{ $plan->plan_name }}</p>
+                            </div>
+                            <div class="text-end ms-2">
+                                <div class="fw-bold text-gray-800">{{ $plan->count }}</div>
+                                <small class="text-muted text-uppercase">{{ __('abonnés') }}</small>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-center text-muted small py-5 mb-0">{{ __('Aucun abonnement actif par plan.') }}</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
             <div class="card border-0 shadow h-100 stat-card border-start border-primary border-4">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1">

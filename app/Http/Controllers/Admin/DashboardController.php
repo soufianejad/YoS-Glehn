@@ -142,7 +142,8 @@ class DashboardController extends Controller
             : 0;
 
         return view('admin.dashboard.index', compact(
-            'totalUsers', 'totalAuthors', 'totalSchools', 'totalBooks', 'publishedBooks', 'activeSubscriptions',
+            'totalUsers', 'totalAuthors', 'totalSchools', 'totalBooks', 'publishedBooks',
+            'totalSubscriptions', 'activeSubscriptions', 'newSubscriptionsThisMonth', 'cancelledSubscriptionsThisMonth', 'subscriptionsByPlan',
             'totalRevenue', 'monthlyRevenue', 'annualRevenue',
             'paymentsCountMonth', 'avgOrderValueMonth',
             'subscriptionRevenueMonth', 'directSalesRevenueMonth', 'directShareMonth', 'subscriptionShareMonth',
@@ -263,6 +264,7 @@ class DashboardController extends Controller
             'userSeries' => $userSeries,
             'bookSeries' => $bookSeries,
             'revenueSeries' => $revenueSeries,
+            'subscriptionSeries' => $subscriptionSeries,
             'summary' => $summary,
             'monthsWindow' => $months,
         ]);
@@ -280,6 +282,13 @@ class DashboardController extends Controller
     public function export(string $type)
     {
         // In a real application, this would generate and download a file (e.g., CSV, Excel)
+        return response('Exporting '.$type.' data...')->header('Content-Type', 'text/plain');
+    }
+}
+urn response('Exporting '.$type.' data...')->header('Content-Type', 'text/plain');
+    }
+}
+on, this would generate and download a file (e.g., CSV, Excel)
         return response('Exporting '.$type.' data...')->header('Content-Type', 'text/plain');
     }
 }
