@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\AdultAccess;
 use App\Models\AuthorPayout;
 use App\Models\Book;
 use App\Models\Payment;
 use App\Models\Review;
 use App\Models\School;
-use App\Models\User;
 use App\Models\Subscription;
+use App\Models\User;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -21,12 +22,51 @@ class DashboardController extends Controller
         $totalAuthors = User::where('role', 'author')->count();
         $totalSchools = School::count();
         $totalBooks = Book::count();
+        $publishedBooks = Book::where('status', 'published')->count();
         $activeSubscriptions = Subscription::where('status', 'active')->count();
-        
+
         // --- Financials ---
         $totalRevenue = Payment::where('status', 'completed')->sum('amount');
-        $monthlyRevenue = Payment::where('status', 'completed')->where('created_at', '>=', now()->startOfMonth())->sum('amount');
+        $monthStart = now()->startOfMonth();
+        $monthlyRevenue = Payment::where('status', 'completed')->where('created_at', '>=', $monthStart)->sum('amount');
         $annualRevenue = Payment::where('status', 'completed')->where('created_at', '>=', now()->startOfYear())->sum('amount');
+
+        $paymentsCountMonth = Payment::where('status', 'completed')->where('created_at', '>=', $monthStart)->count();
+        $avgOrderValueMonth = $paymentsCountMonth > 0 ? round((float) $monthlyRevenue / $paymentsCountMonth, 2) : 0;
+
+        $subscriptionRevenueMonth = Payment::where('status', 'completed')
+            ->where('created_at', '>=', $monthStart)
+            ->where('payment_type', 'subscription')
+            ->sum('amount');
+        $directSalesRevenueMonth = Payment::where('status', 'completed')
+            ->where('created_at', '>=', $monthStart)
+            ->whereIn('payment_type', ['book_pdf', 'book_audio'])
+            ->sum('amount');
+
+        // --- Growth & pipeline ---
+        $newUsersThisMonth = User::where('created_at', '>=', $monthStart)->count();
+        $pendingRevenueAmount = (float) DB::table('revenues')->where('status', 'pending')->sum('total_amount');
+
+        // --- Top authors (volume = somme des montants attribués sur leurs livres) ---
+        $topAuthors = $this->buildTopAuthors();
+
+        // --- Top books by attributed revenue ---
+        $topBooks = DB::table('revenues')
+            ->join('books', 'revenues.book_id', '=', 'books.id')
+            ->join('users as authors', 'books.author_id', '=', 'authors.id')
+            ->select(
+                'books.id',
+                'books.title',
+                'books.slug',
+                DB::raw('COALESCE(authors.first_name, "") as author_first'),
+                DB::raw('COALESCE(authors.last_name, "") as author_last'),
+                DB::raw('SUM(revenues.total_amount) as volume'),
+                DB::raw('COUNT(revenues.id) as allocations')
+            )
+            ->groupBy('books.id', 'books.title', 'books.slug', 'authors.first_name', 'authors.last_name')
+            ->orderByDesc('volume')
+            ->limit(5)
+            ->get();
 
         // --- Pending Items ---
         $pendingBooks = Book::where('status', 'pending')->count();
@@ -75,13 +115,57 @@ class DashboardController extends Controller
         $latestBooks = Book::with('author')->latest()->take(5)->get();
         $latestReviews = Review::with('user', 'book')->latest()->take(5)->get();
 
+        $directShareMonth = (float) $monthlyRevenue > 0
+            ? round(((float) $directSalesRevenueMonth / (float) $monthlyRevenue) * 100, 1)
+            : 0;
+        $subscriptionShareMonth = (float) $monthlyRevenue > 0
+            ? round(((float) $subscriptionRevenueMonth / (float) $monthlyRevenue) * 100, 1)
+            : 0;
+
         return view('admin.dashboard.index', compact(
-            'totalUsers', 'totalAuthors', 'totalSchools', 'totalBooks', 'activeSubscriptions',
+            'totalUsers', 'totalAuthors', 'totalSchools', 'totalBooks', 'publishedBooks', 'activeSubscriptions',
             'totalRevenue', 'monthlyRevenue', 'annualRevenue',
+            'paymentsCountMonth', 'avgOrderValueMonth',
+            'subscriptionRevenueMonth', 'directSalesRevenueMonth', 'directShareMonth', 'subscriptionShareMonth',
+            'newUsersThisMonth', 'pendingRevenueAmount',
+            'topAuthors', 'topBooks',
             'pendingBooks', 'pendingReviews', 'pendingPayouts',
             'revenueChart', 'userChart',
             'latestUsers', 'latestBooks', 'latestReviews'
         ));
+    }
+
+    /**
+     * @return Collection<int, object{author: User, volume: float|int, author_earnings: float|int, allocations: int}>
+     */
+    protected function buildTopAuthors(): Collection
+    {
+        $rows = DB::table('revenues')
+            ->select(
+                'author_id',
+                DB::raw('SUM(total_amount) as volume'),
+                DB::raw('SUM(author_amount) as author_earnings'),
+                DB::raw('COUNT(*) as allocations')
+            )
+            ->groupBy('author_id')
+            ->orderByDesc('volume')
+            ->limit(5)
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return collect();
+        }
+
+        $authors = User::whereIn('id', $rows->pluck('author_id'))->get()->keyBy('id');
+
+        return $rows->map(function ($row) use ($authors) {
+            return (object) [
+                'author' => $authors->get($row->author_id),
+                'volume' => (float) $row->volume,
+                'author_earnings' => (float) $row->author_earnings,
+                'allocations' => (int) $row->allocations,
+            ];
+        })->filter(fn ($item) => $item->author !== null)->values();
     }
 
     public function statistics()
