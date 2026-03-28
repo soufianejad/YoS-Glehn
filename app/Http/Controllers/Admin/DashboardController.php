@@ -36,7 +36,7 @@ class DashboardController extends Controller
         $totalBooks = Book::count();
         $publishedBooks = Book::where('status', 'published')->count();
         $totalSubscriptions = Subscription::count();
-        $activeSubscriptions = Subscription::where('status', 'active')->count();
+        $activeSubscriptions = Subscription::where('status', 'active')->where('end_date', '>=', now())->count();
 
         $monthStart = now()->startOfMonth();
 
@@ -44,6 +44,8 @@ class DashboardController extends Controller
         $cancelledSubscriptionsThisMonth = Subscription::where('status', 'cancelled')->where('updated_at', '>=', $monthStart)->count();
         $subscriptionsByPlan = Subscription::query()
             ->join('subscription_plans', 'subscriptions.subscription_plan_id', '=', 'subscription_plans.id')
+            ->where('subscriptions.status', 'active')
+            ->where('subscriptions.end_date', '>=', now())
             ->select('subscription_plans.name as plan_name', DB::raw('COUNT(*) as count'))
             ->groupBy('subscription_plans.name')
             ->get();
