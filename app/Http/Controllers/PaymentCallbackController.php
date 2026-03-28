@@ -171,21 +171,7 @@ class PaymentCallbackController extends Controller
             return response('OK', 200);
         }
 
-        // // Option : vérification de la transaction directement via l'API Paystack
-        // if ($secretKey) {
-        //     try {
-        //         $verify = Http::withToken($secretKey)
-        //             ->get("https://api.paystack.co/transaction/verify/{$reference}");
-
-        //         if (!$verify->successful() || ($verify->json()['data']['status'] ?? '') !== 'success') {
-        //             Log::warning("Paystack – vérification échouée pour ref {$reference}");
-        //             return response('OK', 200);
-        //         }
-        //     } catch (\Exception $e) {
-        //         Log::error("Paystack verify exception: " . $e->getMessage());
-        //     }
-        // }
-
+   
         $payment = Payment::where('transaction_id', $reference)->where('status', 'pending')->first();
 
         if ($payment) {
