@@ -47,11 +47,11 @@
                         <div class="dropdown">
                             <a class="nav-link position-relative p-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" v-pre>
                                 <i class="bi bi-bell"></i>
-                                <span class="badge bg-danger d-none" id="unread-notifications-count" style="position: absolute; top: 0; right: 0; padding: 3px 6px; border-radius: 50%; font-size: 0.6rem;">0</span>
+                                <span class="badge bg-danger d-none" id="unread-notifications-count" style="position: absolute; top: 0; right: 0; padding: 3px 6px; border-radius: 50%; font-size: 0.6rem; z-index: 1;">0</span>
                             </a>
-                            <div class="dropdown-menu dropdown-menu-end shadow-sm" id="notifications-dropdown-menu" style="width: 280px; max-height: 350px; overflow-y: auto;">
-                                <h6 class="dropdown-header">{{ __('Notifications') }}</h6>
-                                <div id="notifications-list">
+                            <div class="dropdown-menu dropdown-menu-end shadow border" id="notifications-dropdown-menu" style="width: 300px; max-height: 400px; overflow-y: auto; z-index: 1060; background-color: #ffffff !important;">
+                                <div class="dropdown-header border-bottom bg-light fw-bold py-2">{{ __('Notifications') }}</div>
+                                <div id="notifications-list" class="bg-white">
                                     <!-- Notifications load here -->
                                 </div>
                             </div>
