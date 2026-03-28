@@ -44,8 +44,9 @@ class GenericNotificationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.notifications.generic',
+            view: 'emails.notifications.generic',
             with: [
+                'title' => $this->title,
                 'messageBody' => $this->messageBody,
                 'link' => $this->link,
             ],
