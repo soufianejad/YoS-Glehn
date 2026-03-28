@@ -285,10 +285,4 @@ class DashboardController extends Controller
         return response('Exporting ' . $type . ' data...')->header('Content-Type', 'text/plain');
     }
 }
-urn response('Exporting '.$type.' data...')->header('Content-Type', 'text/plain');
-    }
-}
-on, this would generate and download a file (e.g., CSV, Excel)
-        return response('Exporting '.$type.' data...')->header('Content-Type', 'text/plain');
-    }
-}
+
