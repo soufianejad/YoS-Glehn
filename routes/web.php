@@ -287,6 +287,8 @@ Route::view('/faq', 'public.faq')->name('faq');
 Route::get('/{slug}', [PageController::class, 'show'])->name('page.show');
 
 route::middleware(['auth'])->group(function () {
+    Route::get('/notifications', [App\Http\Controllers\User\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/mark-all-read', [App\Http\Controllers\User\NotificationController::class, 'markAllRead'])->name('notifications.markAllRead.web');
     Route::get('/profile/notifications', [NotificationPreferencesController::class, 'edit'])->name('profile.notifications.edit');
     Route::put('/profile/notifications', [NotificationPreferencesController::class, 'update'])->name('profile.notifications.update');
 });

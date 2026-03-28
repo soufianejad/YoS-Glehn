@@ -40,4 +40,19 @@ class NotificationApiController extends Controller
 
         return response()->json(['message' => __('Notification marked as read.')]);
     }
+
+    /**
+     * Mark all unread notifications for the authenticated user as read.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function markAllAsRead()
+    {
+        Auth::user()->notifications()->where('is_read', false)->update([
+            'is_read' => true,
+            'read_at' => now(),
+        ]);
+
+        return response()->json(['message' => __('All notifications marked as read.')]);
+    }
 }

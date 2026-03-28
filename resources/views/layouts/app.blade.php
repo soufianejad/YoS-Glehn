@@ -226,36 +226,40 @@
                 method: 'GET',
                 success: function(response) {
                     let countEl = $('#unread-notifications-count');
+                    let markAllBtn = $('#mark-all-read-btn');
                     countEl.text(response.unread_count);
 
-                    response.unread_count > 0 ? countEl.show() : countEl.hide();
+                    if (response.unread_count > 0) {
+                        countEl.removeClass('d-none').show();
+                        markAllBtn.removeClass('d-none');
+                    } else {
+                        countEl.addClass('d-none').hide();
+                        markAllBtn.addClass('d-none');
+                    }
 
                     let notificationsList = $('#notifications-list');
                     notificationsList.empty();
 
                     if (response.notifications.length > 0) {
-                        response.notifications.forEach(function(notification) {
+                        response.notifications.forEach(function(n) {
                             notificationsList.append(`
-                                <a class="dropdown-item notification-item"
-                                   href="${notification.link ?? '#'}"
-                                   data-id="${notification.id}">
-                                    <strong>${notification.title}</strong><br>
-                                    <small>${notification.message}</small>
-                                </a>
+                                <div class="dropdown-item border-bottom p-3 d-flex align-items-start gap-2">
+                                    <a href="${n.link ?? '#'}" class="text-decoration-none flex-grow-1 notification-item" data-id="${n.id}">
+                                        <div class="fw-bold small mb-1 text-primary text-wrap">${n.title}</div>
+                                        <div class="small text-muted text-wrap">${n.message}</div>
+                                        <div class="mt-1" style="font-size: 0.7rem; color: #adb5bd;">${new Date(n.created_at).toLocaleString()}</div>
+                                    </a>
+                                    <button class="btn btn-link btn-sm p-0 text-muted mark-single-read" data-id="${n.id}" title="{{ __('Marquer comme lu') }}">
+                                        <i class="bi bi-check2"></i>
+                                    </button>
+                                </div>
                             `);
                         });
-
-                        notificationsList.append('<div class="dropdown-divider"></div>');
-                        notificationsList.append(
-                            '<a class="dropdown-item text-center" href="#">' +
-                            @json(__('View all notifications')) +
-                            '</a>'
-                        );
                     } else {
                         notificationsList.append(
-                            '<span class="dropdown-item">' +
+                            '<div class="p-4 text-center text-muted small">' +
                             @json(__('No new notifications.')) +
-                            '</span>'
+                            '</div>'
                         );
                     }
                 },
@@ -271,12 +275,30 @@
         // Refresh every 60s
         setInterval(fetchNotifications, 60000);
 
-        // Mark as read
+        // Mark single as read
+        $(document).on('click', '.mark-single-read', function(e) {
+            e.stopPropagation();
+            let id = $(this).data('id');
+            $.post(`/api/notifications/${id}/mark-as-read`).done(() => {
+                fetchNotifications();
+            });
+        });
+
+        // Mark all as read
+        $(document).on('click', '#mark-all-read-btn', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $.post("{{ route('api.notifications.markAllRead') }}").done(() => {
+                fetchNotifications();
+                toastr.success("{{ __('Toutes les notifications ont été marquées comme lues') }}");
+            });
+        });
+
+        // Mark as read and navigate
         $(document).on('click', '.notification-item', function(e) {
             e.preventDefault();
             let notificationId = $(this).data('id');
             let notificationLink = $(this).attr('href');
-            let $this = $(this);
 
             $.ajax({
                 url: `/api/notifications/${notificationId}/mark-as-read`,
@@ -285,14 +307,10 @@
                     _token: @json(csrf_token())
                 },
                 success: function(response) {
-                    $this.removeClass('bg-light');
                     fetchNotifications();
                     if (notificationLink && notificationLink !== '#') {
                         window.location.href = notificationLink;
                     }
-                },
-                error: function(xhr) {
-                    console.error('Error marking notification as read:', xhr);
                 }
             });
         });
