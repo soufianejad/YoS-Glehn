@@ -1,24 +1,25 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container-fluid py-3 py-md-4">
-        <!-- En-tête : Retour + Favoris -->
-        <div class="row mb-3 align-items-center">
-            <div class="col-md-6">
-                <a href="{{ route('book.show', $book->slug) }}" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-arrow-left me-1"></i> {{ __('Retour') }}
+    <div class="container-fluid py-2 py-md-4">
+        <!-- Barre d'actions : Retour, Langue, Favoris, Téléchargement -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <a href="{{ route('book.show', $book->slug) }}" class="btn btn-outline-secondary btn-sm shadow-sm">
+                    <i class="bi bi-arrow-left me-1"></i> <span class="d-none d-sm-inline">{{ __('Retour') }}</span>
                 </a>
             </div>
-            <div class="col-md-6 text-md-end">
+
+            <div class="d-flex align-items-center gap-2">
                 @auth
                     <!-- Langue Dropdown -->
-                    <div class="dropdown d-inline-block me-2">
+                    <div class="dropdown">
                         <button class="btn btn-outline-secondary btn-sm shadow-sm" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-language me-1"></i> 
                             @if($fileId == 'default')
-                                {{ __('Langue') }}
+                                <span class="d-none d-sm-inline">{{ __('Langue') }}</span>
                             @else
-                                {{ strtoupper($book->files->where('id', $fileId)->first()->language ?? '') }}
+                                <strong>{{ strtoupper($book->files->where('id', $fileId)->first()->language ?? '') }}</strong>
                             @endif
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="languageDropdown">
@@ -40,17 +41,21 @@
                         </ul>
                     </div>
 
-                    <form action="{{ route('favorites.toggle', $book) }}" method="POST" class="d-inline-block favorite-form me-2">
+                    <!-- Favoris -->
+                    <form action="{{ route('favorites.toggle', $book) }}" method="POST" class="favorite-form">
                         @csrf
                         <button type="submit"
-                            class="btn {{ auth()->user()->favorites->contains($book->id) ? 'btn-danger' : 'btn-outline-danger' }} btn-sm">
-                            <i class="{{ auth()->user()->favorites->contains($book->id) ? 'fas fa-heart' : 'far fa-heart' }} me-1"></i>
-                            {{ auth()->user()->favorites->contains($book->id) ? __('Retirer') : __('Favoris') }}
+                            class="btn {{ auth()->user()->favorites->contains($book->id) ? 'btn-danger' : 'btn-outline-danger' }} btn-sm shadow-sm">
+                            <i class="{{ auth()->user()->favorites->contains($book->id) ? 'fas fa-heart' : 'far fa-heart' }}"></i>
+                            <span class="d-none d-sm-inline ms-1">{{ auth()->user()->favorites->contains($book->id) ? __('Retirer') : __('Favoris') }}</span>
                         </button>
                     </form>
+
+                    <!-- Téléchargement -->
                     @if($canDownload)
-                        <a href="{{ route('read.pdf.content', $book->slug) }}?file_id={{ $fileId }}&download=1" class="btn btn-success btn-sm shadow-sm">
-                            <i class="bi bi-download me-1"></i> {{ __('Télécharger le PDF') }}
+                        <a href="{{ route('read.pdf.content', $book->slug) }}?file_id={{ $fileId }}&download=1" class="btn btn-success btn-sm shadow-sm" title="{{ __('Télécharger le PDF') }}">
+                            <i class="bi bi-download"></i>
+                            <span class="d-none d-sm-inline ms-1">{{ __('Télécharger') }}</span>
                         </a>
                     @endif
                 @endauth
