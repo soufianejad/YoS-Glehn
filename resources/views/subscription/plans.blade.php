@@ -70,7 +70,12 @@
         <div class="row justify-content-center">
             @forelse($plans as $plan)
                 <div class="col-lg-4 mb-5">
-                    <div class="card pricing-card h-100 shadow-sm {{ !empty($plan->is_popular) ? 'popular' : '' }}">
+                    <div class="card pricing-card h-100 shadow-sm {{ !empty($plan->is_popular) ? 'popular' : '' }} {{ ($currentSubscription && $currentSubscription->subscription_plan_id == $plan->id) ? 'border-success' : '' }}">
+                        @if($currentSubscription && $currentSubscription->subscription_plan_id == $plan->id)
+                            <div class="position-absolute top-0 start-0 m-3">
+                                <span class="badge bg-success">{{ __('Plan actuel') }}</span>
+                            </div>
+                        @endif
                         @if(!empty($plan->is_popular))
                             <div class="position-absolute top-0 end-0 m-3">
                                 <span class="badge bg-primary">{{ __('Populaire') }}</span>
@@ -97,7 +102,11 @@
                             </ul>
                         </div>
                          <div class="card-footer text-center">
-                            <a href="{{ route('subscription.checkout', $plan) }}" class="btn btn-primary w-100">{{ __("Choisir ce Plan") }}</a>
+                            @if($currentSubscription && $currentSubscription->subscription_plan_id == $plan->id)
+                                <button class="btn btn-success w-100" disabled><i class="fas fa-check-circle me-1"></i> {{ __("Plan Actuel") }}</button>
+                            @else
+                                <a href="{{ route('subscription.checkout', $plan) }}" class="btn btn-primary w-100">{{ __("Choisir ce Plan") }}</a>
+                            @endif
                         </div>
                     </div>
                 </div>
