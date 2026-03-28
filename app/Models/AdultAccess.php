@@ -74,4 +74,13 @@ class AdultAccess extends Model
         $this->used_at = now();
         $this->save();
     }
+
+    public function getDaysRemainingAttribute(): int
+    {
+        if (! $this->expires_at || $this->isExpired()) {
+            return 0;
+        }
+
+        return (int) now()->diffInDays($this->expires_at, false);
+    }
 }

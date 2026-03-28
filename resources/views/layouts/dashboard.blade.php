@@ -171,7 +171,7 @@
                             <li class="nav-item me-3 d-flex align-items-center">
                                 <span class="badge bg-success">
                                     <i class="bi bi-clock-history me-1"></i>
-                                    {{ __('Jours restants :') }} {{ max(0, now()->diffInDays(Auth::user()->adultAccess->expires_at, false)) }}
+                                    {{ __('Jours restants :') }} {{ Auth::user()->adultAccess->days_remaining }}
                                 </span>
                             </li>
                         @endif
