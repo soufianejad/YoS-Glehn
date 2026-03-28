@@ -1,6 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('title', __('Gestion de l\'Abonnement'))
+@section('title', __('Mon Abonnement'))
 
 @push('styles')
 <style>
@@ -128,8 +128,8 @@
     <!-- Header -->
     <div class="d-flex align-items-center justify-content-between mb-4">
         <div>
-            <h1 class="h3 fw-bold text-dark mb-1">{{ __('Mon Espace Abonnement') }}</h1>
-            <p class="text-muted mb-0">{{ __('Gérez vos accès et découvrez de nouveaux contenus.') }}</p>
+            <h1 class="h3 fw-bold text-dark mb-1">{{ __('Mon Abonnement') }}</h1>
+            <p class="text-muted mb-0">{{ __('Gérez votre abonnement et découvrez nos plans.') }}</p>
         </div>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
@@ -147,7 +147,7 @@
                     <div class="card-body p-4 p-md-5">
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start mb-4">
                             <div class="mb-3 mb-md-0">
-                                <span class="badge bg-white bg-opacity-20 text-white mb-2 px-3 py-2 rounded-pill">{{ __('PLAN ACTUEL') }}</span>
+                                <span class="badge bg-white bg-opacity-20 text-white mb-2 px-3 py-2 rounded-pill">{{ strtoupper(__('Plan actuel')) }}</span>
                                 <h2 class="display-5 fw-bold text-white mb-0">{{ $subscription->subscriptionPlan->name }}</h2>
                             </div>
                             <div class="d-flex align-items-center gap-2">
@@ -160,27 +160,27 @@
                                     };
                                 @endphp
                                 <span class="status-badge {{ $statusClass }}">
-                                    <i class="fas fa-circle me-1 small"></i> {{ strtoupper(__($subscription->status)) }}
+                                    <i class="fas fa-circle me-1 small"></i> {{ strtoupper(__($subscription->status == 'active' ? 'Active' : ($subscription->status == 'cancelled' ? 'Cancelled' : ucfirst($subscription->status)))) }}
                                 </span>
                             </div>
                         </div>
 
                         <div class="row g-4 mb-4">
                             <div class="col-6 col-md-3">
-                                <div class="opacity-75 small mb-1">{{ __('Depuis le') }}</div>
+                                <div class="opacity-75 small mb-1">{{ __('Date de début') }}</div>
                                 <div class="fw-bold h5 text-white mb-0">{{ $subscription->start_date->format('d/m/Y') }}</div>
                             </div>
                             <div class="col-6 col-md-3">
-                                <div class="opacity-75 small mb-1">{{ __('Expire le') }}</div>
+                                <div class="opacity-75 small mb-1">{{ __('Date de fin') }}</div>
                                 <div class="fw-bold h5 text-white mb-0">{{ $subscription->end_date->format('d/m/Y') }}</div>
                             </div>
                             <div class="col-6 col-md-3">
-                                <div class="opacity-75 small mb-1">{{ __('Tarif') }}</div>
+                                <div class="opacity-75 small mb-1">{{ __('Prix') }}</div>
                                 <div class="fw-bold h5 text-white mb-0">{{ number_format($subscription->subscriptionPlan->price, 0) }} XOF</div>
                             </div>
                             <div class="col-6 col-md-3">
                                 <div class="opacity-75 small mb-1">{{ __('Statut') }}</div>
-                                <div class="fw-bold h5 text-white mb-0">{{ $subscription->daysRemaining() }} {{ __('jours restants') }}</div>
+                                <div class="fw-bold h5 text-white mb-0">{{ $subscription->daysRemaining() }} {{ __('jours') }}</div>
                             </div>
                         </div>
 
@@ -196,19 +196,19 @@
                         <div class="d-flex flex-wrap gap-3">
                             @if($subscription->status === 'active')
                                 <a href="{{ route('subscription.checkout.renew') }}" class="btn btn-light text-primary btn-action shadow-sm">
-                                    <i class="fas fa-sync-alt me-2"></i>{{ __('Renouveler mon plan') }}
+                                    <i class="fas fa-sync-alt me-2"></i>{{ __('Renouveler') }}
                                 </a>
                                 @if($subscription->auto_renew)
-                                    <form action="{{ route('subscription.cancel') }}" method="POST" onsubmit="return confirm('{{ __('Voulez-vous vraiment désactiver le renouvellement automatique ?') }}')">
+                                    <form action="{{ route('subscription.cancel') }}" method="POST" onsubmit="return confirm('{{ __('Are you sure you want to cancel your subscription?') }}')">
                                         @csrf
                                         <button type="submit" class="btn btn-outline-light btn-action">
-                                            <i class="fas fa-pause-circle me-2"></i>{{ __('Désactiver le renouvellement') }}
+                                            <i class="fas fa-pause-circle me-2"></i>{{ __('Annuler l\'abonnement') }}
                                         </button>
                                     </form>
                                 @endif
                             @else
                                 <a href="{{ route('subscription.plans') }}" class="btn btn-light text-primary btn-action shadow-sm">
-                                    <i class="fas fa-rocket me-2"></i>{{ __('Réactiver l\'abonnement') }}
+                                    <i class="fas fa-rocket me-2"></i>{{ __('Découvrir les Plans') }}
                                 </a>
                             @endif
                         </div>
@@ -219,12 +219,12 @@
                     <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2.5rem;">
                         <i class="fas fa-crown"></i>
                     </div>
-                    <h2 class="fw-bold text-dark">{{ __('Libérez tout votre potentiel') }}</h2>
+                    <h2 class="fw-bold text-dark">{{ __('No Active Subscription') }}</h2>
                     <p class="text-muted mx-auto mb-4" style="max-width: 500px;">
-                        {{ __('Rejoignez notre communauté de lecteurs passionnés et accédez à des milliers d\'ouvrages, des audios exclusifs et des quiz certifiants.') }}
+                        {{ __('It looks like you do not have an active subscription. Subscribe today to get unlimited access to our library!') }}
                     </p>
                     <a href="#plans-section" class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow">
-                        {{ __('Voir les offres disponibles') }}
+                        {{ __('Browse Plans') }}
                     </a>
                 </div>
             @endif
@@ -232,46 +232,46 @@
             <!-- Benefits / Features Section -->
             <div class="card border-0 shadow-sm rounded-4 mb-4">
                 <div class="card-body p-4">
-                    <h4 class="fw-bold text-dark mb-4">{{ __('Vos privilèges lecteur') }}</h4>
+                    <h4 class="fw-bold text-dark mb-4">{{ __('Vos Avantages') }}</h4>
                     <div class="row g-4">
                         <div class="col-md-6 col-lg-3 text-center text-md-start">
                             <div class="icon-box bg-info bg-opacity-10 text-info mx-auto mx-md-0">
                                 <i class="fas fa-book-reader"></i>
                             </div>
-                            <h6 class="fw-bold mb-1">{{ __('Lecture illimitée') }}</h6>
-                            <p class="small text-muted mb-0">{{ __('Accès complet aux PDF') }}</p>
+                            <h6 class="fw-bold mb-1">{{ __('Accès aux PDFs') }}</h6>
+                            <p class="small text-muted mb-0">{{ __('Lecture illimitée') }}</p>
                         </div>
                         <div class="col-md-6 col-lg-3 text-center text-md-start">
                             <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mx-md-0">
                                 <i class="fas fa-headphones-alt"></i>
                             </div>
-                            <h6 class="fw-bold mb-1">{{ __('Écoute Premium') }}</h6>
-                            <p class="small text-muted mb-0">{{ __('Tous les livres audio') }}</p>
+                            <h6 class="fw-bold mb-1">{{ __('Accès aux Audios') }}</h6>
+                            <p class="small text-muted mb-0">{{ __('Écoute illimitée') }}</p>
                         </div>
                         <div class="col-md-6 col-lg-3 text-center text-md-start">
                             <div class="icon-box bg-warning bg-opacity-10 text-warning mx-auto mx-md-0">
                                 <i class="fas fa-certificate"></i>
                             </div>
-                            <h6 class="fw-bold mb-1">{{ __('Quiz & Badges') }}</h6>
-                            <p class="small text-muted mb-0">{{ __('Certifiez vos lectures') }}</p>
+                            <h6 class="fw-bold mb-1">{{ __('Accès aux Quiz') }}</h6>
+                            <p class="small text-muted mb-0">{{ __('Certification') }}</p>
                         </div>
                         <div class="col-md-6 col-lg-3 text-center text-md-start">
                             <div class="icon-box bg-danger bg-opacity-10 text-danger mx-auto mx-md-0">
                                 <i class="fas fa-cloud-download-alt"></i>
                             </div>
-                            <h6 class="fw-bold mb-1">{{ __('Mode Hors-ligne') }}</h6>
-                            <p class="small text-muted mb-0">{{ __('Téléchargement réservé') }}</p>
+                            <h6 class="fw-bold mb-1">{{ __('Téléchargement') }}</h6>
+                            <p class="small text-muted mb-0">{{ __('Accès') }}</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right Side: History or CTA -->
+        <!-- Right Side: History -->
         <div class="col-xl-4">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold text-dark mb-0">{{ __('Historique récent') }}</h5>
+                    <h5 class="fw-bold text-dark mb-0">{{ __('Subscription History') }}</h5>
                     <i class="fas fa-history text-muted"></i>
                 </div>
                 <div class="card-body p-0">
@@ -279,7 +279,7 @@
                         <table class="table history-table hover align-middle mb-0">
                             <thead>
                                 <tr>
-                                    <th>{{ __('Plan / Date') }}</th>
+                                    <th>{{ __('Plan') }} / {{ __('Date') }}</th>
                                     <th class="text-end">{{ __('Statut') }}</th>
                                 </tr>
                             </thead>
@@ -301,7 +301,7 @@
                                                 };
                                             @endphp
                                             <span class="badge {{ $statusClass }} rounded-pill px-2 py-1" style="font-size: 0.65rem;">
-                                                {{ strtoupper(__($sub->status)) }}
+                                                {{ strtoupper(__($sub->status == 'active' ? 'Active' : ($sub->status == 'cancelled' ? 'Cancelled' : ucfirst($sub->status)))) }}
                                             </span>
                                         </td>
                                     </tr>
@@ -309,7 +309,7 @@
                                     <tr>
                                         <td colspan="2" class="text-center py-5 text-muted">
                                             <i class="fas fa-inbox d-block mb-3 fa-2x opacity-20"></i>
-                                            {{ __('Aucune transaction trouvée.') }}
+                                            {{ __('No past subscriptions found.') }}
                                         </td>
                                     </tr>
                                 @endforelse
@@ -329,8 +329,8 @@
     <!-- Plans Section -->
     <div id="plans-section" class="mt-5 pt-4">
         <div class="text-center mb-5">
-            <h2 class="fw-bold text-dark">{{ __('Choisissez le plan qui vous correspond') }}</h2>
-            <p class="text-muted">{{ __('Passez à la vitesse supérieure avec nos offres sur mesure.') }}</p>
+            <h2 class="fw-bold text-dark">{{ __('Nos Plans d\'Abonnement') }}</h2>
+            <p class="text-muted">{{ __('Choisissez le plan qui vous convient et débloquez un monde de connaissances.') }}</p>
         </div>
 
         <div class="row g-4 justify-content-center">
@@ -340,7 +340,7 @@
                         <div class="card-body p-4 p-xl-5 d-flex flex-column">
                             @if($subscription && $subscription->subscription_plan_id === $plan->id)
                                 <div class="text-center mb-3">
-                                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ __('PLAN ACTUEL') }}</span>
+                                    <span class="badge bg-primary px-3 py-2 rounded-pill">{{ strtoupper(__('Plan actuel')) }}</span>
                                 </div>
                             @endif
 
@@ -349,7 +349,7 @@
                                 <div class="price-tag">
                                     {{ number_format($plan->price, 0) }}<span class="h6 fw-normal text-muted ms-1">XOF</span>
                                 </div>
-                                <div class="price-period">{{ $plan->duration_days }} {{ __('jours d\'accès') }}</div>
+                                <div class="price-period">{{ $plan->duration_days }} {{ __('jours') }}</div>
                             </div>
 
                             <hr class="my-4 opacity-10">
@@ -363,30 +363,30 @@
                                 
                                 <li>
                                     <i class="fas fa-check-circle"></i>
-                                    <span>{{ __('Lecture illimitée des PDF') }}</span>
+                                    <span>{{ __('Accès aux PDFs') }}</span>
                                 </li>
                                 <li>
                                     <i class="fas fa-check-circle"></i>
-                                    <span>{{ __('Accès complet aux audiobooks') }}</span>
+                                    <span>{{ __('Accès aux Audios') }}</span>
                                 </li>
                                 <li>
                                     <i class="fas fa-check-circle"></i>
-                                    <span>{{ __('Quiz et certifications') }}</span>
+                                    <span>{{ __('Accès aux Quiz') }}</span>
                                 </li>
                                 <li>
                                     <i class="fas fa-check-circle"></i>
-                                    <span>{{ __('Badge exclusif sur le profil') }}</span>
+                                    <span>{{ __('Accès à toute la bibliothèque') }}</span>
                                 </li>
                             </ul>
 
                             <div class="d-grid">
                                 @if($subscription && $subscription->subscription_plan_id === $plan->id)
                                     <button class="btn btn-outline-primary btn-action" disabled>
-                                        {{ __('Déjà abonné') }}
+                                        {{ __('Plan Actuel') }}
                                     </button>
                                 @else
                                     <a href="{{ route('subscription.checkout', $plan) }}" class="btn btn-primary btn-action shadow-sm">
-                                        {{ __('Choisir ce plan') }}
+                                        {{ __('Choisir ce Plan') }}
                                     </a>
                                 @endif
                             </div>
