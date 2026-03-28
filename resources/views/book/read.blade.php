@@ -13,15 +13,13 @@
                 @auth
                     <!-- Langue Dropdown -->
                     <div class="dropdown d-inline-block me-2">
-                        <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-language me-1"></i> {{ __('Langue') }}: 
-                            <strong>
-                                @if($fileId == 'default')
-                                    {{ __('Par défaut') }}
-                                @else
-                                    {{ strtoupper($book->files->where('id', $fileId)->first()->language ?? '') }}
-                                @endif
-                            </strong>
+                        <button class="btn btn-outline-secondary btn-sm shadow-sm" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-language me-1"></i> 
+                            @if($fileId == 'default')
+                                {{ __('Langue') }}
+                            @else
+                                {{ strtoupper($book->files->where('id', $fileId)->first()->language ?? '') }}
+                            @endif
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="languageDropdown">
                             <li>
