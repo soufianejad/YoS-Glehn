@@ -157,7 +157,7 @@ class User extends Authenticatable
     {
         return $this->hasOne(Subscription::class)
             ->where('status', 'active')
-            ->where('end_date', '>=', now());
+            ->where('end_date', '>=', now()->startOfDay());
     }
 
     // Paiements

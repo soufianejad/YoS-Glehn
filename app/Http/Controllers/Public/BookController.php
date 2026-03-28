@@ -83,9 +83,7 @@ class BookController extends Controller
             ? Purchase::where('user_id', auth()->id())->where('book_id', $book->id)->exists()
             : false;
 
-        $hasActiveSubscription = auth()->check()
-            ? auth()->user()->subscriptions()->where('status', 'active')->exists()
-            : false;
+        $hasActiveSubscription = auth()->check() && auth()->user()->hasActiveSubscription();
 
         $relatedBooks = Book::where('category_id', $book->category_id)
             ->where('id', '!=', $book->id)

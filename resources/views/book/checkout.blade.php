@@ -1,455 +1,366 @@
-{{--
-    Vue de checkout unifiée — utilisable pour :
-      - Achat livre PDF/Audio  → variables : $book, $type (pdf|audio), $price, $methods
-      - Abonnement             → variables : $plan, $type (subscription|renewal), $price, $methods, [$subscription]
-    La variable $context (book|subscription) est injectée par le contrôleur pour adapter le formulaire.
---}}
 @extends('layouts.app')
 
-@section('title')
-    {{ __('Paiement') }} —
-    @if(isset($book)) {{ $book->title }}
-    @elseif(isset($plan)) {{ $plan->name }}
-    @endif
-@endsection
+@section('title', __('Paiement') . ' — ' . (isset($book) ? $book->title : $plan->name))
 
 @push('styles')
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ── Variables & Reset ───────────────────────────────────────────────── */
-:root {
-    --c-bg:      #f8fafc;
-    --c-surface: #ffffff;
-    --c-border:  #e2e8f0;
-    --c-text:    #0f172a;
-    --c-muted:   #64748b;
-    --c-accent:  #4f46e5;
-    --c-accent-light: #eef2ff;
-    --c-success: #10b981;
-    --c-danger:  #ef4444;
-    --radius:    14px;
-    --radius-sm: 8px;
-    --shadow:    0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.05);
-}
-body { background: var(--c-bg); font-family: 'DM Sans', sans-serif; color: var(--c-text); }
+    :root {
+        --primary-color: #0d6efd;
+        --bg-light: #f8fafc;
+        --border-color: #e2e8f0;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --radius: 12px;
+    }
 
-/* ── Layout ─────────────────────────────────────────────────────────── */
-.checkout-wrap { display:grid; grid-template-columns: 400px 1fr; min-height: 100vh; }
-@media(max-width:900px){ .checkout-wrap{ grid-template-columns:1fr; } .panel-left{ display:none; } }
+    body {
+        background-color: var(--bg-light);
+        color: var(--text-dark);
+    }
 
-/* ── Panel gauche (résumé) ───────────────────────────────────────────── */
-.panel-left {
-    background: linear-gradient(160deg, #1e1b4b 0%, #312e81 100%);
-    color:#fff;
-    padding: 3rem 2.5rem;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    overflow: hidden;
-}
-.panel-left::before {
-    content:'';
-    position:absolute;
-    top:-80px; right:-80px;
-    width:300px; height:300px;
-    border-radius:50%;
-    background: rgba(255,255,255,.04);
-}
-.panel-left::after {
-    content:'';
-    position:absolute;
-    bottom:-60px; left:-60px;
-    width:200px; height:200px;
-    border-radius:50%;
-    background: rgba(255,255,255,.03);
-}
-.cover-img {
-    width: 140px; height: 200px;
-    object-fit: cover;
-    border-radius: 10px;
-    box-shadow: 0 20px 40px rgba(0,0,0,.4);
-    margin-bottom: 2rem;
-    position: relative; z-index:1;
-}
-.plan-icon {
-    width:100px; height:100px;
-    border-radius: 50%;
-    background: rgba(255,255,255,.12);
-    backdrop-filter: blur(10px);
-    display:flex; align-items:center; justify-content:center;
-    font-size: 2.5rem;
-    margin-bottom: 2rem;
-    position: relative; z-index:1;
-}
-.summary-title { font-size:1.4rem; font-weight:700; margin-bottom:.5rem; position:relative;z-index:1; }
-.summary-sub   { color:rgba(255,255,255,.65); font-size:.9rem; margin-bottom:2rem; position:relative;z-index:1; }
-.summary-divider { border-color:rgba(255,255,255,.15); margin: 1.5rem 0; }
-.summary-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:.75rem; position:relative;z-index:1; }
-.summary-row .label { color:rgba(255,255,255,.6); font-size:.85rem; }
-.summary-row .val   { font-weight:600; font-size:.95rem; }
-.summary-total { position:relative;z-index:1; }
-.summary-total .label { color:rgba(255,255,255,.7); font-size:.9rem; }
-.summary-total .val {
-    font-size:2rem; font-weight:700;
-    background: linear-gradient(135deg,#a5b4fc,#818cf8);
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-}
-.trust-badges { display:flex; gap:1rem; flex-wrap:wrap; margin-top:2.5rem; position:relative;z-index:1; }
-.badge-item { display:flex; align-items:center; gap:.4rem; font-size:.72rem; color:rgba(255,255,255,.55); }
-.badge-item i { color:rgba(255,255,255,.4); }
+    .checkout-container {
+        max-width: 1000px;
+        margin: 40px auto;
+    }
 
-/* ── Panel droit (formulaire) ────────────────────────────────────────── */
-.panel-right {
-    padding: 3rem 2.5rem;
-    max-width: 580px;
-    width: 100%;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
+    .card {
+        border: none;
+        border-radius: var(--radius);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
 
-/* ── Steps ───────────────────────────────────────────────────────────── */
-.steps { display:flex; gap:.5rem; align-items:center; margin-bottom:2.5rem; }
-.step { width:28px;height:28px; border-radius:50%; display:flex;align-items:center;justify-content:center; font-size:.75rem; font-weight:700; transition:.2s; }
-.step.done   { background:var(--c-success); color:#fff; }
-.step.active { background:var(--c-accent); color:#fff; box-shadow:0 0 0 3px var(--c-accent-light); }
-.step.pending{ background:var(--c-border); color:var(--c-muted); }
-.step-line { flex:1; height:2px; border-radius:1px; background:var(--c-border); }
-.step-line.done { background:var(--c-success); }
+    .summary-card {
+        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+        color: white;
+    }
 
-/* ── Form labels ─────────────────────────────────────────────────────── */
-.form-label { font-weight:600; font-size:.82rem; color:var(--c-muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:.6rem; }
-.form-control, .form-select {
-    border: 1.5px solid var(--c-border);
-    border-radius: var(--radius-sm);
-    font-size:.9rem;
-    padding:.65rem 1rem;
-    transition: border-color .15s, box-shadow .15s;
-}
-.form-control:focus, .form-select:focus {
-    border-color: var(--c-accent);
-    box-shadow: 0 0 0 3px rgba(79,70,229,.12);
-    outline: none;
-}
+    .summary-card .text-muted {
+        color: rgba(255, 255, 255, 0.7) !important;
+    }
 
-/* ── Country selector ────────────────────────────────────────────────── */
-.country-flag-option { display:flex; align-items:center; gap:.5rem; }
+    .summary-card hr {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
-/* ── Network grid ────────────────────────────────────────────────────── */
-.network-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(135px,1fr)); gap:.65rem; }
-.network-card {
-    border: 1.5px solid var(--c-border);
-    border-radius: var(--radius-sm);
-    padding: .7rem .8rem;
-    cursor: pointer;
-    transition: all .15s;
-    display: flex;
-    flex-direction: column;
-    gap: .3rem;
-    background: var(--c-surface);
-    user-select: none;
-}
-.network-card:hover { border-color:#94a3b8; background:#f8fafc; transform:translateY(-1px); }
-.network-card.selected {
-    border-color: var(--c-accent);
-    background: var(--c-accent-light);
-    box-shadow: 0 0 0 1px var(--c-accent);
-}
-.network-card .net-name { font-weight:700; font-size:.8rem; }
-.network-card .net-sub  { font-size:.68rem; color:var(--c-muted); font-family:'DM Mono',monospace; }
-.network-card .net-check {
-    width:16px;height:16px;border-radius:50%;border:1.5px solid var(--c-border);
-    display:flex;align-items:center;justify-content:center;align-self:flex-end;
-    margin-top:-.2rem; flex-shrink:0;
-}
-.network-card.selected .net-check { background:var(--c-accent);border-color:var(--c-accent); }
-.network-card.selected .net-check::after { content:'✓'; color:#fff; font-size:.6rem; font-weight:700; }
+    .cover-img {
+        width: 100px;
+        height: 140px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    }
 
-/* ── Provider tags ───────────────────────────────────────────────────── */
-.provider-tag {
-    display:inline-block;
-    padding:.1rem .4rem;
-    border-radius:4px;
-    font-size:.62rem;
-    font-weight:600;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-}
-.tag-touchpay    { background:#d1fae5; color:#065f46; }
-.tag-paiementpro { background:#fef3c7; color:#92400e; }
-.tag-pawapay     { background:#ede9fe; color:#4c1d95; }
-.tag-paystack    { background:#dbeafe; color:#1e40af; }
+    .plan-icon-large {
+        font-size: 3rem;
+        background: rgba(255, 255, 255, 0.1);
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin-bottom: 1rem;
+    }
 
-/* ── OTP box ─────────────────────────────────────────────────────────── */
-.otp-box {
-    background: #fffbeb;
-    border: 1.5px solid #fde68a;
-    border-radius: var(--radius-sm);
-    padding: 1rem;
-    font-size:.85rem;
-}
-.otp-code { font-family:'DM Mono',monospace; font-size:1.1rem; font-weight:600; color:#92400e; letter-spacing:.1em; }
+    .form-label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        color: var(--text-muted);
+    }
 
-/* ── Submit button ───────────────────────────────────────────────────── */
-.btn-pay {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    border: none;
-    border-radius: var(--radius-sm);
-    color: #fff;
-    font-weight:700;
-    font-size:1rem;
-    padding: .9rem 2rem;
-    width: 100%;
-    transition: all .2s;
-    position: relative;
-    overflow: hidden;
-}
-.btn-pay::before {
-    content:'';
-    position:absolute;inset:0;
-    background:rgba(255,255,255,.1);
-    opacity:0;transition:.2s;
-}
-.btn-pay:hover::before { opacity:1; }
-.btn-pay:hover { transform:translateY(-1px); box-shadow:0 8px 20px rgba(79,70,229,.35); }
-.btn-pay:disabled { opacity:.7; transform:none; cursor:not-allowed; }
-.btn-pay .spinner { width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:none; }
-@keyframes spin { to { transform:rotate(360deg); } }
-.btn-pay.loading .spinner { display:inline-block; }
-.btn-pay.loading .btn-text { display:none; }
+    .network-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+    }
 
-/* ── Loader networks ─────────────────────────────────────────────────── */
-.networks-loading { display:flex;align-items:center;gap:.5rem;color:var(--c-muted);font-size:.85rem;padding:1rem 0; }
-.networks-loading .dot { width:6px;height:6px;border-radius:50%;background:var(--c-accent);animation:bounce .8s infinite; }
-.networks-loading .dot:nth-child(2){ animation-delay:.15s; }
-.networks-loading .dot:nth-child(3){ animation-delay:.3s; }
-@keyframes bounce { 0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)} }
+    .network-card {
+        border: 2px solid var(--border-color);
+        border-radius: 10px;
+        padding: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: white;
+        text-align: center;
+    }
 
-/* ── Group header ────────────────────────────────────────────────────── */
-.group-header { font-size:.72rem; font-weight:700; color:var(--c-muted); text-transform:uppercase; letter-spacing:.08em; margin:.8rem 0 .4rem; }
+    .network-card:hover {
+        border-color: var(--primary-color);
+        background-color: #f0f7ff;
+    }
+
+    .network-card.selected {
+        border-color: var(--primary-color);
+        background-color: #ebf5ff;
+        box-shadow: 0 0 0 1px var(--primary-color);
+    }
+
+    .network-card .net-name {
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-bottom: 4px;
+    }
+
+    .network-card .net-sub {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        font-family: monospace;
+    }
+
+    .btn-pay {
+        background: var(--primary-color);
+        border: none;
+        border-radius: 10px;
+        padding: 14px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-pay:hover:not(:disabled) {
+        background: #0b5ed7;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(13, 110, 253, 0.3);
+    }
+
+    .btn-pay:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .provider-tag {
+        font-size: 0.65rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .otp-box {
+        background: #fffbeb;
+        border: 1px solid #fef3c7;
+        color: #92400e;
+    }
+
+    .steps-indicator {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+    }
+
+    .step-item {
+        text-align: center;
+        flex: 1;
+        position: relative;
+    }
+
+    .step-item:not(:last-child):after {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100%;
+        height: 2px;
+        background: var(--border-color);
+        z-index: 1;
+    }
+
+    .step-number {
+        width: 32px;
+        height: 32px;
+        background: white;
+        border: 2px solid var(--border-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 8px;
+        font-weight: 700;
+        position: relative;
+        z-index: 2;
+    }
+
+    .step-item.active .step-number {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+
+    .step-item.completed .step-number {
+        background: #10b981;
+        border-color: #10b981;
+        color: white;
+    }
 </style>
 @endpush
 
 @section('content')
-<div class="checkout-wrap">
+<div class="container checkout-container">
+    <div class="row g-4">
+        <!-- Colonne Gauche : Résumé -->
+        <div class="col-lg-4 order-lg-2">
+            <div class="card summary-card p-4">
+                <h4 class="mb-4">{{ __('Résumé de la commande') }}</h4>
+                
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    @if(isset($book))
+                        <img src="{{ $book->cover_image ? asset('storage/'.$book->cover_image) : asset('images/default-book-cover.jpg') }}" class="cover-img">
+                        <div>
+                            <h6 class="mb-1 fw-bold">{{ $book->title }}</h6>
+                            <p class="small text-muted mb-0">{{ $book->author->name ?? __('Auteur') }}</p>
+                        </div>
+                    @elseif(isset($plan))
+                        <div class="plan-icon-large">📚</div>
+                        <div>
+                            <h6 class="mb-1 fw-bold">{{ $plan->name }}</h6>
+                            <p class="small text-muted mb-0">{{ $plan->duration_days }} {{ __('jours d\'accès') }}</p>
+                        </div>
+                    @endif
+                </div>
 
-    {{-- ── Panel gauche – Résumé ─────────────────────────────────────────── --}}
-    <div class="panel-left">
-        @if(isset($book))
-            <img src="{{ $book->cover_image ? asset('storage/'.$book->cover_image) : asset('images/default-book-cover.jpg') }}"
-                 alt="{{ $book->title }}" class="cover-img">
-            <div class="summary-title">{{ $book->title }}</div>
-            <div class="summary-sub">{{ $book->author->name ?? __('Auteur') }}</div>
-        @elseif(isset($plan))
-            <div class="plan-icon">📚</div>
-            <div class="summary-title">{{ $plan->name }}</div>
-            <div class="summary-sub">{{ $plan->description }}</div>
-        @endif
+                <hr>
 
-        <hr class="summary-divider">
-
-        @if(isset($book))
-        <div class="summary-row">
-            <span class="label">{{ __("Type d'achat") }}</span>
-            <span class="val">{{ strtoupper($type) }}</span>
-        </div>
-        @elseif(isset($plan))
-        <div class="summary-row">
-            <span class="label">{{ __("Durée") }}</span>
-            <span class="val">{{ $plan->duration_days }} {{ __('jours') }}</span>
-        </div>
-        <div class="summary-row">
-            <span class="label">{{ __("Type") }}</span>
-            <span class="val">{{ $type === 'renewal' ? __('Renouvellement') : __('Nouvel abonnement') }}</span>
-        </div>
-        @endif
-
-        <hr class="summary-divider">
-
-        <div class="summary-total">
-            <div class="label mb-1">{{ __('Total à payer') }}</div>
-            <div class="val">{{ number_format($price, 0, ',', ' ') }} <span style="font-size:1rem;font-weight:500;color:rgba(255,255,255,.5)">XOF</span></div>
-        </div>
-
-        <div class="trust-badges">
-            <div class="badge-item"><i class="fas fa-lock"></i> Paiement sécurisé</div>
-            <div class="badge-item"><i class="fas fa-shield-alt"></i> Données chiffrées</div>
-            <div class="badge-item"><i class="fas fa-bolt"></i> Accès immédiat</div>
-        </div>
-    </div>
-
-    {{-- ── Panel droit – Formulaire ──────────────────────────────────────── --}}
-    <div class="panel-right">
-
-        {{-- Steps --}}
-        <div class="steps mb-4">
-            <div class="step done">✓</div>
-            <div class="step-line done"></div>
-            <div class="step active">2</div>
-            <div class="step-line"></div>
-            <div class="step pending">3</div>
-        </div>
-
-        <h2 class="fw-bold mb-1" style="font-size:1.5rem;">{{ __('Choisir votre moyen de paiement') }}</h2>
-        <p class="text-muted mb-4" style="font-size:.9rem;">{{ __('Sélectionnez votre opérateur ou moyen de paiement préféré.') }}</p>
-
-        @if(isset($book))
-            <form action="{{ route($type === 'pdf' ? 'purchase.pdf' : 'purchase.audio', $book) }}" method="POST" id="payment-form">
-        @elseif(isset($plan))
-            <form action="{{ $type === 'renewal' ? route('subscription.renew') : route('subscription.subscribe', $plan) }}" method="POST" id="payment-form">
-        @endif
-            @csrf
-            <input type="hidden" name="network" id="selected-network">
-
-            {{-- Téléphone --}}
-            <div class="mb-4">
-                <label class="form-label">{{ __('Numéro de téléphone') }}</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-white" style="border:1.5px solid var(--c-border);border-right:0;border-radius:var(--radius-sm) 0 0 var(--radius-sm);">
-                        <i class="fas fa-mobile-alt text-muted"></i>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted small">{{ __('Type') }}</span>
+                    <span class="fw-bold small">
+                        @if(isset($book)) {{ strtoupper($type) }} @else {{ $type === 'renewal' ? __('Renouvellement') : __('Nouvel abonnement') }} @endif
                     </span>
-                    <input type="tel" name="phone" id="phone" class="form-control"
-                           style="border-left:0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;"
-                           placeholder="{{ __('Ex: 0707070707') }}"
-                           value="{{ auth()->user()->phone ?? '' }}" required>
                 </div>
-                <div class="form-text" style="font-size:.75rem;">{{ __('Utilisé pour Mobile Money et les notifications.') }}</div>
-            </div>
 
-            {{-- Email (si non connecté) --}}
-            @guest
-            <div class="mb-4">
-                <label class="form-label">{{ __('Adresse email') }}</label>
-                <input type="email" name="email" class="form-control" placeholder="{{ __('votre@email.com') }}">
-            </div>
-            @endguest
+                <div class="d-flex justify-content-between mb-4">
+                    <span class="text-muted small">{{ __('Taxes incluses') }}</span>
+                    <span class="fw-bold small">0 XOF</span>
+                </div>
 
-            {{-- Pays --}}
-            <div class="mb-4">
-                <label class="form-label">{{ __('Pays de paiement') }}</label>
-                <select class="form-select" id="country-select">
-                    @php
-                        $countriesList = [
-                            'CI' => "🇨🇮 Côte d'Ivoire",
-                            'SN' => '🇸🇳 Sénégal',
-                            'BJ' => '🇧🇯 Bénin',
-                            'BF' => '🇧🇫 Burkina Faso',
-                            'ML' => '🇲🇱 Mali',
-                            'NE' => '🇳🇪 Niger',
-                            'TG' => '🇹🇬 Togo',
-                            'CM' => '🇨🇲 Cameroun',
-                            'GW' => '🇬🇼 Guinée-Bissau',
-                            'CD' => '🇨🇩 RD Congo',
-                            'CG' => '🇨🇬 Congo Brazzaville',
-                            'GA' => '🇬🇦 Gabon',
-                            'GH' => '🇬🇭 Ghana',
-                            'KE' => '🇰🇪 Kenya',
-                            'MW' => '🇲🇼 Malawi',
-                            'RW' => '🇷🇼 Rwanda',
-                            'SL' => '🇸🇱 Sierra Leone',
-                            'TZ' => '🇹🇿 Tanzanie',
-                            'UG' => '🇺🇬 Ouganda',
-                            'ZM' => '🇿🇲 Zambie',
-                            'NG' => '🇳🇬 Nigéria',
-                            'MZ' => '🇲🇿 Mozambique',
-                            'MA' => '🇲🇦 Maroc',
-                            'FR' => '🇫🇷 France / Europe',
-                        ];
-                        $defaultCountry = 'CI';
-                    @endphp
-                    @foreach($countriesList as $iso => $label)
-                        <option value="{{ $iso }}" {{ $iso === $defaultCountry ? 'selected' : '' }}>
-                            {{ $label }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+                <hr>
 
-            {{-- Méthodes de paiement --}}
-            <div class="mb-4">
-                <label class="form-label">{{ __('Opérateur / Mode de paiement') }}</label>
-                <div id="networks-container">
-                    <div class="networks-loading" id="networks-loading">
-                        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-                        <span>{{ __('Chargement...') }}</span>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <span class="h5 mb-0 fw-bold text-muted">{{ __('Total') }}</span>
+                    <span class="h3 mb-0 fw-bold">{{ number_format($price, 0, ',', ' ') }} <small>XOF</small></span>
+                </div>
+
+                <div class="mt-4 p-3 rounded bg-white bg-opacity-10 small">
+                    <div class="mb-2"><i class="fas fa-lock me-2"></i> {{ __('Paiement 100% sécurisé') }}</div>
+                    <div class="mb-2"><i class="fas fa-check-circle me-2"></i> {{ __('Accès immédiat après validation') }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonne Droite : Formulaire -->
+        <div class="col-lg-8 order-lg-1">
+            <div class="card p-4 p-md-5">
+                <!-- Indicateur d'étapes -->
+                <div class="steps-indicator">
+                    <div class="step-item completed">
+                        <div class="step-number"><i class="fas fa-check"></i></div>
+                        <div class="small fw-bold text-muted">{{ __('Plan') }}</div>
                     </div>
-                    <div id="networks-grid" class="d-none"></div>
-                    <div id="networks-empty" class="d-none text-center py-3 text-muted" style="font-size:.85rem;">
-                        {{ __('Aucun mode de paiement disponible pour ce pays.') }}
+                    <div class="step-item active">
+                        <div class="step-number">2</div>
+                        <div class="small fw-bold">{{ __('Paiement') }}</div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="small fw-bold text-muted">{{ __('Succès') }}</div>
                     </div>
                 </div>
-                <p id="network-error" class="text-danger small mt-1 d-none">{{ __('Veuillez sélectionner un mode de paiement.') }}</p>
+
+                <h3 class="fw-bold mb-4">{{ __('Méthode de paiement') }}</h3>
+
+                @if(isset($book))
+                    <form action="{{ route($type === 'pdf' ? 'purchase.pdf' : 'purchase.audio', $book) }}" method="POST" id="payment-form">
+                @elseif(isset($plan))
+                    <form action="{{ $type === 'renewal' ? route('subscription.renew') : route('subscription.subscribe', $plan) }}" method="POST" id="payment-form">
+                @endif
+                    @csrf
+                    <input type="hidden" name="network" id="selected-network">
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ __('Votre numéro de téléphone') }}</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-phone-alt text-muted"></i></span>
+                                <input type="tel" name="phone" id="phone" class="form-control border-start-0" 
+                                       placeholder="Ex: 0707070707" value="{{ auth()->user()->phone ?? '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mt-3 mt-md-0">
+                            <label class="form-label">{{ __('Pays de paiement') }}</label>
+                            <select class="form-select bg-light" id="country-select">
+                                @php
+                                    $countriesList = [
+                                        'CI' => "🇨🇮 Côte d'Ivoire", 'SN' => '🇸🇳 Sénégal', 'BJ' => '🇧🇯 Bénin',
+                                        'BF' => '🇧🇫 Burkina Faso', 'ML' => '🇲🇱 Mali', 'NE' => '🇳🇪 Niger',
+                                        'TG' => '🇹🇬 Togo', 'CM' => '🇨🇲 Cameroun', 'FR' => '🇫🇷 France / Europe',
+                                        'CD' => '🇨🇩 RD Congo', 'NG' => '🇳🇬 Nigéria', 'GH' => '🇬🇭 Ghana'
+                                    ];
+                                @endphp
+                                @foreach($countriesList as $iso => $label)
+                                    <option value="{{ $iso }}" {{ $iso === 'CI' ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label d-block mb-3">{{ __('Sélectionnez votre opérateur') }}</label>
+                        <div id="networks-container">
+                            <div class="text-center py-4 text-muted" id="networks-loading">
+                                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                {{ __('Chargement des opérateurs...') }}
+                            </div>
+                            <div id="networks-grid" class="d-none"></div>
+                            <div id="networks-empty" class="d-none alert alert-warning small">
+                                {{ __('Aucun opérateur disponible pour ce pays.') }}
+                            </div>
+                        </div>
+                        <p id="network-error" class="text-danger small mt-2 d-none">
+                            <i class="fas fa-exclamation-circle me-1"></i> {{ __('Veuillez sélectionner un opérateur.') }}
+                        </p>
+                    </div>
+
+                    <!-- OTP Orange Money (CI) -->
+                    <div class="otp-box p-3 rounded mb-4 d-none" id="otp-container">
+                        <div class="d-flex gap-3 align-items-center">
+                            <div class="h2 mb-0"><i class="fas fa-shield-alt"></i></div>
+                            <div>
+                                <div class="fw-bold">{{ __('Code OTP requis') }}</div>
+                                <div class="small opacity-75">{{ __('Composez #144*82# pour obtenir votre code.') }}</div>
+                            </div>
+                        </div>
+                        <input type="text" name="otp" id="otp" class="form-control mt-3" placeholder="Entrez le code reçu">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-pay w-100 text-white" id="submit-btn">
+                        <span class="btn-text">{{ __('Confirmer et Payer') }} · {{ number_format($price, 0, ',', ' ') }} XOF</span>
+                        <span class="spinner-border spinner-border-sm d-none" id="btn-spinner"></span>
+                    </button>
+
+                    <div class="mt-4 d-flex justify-content-center gap-4 opacity-50 grayscale-img">
+                        <img src="https://www.paiementpro.net/images/logo.png" height="20" alt="PaiementPro">
+                        <img src="https://api.gutouch.com/img/touchpay.png" height="20" alt="TouchPay">
+                    </div>
+                </form>
             </div>
-
-            {{-- OTP Orange Money --}}
-            <div class="otp-box d-none mb-4" id="otp-container">
-                <div class="fw-semibold mb-1">🔐 {{ __('Code OTP requis') }}</div>
-                <div class="text-muted small mb-2">{{ __('Composez le code suivant sur votre téléphone puis entrez le code reçu.') }}</div>
-                <div class="otp-code mb-2">#144*82#</div>
-                <input type="text" name="otp" id="otp" class="form-control" placeholder="{{ __('Entrez votre code OTP') }}" maxlength="10">
-            </div>
-
-            {{-- Bouton paiement --}}
-            <button type="submit" class="btn-pay" id="submit-btn">
-                <span class="btn-text d-flex align-items-center justify-content-center gap-2">
-                    <i class="fas fa-lock"></i>
-                    {{ __('Confirmer le paiement') }}
-                    · {{ number_format($price, 0, ',', ' ') }} XOF
-                </span>
-                <div class="spinner mx-auto"></div>
-            </button>
-
-            {{-- Logos prestataires --}}
-            <div class="d-flex align-items-center justify-content-center gap-3 mt-4 flex-wrap">
-                <img src="https://www.paiementpro.net/images/logo.png" alt="PaiementPro" height="22" style="opacity:.5;filter:grayscale(1);">
-                <img src="https://api.gutouch.com/img/touchpay.png" alt="TouchPay" height="20" style="opacity:.5;filter:grayscale(1);">
-                <span style="color:var(--c-border);font-size:.8rem;">Paystack · PawaPay</span>
-            </div>
-
-        </form>
+        </div>
     </div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
-(function () {
-    // ── État ──────────────────────────────────────────────────────────────
-    let currentMethods  = @json($methods['methods'] ?? []);
-    let selectedNetwork = null;
-
-    const gridEl      = document.getElementById('networks-grid');
-    const loadingEl   = document.getElementById('networks-loading');
-    const emptyEl     = document.getElementById('networks-empty');
-    const networkInput= document.getElementById('selected-network');
-    const otpBox      = document.getElementById('otp-container');
-    const submitBtn   = document.getElementById('submit-btn');
-    const netError    = document.getElementById('network-error');
+document.addEventListener('DOMContentLoaded', function () {
+    let currentMethods = @json($methods['methods'] ?? []);
+    const gridEl = document.getElementById('networks-grid');
+    const loadingEl = document.getElementById('networks-loading');
+    const emptyEl = document.getElementById('networks-empty');
+    const networkInput = document.getElementById('selected-network');
     const countrySelect = document.getElementById('country-select');
+    const otpBox = document.getElementById('otp-container');
+    const submitBtn = document.getElementById('submit-btn');
 
-    // ── Groupement des méthodes ───────────────────────────────────────────
-    function groupMethods(methods) {
-        const groups = {};
-        methods.forEach(m => {
-            if (!groups[m.group]) groups[m.group] = [];
-            groups[m.group].push(m);
-        });
-        return groups;
-    }
-
-    const providerTagMap = {
-        touchpay:    'tag-touchpay',
-        paiementpro: 'tag-paiementpro',
-        pawapay:     'tag-pawapay',
-        paystack:    'tag-paystack',
-    };
-
-    // ── Rendu des méthodes ────────────────────────────────────────────────
     function renderNetworks(methods) {
         loadingEl.classList.add('d-none');
         gridEl.innerHTML = '';
@@ -457,113 +368,63 @@ body { background: var(--c-bg); font-family: 'DM Sans', sans-serif; color: var(-
         if (!methods || methods.length === 0) {
             emptyEl.classList.remove('d-none');
             gridEl.classList.add('d-none');
-            submitBtn.disabled = true;
             return;
         }
 
         emptyEl.classList.add('d-none');
         gridEl.classList.remove('d-none');
-        submitBtn.disabled = false;
+        gridEl.className = 'network-grid';
 
-        const groups = groupMethods(methods);
-
-        Object.entries(groups).forEach(([group, items]) => {
-            const header = document.createElement('div');
-            header.className = 'group-header';
-            header.textContent = group;
-            gridEl.appendChild(header);
-
-            const row = document.createElement('div');
-            row.className = 'network-grid mb-2';
-
-            items.forEach(method => {
-                const card = document.createElement('div');
-                card.className = 'network-card';
-                card.dataset.id = method.id;
-                const tagClass = providerTagMap[method.provider] || '';
-                card.innerHTML = `
-                    <div class="d-flex align-items-start justify-content-between">
-                        <div class="net-name" style="color:${method.icon_color}">${method.name}</div>
-                        <div class="net-check"></div>
-                    </div>
-                    <div class="d-flex align-items-center gap-1">
-                        <span class="provider-tag ${tagClass}">${method.provider}</span>
-                    </div>
-                    <div class="net-sub">${method.id}</div>
-                `;
-                card.addEventListener('click', () => selectNetwork(card, method));
-                row.appendChild(card);
+        methods.forEach(method => {
+            const card = document.createElement('div');
+            card.className = 'network-card';
+            card.dataset.id = method.id;
+            card.innerHTML = `
+                <div class="net-name" style="color:${method.icon_color}">${method.name}</div>
+                <div class="provider-tag bg-light text-muted">${method.provider}</div>
+            `;
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.network-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                networkInput.value = method.id;
+                otpBox.classList.toggle('d-none', method.id !== 'OMCIV2');
             });
-
-            gridEl.appendChild(row);
+            gridEl.appendChild(card);
         });
 
-        // Auto-sélection du premier
-        const first = gridEl.querySelector('.network-card');
-        if (first) {
-            first.click();
-        }
+        // Auto select first
+        if (gridEl.firstChild) gridEl.firstChild.click();
     }
 
-    // ── Sélection d'une méthode ───────────────────────────────────────────
-    function selectNetwork(cardEl, method) {
-        document.querySelectorAll('.network-card').forEach(c => c.classList.remove('selected'));
-        cardEl.classList.add('selected');
-        selectedNetwork = method.id;
-        networkInput.value = method.id;
-        netError.classList.add('d-none');
-
-        // OTP Orange Money
-        if (method.id === 'OMCIV2') {
-            otpBox.classList.remove('d-none');
-        } else {
-            otpBox.classList.add('d-none');
-            document.getElementById('otp').value = '';
-        }
-    }
-
-    // ── Fetch des méthodes par pays ───────────────────────────────────────
     async function fetchNetworks(country) {
         loadingEl.classList.remove('d-none');
         gridEl.classList.add('d-none');
         emptyEl.classList.add('d-none');
-        selectedNetwork = null;
-        networkInput.value = '';
 
         try {
             const resp = await fetch(`{{ route('payment.methods') }}?country=${country}`);
-            if (!resp.ok) throw new Error('Network error');
             const data = await resp.json();
-            currentMethods = data.methods || [];
-            renderNetworks(currentMethods);
+            renderNetworks(data.methods || []);
         } catch (err) {
-            console.error('Fetch networks error:', err);
             loadingEl.classList.add('d-none');
             emptyEl.classList.remove('d-none');
-            emptyEl.textContent = '{{ __("Erreur lors du chargement. Réessayez.") }}';
         }
     }
 
-    // ── Événements ───────────────────────────────────────────────────────
-    countrySelect.addEventListener('change', e => fetchNetworks(e.target.value));
+    countrySelect.addEventListener('change', (e) => fetchNetworks(e.target.value));
 
     document.getElementById('payment-form').addEventListener('submit', function (e) {
         if (!networkInput.value) {
             e.preventDefault();
-            netError.classList.remove('d-none');
-            gridEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('network-error').classList.remove('d-none');
             return;
         }
         submitBtn.disabled = true;
-        submitBtn.classList.add('loading');
+        document.getElementById('btn-spinner').classList.remove('d-none');
+        document.querySelector('.btn-text').classList.add('d-none');
     });
 
-    // Détection auto du pays depuis le numéro
-    const phoneInput = document.getElementById('phone');
-    const phonePrefixes = @json(collect($methods['methods'] ?? [])->pluck('id')->values());
-
-    // ── Init ─────────────────────────────────────────────────────────────
     renderNetworks(currentMethods);
-})();
+});
 </script>
 @endpush
