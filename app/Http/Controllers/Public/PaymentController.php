@@ -68,9 +68,20 @@ class PaymentController extends Controller
 
     public function success()
     {
+        $user = auth()->user();
+        $lastPayment = null;
+        if ($user) {
+            $lastPayment = Payment::where('user_id', $user->id)
+                ->where('status', 'completed')
+                ->where('created_at', '>=', now()->subMinutes(30))
+                ->latest()
+                ->first();
+        }
+
         $url = Session::get('payment_return_url', route('home'));
         Session::forget('payment_return_url');
-        return view('payment.success', compact('url'));
+
+        return view('payment.success', compact('url', 'lastPayment'));
     }
 
     public function failed()
