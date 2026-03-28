@@ -270,6 +270,7 @@ Route::post('/adult-registration/{token}', [InvitationController::class, 'regist
 */
 Route::prefix('api')->name('api.')->middleware('auth')->group(function () {
     Route::get('/notifications', [App\Http\Controllers\Api\NotificationApiController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/mark-all-read', [App\Http\Controllers\Api\NotificationApiController::class, 'markAllAsRead'])->name('notifications.markAllRead');
     Route::post('/notifications/{notification}/mark-as-read', [App\Http\Controllers\Api\NotificationApiController::class, 'markAsRead'])->name('notifications.markAsRead');
     
     // Messaging API routes
