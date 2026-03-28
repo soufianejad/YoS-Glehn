@@ -11,6 +11,37 @@
             </div>
             <div class="col-md-6 text-md-end">
                 @auth
+                    <!-- Langue Dropdown -->
+                    <div class="dropdown d-inline-block me-2">
+                        <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-language me-1"></i> {{ __('Langue') }}: 
+                            <strong>
+                                @if($fileId == 'default')
+                                    {{ __('Par défaut') }}
+                                @else
+                                    {{ strtoupper($book->files->where('id', $fileId)->first()->language ?? '') }}
+                                @endif
+                            </strong>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="languageDropdown">
+                            <li>
+                                <a class="dropdown-item {{ $fileId == 'default' ? 'active' : '' }}" href="{{ route('read.book', $book->slug) }}?file_id=default">
+                                    {{ __('Par défaut') }}
+                                </a>
+                            </li>
+                            @if($book->files->where('file_type', 'pdf')->count() > 0)
+                                <li><hr class="dropdown-divider"></li>
+                                @foreach($book->files->where('file_type', 'pdf') as $file)
+                                    <li>
+                                        <a class="dropdown-item {{ $fileId == $file->id ? 'active' : '' }}" href="{{ route('read.book', $book->slug) }}?file_id={{ $file->id }}">
+                                            {{ strtoupper($file->language) }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            @endif
+                        </ul>
+                    </div>
+
                     <form action="{{ route('favorites.toggle', $book) }}" method="POST" class="d-inline-block favorite-form me-2">
                         @csrf
                         <button type="submit"
@@ -20,7 +51,7 @@
                         </button>
                     </form>
                     @if($canDownload)
-                        <a href="{{ route('read.pdf.content', $book) }}?file_id={{ $fileId }}&download=1" class="btn btn-success btn-sm">
+                        <a href="{{ route('read.pdf.content', $book->slug) }}?file_id={{ $fileId }}&download=1" class="btn btn-success btn-sm shadow-sm">
                             <i class="bi bi-download me-1"></i> {{ __('Télécharger le PDF') }}
                         </a>
                     @endif
@@ -29,31 +60,12 @@
         </div>
 
         <!-- Titre -->
-        <div class="row mb-3 align-items-center">
-            <div class="col-md-8">
-                <h1 class="h3 fw-bold text-primary mb-0">{{ $book->title }}</h1>
+        <div class="row mb-4 align-items-center">
+            <div class="col-12">
+                <h1 class="h3 fw-bold text-primary mb-1">{{ $book->title }}</h1>
                 @if ($book->author)
-                    <p class="text-muted small mb-0">{{ __('par') }} {{ $book->author->name }}</p>
+                    <p class="text-muted mb-0"><i class="fas fa-user-feather me-1"></i> {{ __('par') }} {{ $book->author->name }}</p>
                 @endif
-            </div>
-            <div class="col-md-4 text-md-end mt-2 mt-md-0">
-                <form action="{{ route('read.book', $book->slug) }}" method="GET" id="language-form">
-                    <div class="input-group input-group-sm">
-                        <label class="input-group-text bg-primary text-white border-primary" for="file_id">
-                            <i class="fas fa-language me-1"></i> {{ __('Langue') }}
-                        </label>
-                        <select name="file_id" id="file_id" class="form-select border-primary" onchange="this.form.submit()">
-                            <option value="default" {{ $fileId == 'default' ? 'selected' : '' }}>
-                                {{ __('Par défaut') }}
-                            </option>
-                            @foreach($book->files->where('file_type', 'pdf') as $file)
-                                <option value="{{ $file->id }}" {{ $fileId == $file->id ? 'selected' : '' }}>
-                                    {{ strtoupper($file->language) }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </form>
             </div>
         </div>
 
