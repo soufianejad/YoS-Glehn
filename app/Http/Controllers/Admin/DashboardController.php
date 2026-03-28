@@ -282,7 +282,7 @@ class DashboardController extends Controller
     public function export(string $type)
     {
         // In a real application, this would generate and download a file (e.g., CSV, Excel)
-        return response('Exporting '.$type.' data...')->header('Content-Type', 'text/plain');
+        return response('Exporting ' . $type . ' data...')->header('Content-Type', 'text/plain');
     }
 }
 urn response('Exporting '.$type.' data...')->header('Content-Type', 'text/plain');
