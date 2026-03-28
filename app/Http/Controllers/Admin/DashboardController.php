@@ -10,11 +10,23 @@ use App\Models\Review;
 use App\Models\School;
 use App\Models\Subscription;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    /**
+     * Paiements validés : complétés par l’admin (ou le PSP) avec date d’encaissement.
+     * Exclut les paiements encore en attente (pending) ou sans paid_at.
+     */
+    protected function approvedPaymentsQuery(): Builder
+    {
+        return Payment::query()
+            ->where('status', 'completed')
+            ->whereNotNull('paid_at');
+    }
+
     public function index()
     {
         // --- Key Metrics ---
@@ -25,21 +37,28 @@ class DashboardController extends Controller
         $publishedBooks = Book::where('status', 'published')->count();
         $activeSubscriptions = Subscription::where('status', 'active')->count();
 
-        // --- Financials ---
-        $totalRevenue = Payment::where('status', 'completed')->sum('amount');
         $monthStart = now()->startOfMonth();
-        $monthlyRevenue = Payment::where('status', 'completed')->where('created_at', '>=', $monthStart)->sum('amount');
-        $annualRevenue = Payment::where('status', 'completed')->where('created_at', '>=', now()->startOfYear())->sum('amount');
 
-        $paymentsCountMonth = Payment::where('status', 'completed')->where('created_at', '>=', $monthStart)->count();
+        // --- Financials (uniquement paiements validés : completed + paid_at) ---
+        $totalRevenue = (clone $this->approvedPaymentsQuery())->sum('amount');
+        $monthlyRevenue = (clone $this->approvedPaymentsQuery())
+            ->where('paid_at', '>=', $monthStart)
+            ->sum('amount');
+        $annualRevenue = (clone $this->approvedPaymentsQuery())
+            ->where('paid_at', '>=', now()->startOfYear())
+            ->sum('amount');
+
+        $paymentsCountMonth = (clone $this->approvedPaymentsQuery())
+            ->where('paid_at', '>=', $monthStart)
+            ->count();
         $avgOrderValueMonth = $paymentsCountMonth > 0 ? round((float) $monthlyRevenue / $paymentsCountMonth, 2) : 0;
 
-        $subscriptionRevenueMonth = Payment::where('status', 'completed')
-            ->where('created_at', '>=', $monthStart)
+        $subscriptionRevenueMonth = (clone $this->approvedPaymentsQuery())
+            ->where('paid_at', '>=', $monthStart)
             ->where('payment_type', 'subscription')
             ->sum('amount');
-        $directSalesRevenueMonth = Payment::where('status', 'completed')
-            ->where('created_at', '>=', $monthStart)
+        $directSalesRevenueMonth = (clone $this->approvedPaymentsQuery())
+            ->where('paid_at', '>=', $monthStart)
             ->whereIn('payment_type', ['book_pdf', 'book_audio'])
             ->sum('amount');
 
@@ -50,8 +69,8 @@ class DashboardController extends Controller
         // --- Top authors (volume = somme des montants attribués sur leurs livres) ---
         $topAuthors = $this->buildTopAuthors();
 
-        // --- Top books by attributed revenue ---
-        $topBooks = DB::table('revenues')
+        // --- Top books (même règle : paiement validé + revenu approuvé ou payé) ---
+        $topBooks = $this->validatedRevenuesQuery()
             ->join('books', 'revenues.book_id', '=', 'books.id')
             ->join('users as authors', 'books.author_id', '=', 'authors.id')
             ->select(
@@ -73,14 +92,14 @@ class DashboardController extends Controller
         $pendingReviews = Review::where('is_approved', '0')->count();
         $pendingPayouts = AuthorPayout::where('status', 'pending')->count();
 
-        // --- Chart Data (Last 12 months) ---
-        // Revenue Chart
-        $revenueByMonth = Payment::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, sum(amount) as total")
-            ->where('status', 'completed')
-            ->where('created_at', '>=', now()->subYear())
+        // --- Chart Data (Last 12 months) — date de validation = paid_at ---
+        $revenueByMonth = (clone $this->approvedPaymentsQuery())
+            ->selectRaw("DATE_FORMAT(paid_at, '%Y-%m') as month, sum(amount) as total")
+            ->where('paid_at', '>=', now()->subYear())
             ->groupBy('month')
             ->orderBy('month', 'asc')
-            ->get()->pluck('total', 'month');
+            ->get()
+            ->pluck('total', 'month');
 
         $revenueChartLabels = collect();
         $revenueChartData = collect();
@@ -141,13 +160,17 @@ class DashboardController extends Controller
     protected function buildTopAuthors(): Collection
     {
         $rows = DB::table('revenues')
+            ->join('payments', 'revenues.payment_id', '=', 'payments.id')
+            ->where('payments.status', 'completed')
+            ->whereNotNull('payments.paid_at')
+            ->whereIn('revenues.status', ['approved', 'paid'])
             ->select(
-                'author_id',
-                DB::raw('SUM(total_amount) as volume'),
-                DB::raw('SUM(author_amount) as author_earnings'),
-                DB::raw('COUNT(*) as allocations')
+                'revenues.author_id',
+                DB::raw('SUM(revenues.total_amount) as volume'),
+                DB::raw('SUM(revenues.author_amount) as author_earnings'),
+                DB::raw('COUNT(revenues.id) as allocations')
             )
-            ->groupBy('author_id')
+            ->groupBy('revenues.author_id')
             ->orderByDesc('volume')
             ->limit(5)
             ->get();
@@ -168,6 +191,18 @@ class DashboardController extends Controller
         })->filter(fn ($item) => $item->author !== null)->values();
     }
 
+    /**
+     * Base query for revenue rows included in rankings (validated payment + revenue approuvé ou payé).
+     */
+    protected function validatedRevenuesQuery(): \Illuminate\Database\Query\Builder
+    {
+        return DB::table('revenues')
+            ->join('payments', 'revenues.payment_id', '=', 'payments.id')
+            ->where('payments.status', 'completed')
+            ->whereNotNull('payments.paid_at')
+            ->whereIn('revenues.status', ['approved', 'paid']);
+    }
+
     public function statistics()
     {
         // Placeholder for more detailed statistics
@@ -181,8 +216,8 @@ class DashboardController extends Controller
             ->orderBy('month')
             ->get();
 
-        $revenueByMonth = Payment::selectRaw('DATE_FORMAT(paid_at, "%Y-%m") as month, sum(amount) as total_amount')
-            ->where('status', 'completed')
+        $revenueByMonth = (clone $this->approvedPaymentsQuery())
+            ->selectRaw('DATE_FORMAT(paid_at, "%Y-%m") as month, sum(amount) as total_amount')
             ->groupBy('month')
             ->orderBy('month')
             ->get();

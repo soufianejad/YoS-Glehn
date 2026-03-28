@@ -194,7 +194,7 @@
                     <div class="row align-items-center">
                         <div class="col-md-4 mb-3 mb-md-0">
                             <h6 class="mb-1 fw-bold text-gray-800">{{ __('Répartition des revenus (mois en cours)') }}</h6>
-                            <p class="small text-muted mb-0">{{ __('Basée sur les paiements complétés (brut encaissé).') }}</p>
+                            <p class="small text-muted mb-0">{{ __('Uniquement les paiements validés (complétés avec date d’encaissement).') }}</p>
                         </div>
                         <div class="col-md-8">
                             <div class="mix-bar mb-2" role="img" aria-label="{{ __('Répartition abonnements / ventes directes') }}">
@@ -217,7 +217,7 @@
     </div>
 
     {{-- Top auteurs & top livres --}}
-    <p class="admin-section-title mb-2">{{ __('Classements (revenus enregistrés dans « Revenus »)') }}</p>
+    <p class="admin-section-title mb-2">{{ __('Classements (paiements validés + lignes revenus approuvées ou payées)') }}</p>
     <div class="row mb-4">
         <div class="col-lg-6 mb-4">
             <div class="card border-0 shadow h-100">
