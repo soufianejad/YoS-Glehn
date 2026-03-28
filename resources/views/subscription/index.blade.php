@@ -100,43 +100,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Avantages du plan -->
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold mb-4">{{ __('Vos Avantages Inclus') }}</h5>
-                        <div class="row g-4">
-                            <div class="col-md-6 d-flex align-items-center">
-                                <div class="feature-icon text-primary"><i class="fas fa-file-pdf"></i></div>
-                                <div>
-                                    <div class="fw-bold">{{ __('Accès PDF') }}</div>
-                                    <div class="small text-muted">{{ $subscription->subscriptionPlan->pdf_access ? __('Lecture illimitée') : __('Non inclus') }}</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 d-flex align-items-center">
-                                <div class="feature-icon text-success"><i class="fas fa-headphones"></i></div>
-                                <div>
-                                    <div class="fw-bold">{{ __('Accès Audio') }}</div>
-                                    <div class="small text-muted">{{ $subscription->subscriptionPlan->audio_access ? __('Écoute illimitée') : __('Non inclus') }}</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 d-flex align-items-center">
-                                <div class="feature-icon text-warning"><i class="fas fa-download"></i></div>
-                                <div>
-                                    <div class="fw-bold">{{ __('Téléchargement') }}</div>
-                                    <div class="small text-muted">{{ $subscription->subscriptionPlan->download_access ? __('Remises exclusives') : __('Non inclus') }}</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 d-flex align-items-center">
-                                <div class="feature-icon text-info"><i class="fas fa-question-circle"></i></div>
-                                <div>
-                                    <div class="fw-bold">{{ __('Accès Quiz') }}</div>
-                                    <div class="small text-muted">{{ $subscription->subscriptionPlan->quiz_access ? __('Certification incluse') : __('Non inclus') }}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             @else
                 <div class="card border-0 shadow-sm rounded-4 text-center p-5">
                     <div class="mb-4">
@@ -151,61 +114,57 @@
             @endif
         </div>
 
-        <!-- Historique -->
-        <div class="col-lg-5">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
-                    <h5 class="fw-bold mb-0">{{ __('Historique des Abonnements') }}</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="ps-4 py-3 small text-uppercase text-muted">{{ __('Plan') }}</th>
-                                    <th class="py-3 small text-uppercase text-muted">{{ __('Fin') }}</th>
-                                    <th class="pe-4 py-3 text-end small text-uppercase text-muted">{{ __('Statut') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($history as $sub)
-                                    <tr>
-                                        <td class="ps-4">
-                                            <div class="fw-bold">{{ $sub->subscriptionPlan->name }}</div>
-                                            <div class="small text-muted">{{ number_format($sub->subscriptionPlan->price, 0) }} XOF</div>
-                                        </td>
-                                        <td>
-                                            <div class="small">{{ $sub->end_date->format('d/m/Y') }}</div>
-                                        </td>
-                                        <td class="pe-4 text-end">
-                                            @php
-                                                $statusClass = match($sub->status) {
-                                                    'active' => 'bg-success',
-                                                    'pending' => 'bg-warning text-dark',
-                                                    'cancelled' => 'bg-secondary',
-                                                    'expired' => 'bg-danger',
-                                                    default => 'bg-info'
-                                                };
-                                            @endphp
-                                            <span class="badge {{ $statusClass }} rounded-pill">{{ __($sub->status) }}</span>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="3" class="text-center py-5 text-muted">
-                                            {{ __('Aucun historique disponible.') }}
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    @if($history->hasPages())
-                        <div class="p-4 border-top">
-                            {{ $history->links() }}
+        <!-- Plans Disponibles -->
+        <div class="col-lg-12 mt-5">
+            <h3 class="fw-bold text-center mb-4">{{ __('Découvrez nos autres plans') }}</h3>
+            <div class="row justify-content-center">
+                @forelse($plans as $plan)
+                    <div class="col-lg-4 mb-5">
+                        <div class="card pricing-card h-100 shadow-sm {{ !empty($plan->is_popular) ? 'popular' : '' }} {{ ($currentSubscription && $currentSubscription->subscription_plan_id == $plan->id) ? 'border-success' : '' }}">
+                            @if($currentSubscription && $currentSubscription->subscription_plan_id == $plan->id)
+                                <div class="position-absolute top-0 start-0 m-3">
+                                    <span class="badge bg-success">{{ __('Plan actuel') }}</span>
+                                </div>
+                            @endif
+                            @if(!empty($plan->is_popular))
+                                <div class="position-absolute top-0 end-0 m-3">
+                                    <span class="badge bg-primary">{{ __('Populaire') }}</span>
+                                </div>
+                            @endif
+                            <div class="card-header text-center py-4">
+                                <h4 class="card-title">{{ $plan->name }}</h4>
+                                <p class="text-muted">{{ $plan->description }}</p>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="price mb-4">
+                                    <span class="currency">F</span>{{ number_format($plan->price, 0) }}
+                                    <small class="text-muted">/ {{ $plan->duration_days }} jours</small>
+                                </div>
+                                <ul class="feature-list text-left">
+                                    <li>{{ __('Accès à toute la bibliothèque') }}</li>
+                                    <li><i class="fas {{ $plan->pdf_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> {{__("Accès aux PDFs")}}</li>
+                                    <li><i class="fas {{ $plan->audio_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> {{__("Accès aux Audios")}}</li>
+                                    <li><i class="fas {{ $plan->download_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> {{__("Téléchargement")}}</li>
+                                    <li><i class="fas {{ $plan->quiz_access ? 'fa-check-circle' : 'fa-times-circle text-muted' }}"></i> {{__("Accès aux Quiz")}}</li>
+                                     @if($plan->max_students)
+                                        <li><i class="fas fa-users"></i> {{__("Jusqu'à")}} {{ $plan->max_students }} {{__("étudiants")}}</li>
+                                    @endif
+                                </ul>
+                            </div>
+                            <div class="card-footer text-center">
+                                @if($currentSubscription && $currentSubscription->subscription_plan_id == $plan->id)
+                                    <button class="btn btn-success w-100" disabled><i class="fas fa-check-circle me-1"></i> {{ __("Plan Actuel") }}</button>
+                                @else
+                                    <a href="{{ route('subscription.checkout', $plan) }}" class="btn btn-primary w-100">{{ __("Choisir ce Plan") }}</a>
+                                @endif
+                            </div>
                         </div>
-                    @endif
-                </div>
+                    </div>
+                @empty
+                    <div class="col-12 text-center">
+                        <p class="text-muted">{{ __("Aucun plan d'abonnement disponible pour le moment.") }}</p>
+                    </div>
+                @endforelse
             </div>
         </div>
     </div>

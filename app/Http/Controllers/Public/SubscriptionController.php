@@ -32,8 +32,10 @@ class SubscriptionController extends Controller
         $user         = auth()->user();
         $subscription = $user->activeSubscription;
         $history      = $user->subscriptions()->with('subscriptionPlan')->latest()->paginate(10);
+        $plans        = SubscriptionPlan::where('is_active', true)->orderBy('order')->get(); // Fetch available plans
+        $currentSubscription = $user->activeSubscription; // Fetch current subscription again for highlighting in plans list
 
-        return view('subscription.index', compact('subscription', 'history'));
+        return view('subscription.index', compact('subscription', 'history', 'plans', 'currentSubscription'));
     }
 
     public function plans()
