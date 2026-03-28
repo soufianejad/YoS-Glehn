@@ -35,9 +35,18 @@ class DashboardController extends Controller
         $totalSchools = School::count();
         $totalBooks = Book::count();
         $publishedBooks = Book::where('status', 'published')->count();
+        $totalSubscriptions = Subscription::count();
         $activeSubscriptions = Subscription::where('status', 'active')->count();
 
         $monthStart = now()->startOfMonth();
+
+        $newSubscriptionsThisMonth = Subscription::where('created_at', '>=', $monthStart)->count();
+        $cancelledSubscriptionsThisMonth = Subscription::where('status', 'cancelled')->where('updated_at', '>=', $monthStart)->count();
+        $subscriptionsByPlan = Subscription::query()
+            ->join('subscription_plans', 'subscriptions.subscription_plan_id', '=', 'subscription_plans.id')
+            ->select('subscription_plans.name', DB::raw('COUNT(*) as count'))
+            ->groupBy('subscription_plans.name')
+            ->pluck('count', 'name');
 
         // --- Financials (uniquement paiements validés : completed + paid_at) ---
         $totalRevenue = (clone $this->approvedPaymentsQuery())->sum('amount');
