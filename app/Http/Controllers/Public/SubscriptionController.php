@@ -158,13 +158,13 @@ class SubscriptionController extends Controller
             'user_id'          => $user->id,
             'subscription_id'  => $subscription->id,
             'transaction_id'   => 'RENEW-' . strtoupper(Str::random(10)),
-            'payment_type'     => 'subscription_renewal',
+            'payment_type'     => 'subscription',
             'amount'           => $subscription->subscriptionPlan->price,
             'currency'         => 'XOF',
             'payment_method'   => $request->network === 'CARD' ? 'card' : 'mobile_money',
             'payment_provider' => $request->network,
             'status'           => 'pending',
-            'payment_details'  => ['subscription_id' => $subscription->id],
+            'payment_details'  => ['subscription_id' => $subscription->id, 'renewal' => true],
         ]);
 
         return $this->paymentService->initiatePayment($request, $payment, false, route('subscription.index'));
@@ -204,7 +204,7 @@ class SubscriptionController extends Controller
                 $q->where('transaction_id', $sessionId)
                   ->orWhereJsonContains('payment_details->wave_id', $sessionId);
             })->where('status', 'pending')
-              ->whereIn('payment_type', ['subscription', 'subscription_renewal'])
+              ->where('payment_type', 'subscription')
               ->first();
 
             if ($payment && ($data['data']['payment_status'] ?? '') === 'succeeded') {
@@ -227,7 +227,7 @@ class SubscriptionController extends Controller
 
             $payment = Payment::where('transaction_id', $reference)
                 ->where('status', 'pending')
-                ->whereIn('payment_type', ['subscription', 'subscription_renewal'])
+                ->where('payment_type', 'subscription')
                 ->first();
 
             if ($payment && strtoupper($body['status'] ?? '') === 'SUCCESSFUL') {
@@ -250,7 +250,7 @@ class SubscriptionController extends Controller
 
             $payment = Payment::where('transaction_id', $depositId)
                 ->where('status', 'pending')
-                ->whereIn('payment_type', ['subscription', 'subscription_renewal'])
+                ->where('payment_type', 'subscription')
                 ->first();
 
             if ($payment && strtoupper($body['status'] ?? '') === 'COMPLETED') {
@@ -274,7 +274,7 @@ class SubscriptionController extends Controller
 
             $payment = Payment::where('transaction_id', $reference)
                 ->where('status', 'pending')
-                ->whereIn('payment_type', ['subscription', 'subscription_renewal'])
+                ->where('payment_type', 'subscription')
                 ->first();
 
             if ($payment && $responseCode == '0') {

@@ -285,13 +285,13 @@ class ReaderController extends Controller
             'user_id' => $user->id,
             'subscription_id' => $subscription->id,
             'transaction_id' => 'RENEW-' . strtoupper(Str::random(10)),
-            'payment_type' => 'subscription_renewal',
+            'payment_type' => 'subscription',
             'amount' => $subscription->subscriptionPlan->price,
             'currency' => 'XOF',
             'payment_method' => $request->network === 'CARD' ? 'card' : 'mobile_money',
             'payment_provider' => $request->network,
             'status' => 'pending',
-            'payment_details' => ['subscription_id' => $subscription->id],
+            'payment_details' => ['subscription_id' => $subscription->id, 'renewal' => true],
         ]);
 
         return $this->paymentService->initiatePayment($request, $payment, false, route('subscription.index'));
