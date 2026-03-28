@@ -350,7 +350,7 @@ class User extends Authenticatable
 
         return $this->purchases()
             ->where('book_id', $book->id)
-            ->where('purchase_type', 'pdf_download')
+            ->whereIn('purchase_type', ['pdf', 'pdf_download'])
             ->where(function ($query) {
                 $query->whereNull('book_file_id') // Purchased the main downloadable PDF
                     ->orWhereNotNull('book_file_id'); // Purchased a specific language downloadable PDF

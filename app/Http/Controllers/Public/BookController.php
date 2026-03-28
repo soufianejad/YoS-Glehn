@@ -396,7 +396,7 @@ class BookController extends Controller
             'payment_method'   => $request->network === 'CARD' ? 'card' : 'mobile_money',
             'payment_provider' => $request->network,
             'status'           => 'pending',
-            'payment_details'  => ['purchase_type' => 'pdf'],
+            'payment_details'  => ['purchase_type' => 'pdf_download'],
         ]);
 
         return $this->paymentService->initiatePayment($request, $payment);

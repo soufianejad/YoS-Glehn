@@ -93,11 +93,16 @@
                                     </div>
                                 @endif
 
-                                <div class="mt-auto pt-3">
-                                    <a href="{{ route('read.book', $purchase->book) }}" class="btn btn-primary btn-sm w-100">
+                                <div class="mt-auto pt-3 d-flex gap-1">
+                                    <a href="{{ route('read.book', $purchase->book) }}" class="btn btn-primary btn-sm flex-grow-1">
                                         <i class="fas fa-book-open me-1"></i> 
-                                        {{ ($progress && $progress->progress_percentage > 0) ? __('Continuer') : __('Commencer la lecture') }}
+                                        {{ ($progress && $progress->progress_percentage > 0) ? __('Continuer') : __('Commencer') }}
                                     </a>
+                                    @if($purchase->book->is_downloadable)
+                                        <a href="{{ route('read.pdf.content', $purchase->book) }}?download=1" class="btn btn-outline-info btn-sm" title="{{ __('Télécharger') }}">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
