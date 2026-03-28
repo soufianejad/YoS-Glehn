@@ -75,8 +75,17 @@ class RevenueCalculatorService
                 return 'pdf_sale';
             case 'book_audio':
                 return 'audio_sale';
+            case 'book_purchase':
+                $purchaseType = $payment->payment_details['purchase_type'] ?? 'pdf';
+
+                return $purchaseType === 'audio' ? 'audio_sale' : 'pdf_sale';
             default:
-                return 'subscription';
+                Log::warning('determineRevenueType: unknown payment_type, stored as pdf_sale', [
+                    'payment_id' => $payment->id,
+                    'payment_type' => $payment->payment_type,
+                ]);
+
+                return 'pdf_sale';
         }
     }
 
