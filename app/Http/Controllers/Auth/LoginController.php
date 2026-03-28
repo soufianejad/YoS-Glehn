@@ -20,17 +20,18 @@ class LoginController extends Controller
             'password' => ['required'],
         ]);
 
+        $user = \App\Models\User::where('email', $credentials['email'])->first();
+
+        if ($user && $user->isAdultReader() && $user->adultAccess && $user->adultAccess->isExpired()) {
+            return back()->withErrors([
+                'email' => __('Votre accès a expiré. Veuillez contacter l\'administrateur.'),
+            ])->onlyInput('email');
+        }
+
         if (Auth::attempt($credentials, $request->filled('remember'))) {
-            $user = Auth::user();
-
-            if ($user->isAdultReader() && ($user->adultAccess && $user->adultAccess->isExpired())) {
-                Auth::logout();
-                return back()->withErrors([
-                    'email' => __('Votre accès a expiré. Veuillez contacter l\'administrateur.'),
-                ])->onlyInput('email');
-            }
-
             $request->session()->regenerate();
+
+            $user = Auth::user();
 
             switch ($user->role) {
                 case 'admin':
