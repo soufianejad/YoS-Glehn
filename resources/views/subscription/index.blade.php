@@ -44,13 +44,6 @@
 
 @section('content')
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0">{{ __('Gestion de mon Abonnement') }}</h2>
-        <a href="{{ route('subscription.plans') }}" class="btn btn-outline-primary rounded-pill">
-            <i class="fas fa-layer-group me-2"></i>{{ __('Voir tous les plans') }}
-        </a>
-    </div>
-
     <div class="row g-4">
         <!-- Carte Abonnement Actuel -->
         <div class="col-lg-7">
