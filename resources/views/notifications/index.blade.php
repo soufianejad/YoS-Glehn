@@ -8,17 +8,17 @@
         <div class="col-md-10">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="fw-bold mb-0">{{ __('Notifications') }}</h2>
-                @if($notifications->where('is_read', false)->count() > 0)
-                    <form action="{{ route('notifications.markAllRead.web') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill px-3">
-                            <i class="fas fa-check-double me-1"></i> {{ __('Mark all as read') }}
-                        </button>
-                    </form>
-                @endif
-            </div>
+        @if($notifications->where('is_read', false)->count() > 0)
+            <form action="{{ route('notifications.markAllRead.web') }}" method="POST" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                    <i class="fas fa-check-double me-1"></i> {{ __('Mark all as read') }}
+                </button>
+            </form>
+        @endif
+    </div>
 
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                 <div class="list-group list-group-flush">
                     @forelse($notifications as $notification)
                         <div class="list-group-item list-group-item-action p-4 {{ $notification->is_read ? 'bg-light opacity-75' : 'bg-white border-start border-primary border-4' }}">
