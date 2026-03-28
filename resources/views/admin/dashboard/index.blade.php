@@ -197,12 +197,12 @@
                             <p class="small text-muted mb-0">{{ __('Basée sur les paiements complétés (brut encaissé).') }}</p>
                         </div>
                         <div class="col-md-8">
-                            <div class="mix-bar mb-2">
+                            <div class="mix-bar mb-2" role="img" aria-label="{{ __('Répartition abonnements / ventes directes') }}">
                                 @if($subscriptionShareMonth > 0)
-                                    <span style="width: {{ min(100, $subscriptionShareMonth) }}%; background: #4e73df;" title="{{ __('Abonnements') }}"></span>
+                                    <span style="width: {{ $subscriptionShareMonth }}%; background: #4e73df;" title="{{ __('Abonnements') }}"></span>
                                 @endif
                                 @if($directShareMonth > 0)
-                                    <span style="width: {{ min(100, $directShareMonth) }}%; background: #1cc88a;" title="{{ __('Ventes directes (PDF / audio)') }}"></span>
+                                    <span style="width: {{ $directShareMonth }}%; background: #1cc88a;" title="{{ __('Ventes directes (PDF / audio)') }}"></span>
                                 @endif
                             </div>
                             <div class="d-flex flex-wrap gap-3 small">
@@ -232,7 +232,7 @@
                             <div class="flex-grow-1 min-width-0">
                                 @if($row->author)
                                     <a href="{{ route('admin.revenues.author-detail', $row->author) }}" class="fw-bold text-gray-800 text-decoration-none d-block text-truncate">{{ $row->author->name }}</a>
-                                    <small class="text-muted">{{ __('Part auteur cumulée :') }} {{ number_format($row->author_earnings, 0, ',', ' ') }} F · {{ trans_choice(':count ligne|:count lignes', $row->allocations, ['count' => $row->allocations]) }}</small>
+                                    <small class="text-muted">{{ __('Part auteur cumulée :') }} {{ number_format($row->author_earnings, 0, ',', ' ') }} F · {{ $row->allocations }} {{ __('lignes revenus') }}</small>
                                 @else
                                     <span class="text-muted">{{ __('Auteur inconnu') }}</span>
                                 @endif
@@ -264,7 +264,7 @@
                             </div>
                             <div class="text-end ms-2">
                                 <div class="fw-bold text-gray-800">{{ number_format($book->volume, 0, ',', ' ') }} F</div>
-                                <small class="text-muted">{{ trans_choice(':count attribution|:count attributions', $book->allocations, ['count' => $book->allocations]) }}</small>
+                                <small class="text-muted">{{ $book->allocations }} {{ __('attributions') }}</small>
                             </div>
                         </div>
                     @empty
