@@ -21,9 +21,16 @@ class LoginController extends Controller
         ]);
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
-            $request->session()->regenerate();
-
             $user = Auth::user();
+
+            if ($user->isAdultReader() && ($user->adultAccess && $user->adultAccess->isExpired())) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => __('Votre accès a expiré. Veuillez contacter l\'administrateur.'),
+                ])->onlyInput('email');
+            }
+
+            $request->session()->regenerate();
 
             switch ($user->role) {
                 case 'admin':
