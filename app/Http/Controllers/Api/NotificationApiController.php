@@ -30,12 +30,9 @@ class NotificationApiController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function markAsRead(Request $request, Notification $notification)
+    public function markAsRead(Request $request, $id)
     {
-        if ($notification->user_id !== Auth::id()) {
-            return response()->json(['message' => __('Unauthorized')], 403);
-        }
-
+        $notification = Auth::user()->notifications()->findOrFail($id);
         $notification->markAsRead();
 
         return response()->json(['message' => __('Notification marked as read.')]);
