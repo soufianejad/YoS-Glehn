@@ -44,9 +44,9 @@ class DashboardController extends Controller
         $cancelledSubscriptionsThisMonth = Subscription::where('status', 'cancelled')->where('updated_at', '>=', $monthStart)->count();
         $subscriptionsByPlan = Subscription::query()
             ->join('subscription_plans', 'subscriptions.subscription_plan_id', '=', 'subscription_plans.id')
-            ->select('subscription_plans.name', DB::raw('COUNT(*) as count'))
+            ->select('subscription_plans.name as plan_name', DB::raw('COUNT(*) as count'))
             ->groupBy('subscription_plans.name')
-            ->pluck('count', 'name');
+            ->get();
 
         // --- Financials (uniquement paiements validés : completed + paid_at) ---
         $totalRevenue = (clone $this->approvedPaymentsQuery())->sum('amount');
