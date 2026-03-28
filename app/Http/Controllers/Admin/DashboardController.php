@@ -205,24 +205,67 @@ class DashboardController extends Controller
 
     public function statistics()
     {
-        // Placeholder for more detailed statistics
-        $usersByMonth = User::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, count(*) as count')
+        $months = 24;
+        $periodStart = now()->subMonths($months - 1)->startOfMonth();
+
+        $usersByMonthKey = User::query()
+            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as cnt')
+            ->where('created_at', '>=', $periodStart)
             ->groupBy('month')
             ->orderBy('month')
-            ->get();
+            ->get()
+            ->keyBy('month');
 
-        $booksByMonth = Book::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, count(*) as count')
+        $booksByMonthKey = Book::query()
+            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as cnt')
+            ->where('created_at', '>=', $periodStart)
             ->groupBy('month')
             ->orderBy('month')
-            ->get();
+            ->get()
+            ->keyBy('month');
 
-        $revenueByMonth = (clone $this->approvedPaymentsQuery())
-            ->selectRaw('DATE_FORMAT(paid_at, "%Y-%m") as month, sum(amount) as total_amount')
+        $revenueByMonthKey = (clone $this->approvedPaymentsQuery())
+            ->selectRaw('DATE_FORMAT(paid_at, "%Y-%m") as month, SUM(amount) as total_amount')
+            ->where('paid_at', '>=', $periodStart)
             ->groupBy('month')
             ->orderBy('month')
-            ->get();
+            ->get()
+            ->keyBy('month');
 
-        return view('admin.dashboard.statistics', compact('usersByMonth', 'booksByMonth', 'revenueByMonth'));
+        $chartLabels = collect();
+        $userSeries = collect();
+        $bookSeries = collect();
+        $revenueSeries = collect();
+
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $key = $month->format('Y-m');
+            $chartLabels->push($month->locale(app()->getLocale())->translatedFormat('M Y'));
+
+            $userSeries->push((int) (optional($usersByMonthKey->get($key))->cnt ?? 0));
+            $bookSeries->push((int) (optional($booksByMonthKey->get($key))->cnt ?? 0));
+            $revenueSeries->push((float) (optional($revenueByMonthKey->get($key))->total_amount ?? 0));
+        }
+
+        $summary = [
+            'users_total' => User::count(),
+            'books_total' => Book::count(),
+            'books_published' => Book::where('status', 'published')->count(),
+            'revenue_total' => (float) (clone $this->approvedPaymentsQuery())->sum('amount'),
+            'revenue_year' => (float) (clone $this->approvedPaymentsQuery())
+                ->where('paid_at', '>=', now()->startOfYear())
+                ->sum('amount'),
+            'payments_validated' => (clone $this->approvedPaymentsQuery())->count(),
+        ];
+
+        return view('admin.dashboard.statistics', [
+            'chartLabels' => $chartLabels,
+            'userSeries' => $userSeries,
+            'bookSeries' => $bookSeries,
+            'revenueSeries' => $revenueSeries,
+            'summary' => $summary,
+            'monthsWindow' => $months,
+        ]);
     }
 
     public function activityReport()
