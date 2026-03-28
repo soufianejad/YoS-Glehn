@@ -10,9 +10,8 @@
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="dns-prefetch" href="//fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -21,111 +20,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <!-- Toastr CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
     <!-- Custom CSS -->
-    <style>
-        :root {
-            --primary-color: #0d6efd;
-            --nav-height: 70px;
-        }
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
-            padding-top: var(--nav-height);
-        }
-        .navbar {
-            height: var(--nav-height);
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.95) !important;
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .navbar-brand img {
-            height: 38px;
-            transition: transform 0.3s ease;
-        }
-        .navbar-brand:hover img {
-            transform: scale(1.05);
-        }
-        .nav-link {
-            font-weight: 500;
-            color: #475569 !important;
-            padding: 0.5rem 1rem !important;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-        .nav-link:hover {
-            color: var(--primary-color) !important;
-            background: rgba(13, 110, 253, 0.05);
-        }
-        .nav-link.active {
-            color: var(--primary-color) !important;
-            font-weight: 600;
-        }
-        .navbar-toggler {
-            border: none;
-            padding: 0;
-        }
-        .navbar-toggler:focus {
-            box-shadow: none;
-        }
-        
-        /* Mobile Improvements */
-        @media (max-width: 991.98px) {
-            .navbar-collapse {
-                background: white;
-                margin-top: 10px;
-                padding: 1rem;
-                border-radius: 12px;
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            }
-            .nav-auth-mobile {
-                display: flex !important;
-                align-items: center;
-                gap: 15px;
-            }
-        }
-        
-        .notification-badge {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            padding: 4px 6px;
-            border-radius: 50%;
-            font-size: 0.65rem;
-            border: 2px solid white;
-        }
-        
-        .user-avatar {
-            width: 35px;
-            height: 35px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 2px solid #e2e8f0;
-        }
-        
-        .dropdown-menu {
-            border: none;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            border-radius: 12px;
-            padding: 0.5rem;
-        }
-        .dropdown-item {
-            border-radius: 8px;
-            padding: 0.6rem 1rem;
-            font-weight: 500;
-        }
-        
-        footer {
-            background: white;
-            border-top: 1px solid #e2e8f0;
-            padding: 3rem 0;
-        }
-    </style>
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
     <!-- Google reCAPTCHA -->
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
@@ -134,71 +35,55 @@
 </head>
 <body>
     <div id="app">
-        <nav class="navbar navbar-expand-lg fixed-top shadow-sm">
+        <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm" style="z-index: 100">
             <div class="container">
-                <!-- Logo -->
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    <img src="{{ asset('images/logo.jpg') }}" alt="{{ config('app.name') }}">
+                <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}">
+                    <img src="{{ asset('images/logo.jpg') }}" alt="{{ __('Logo') }}" height="32" class="me-2">
                 </a>
                 
-                <!-- Right Side - Always Visible Mobile -->
-                <div class="d-flex align-items-center order-lg-last gap-2 gap-md-3">
+                <!-- Right Side - Always Visible Mobile (Notifications & Profile) -->
+                <div class="d-flex align-items-center order-md-last gap-2">
                     @auth
-                        <!-- Notifications -->
                         <div class="dropdown">
-                            <a class="nav-link position-relative p-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-bell fs-5"></i>
-                                <span class="badge bg-danger notification-badge d-none" id="unread-notifications-count">0</span>
+                            <a class="nav-link position-relative p-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" v-pre>
+                                <i class="bi bi-bell"></i>
+                                <span class="badge bg-danger d-none" id="unread-notifications-count" style="position: absolute; top: 0; right: 0; padding: 3px 6px; border-radius: 50%; font-size: 0.6rem;">0</span>
                             </a>
-                            <div class="dropdown-menu dropdown-menu-end p-0" style="width: 300px; max-height: 400px; overflow-y: auto;">
-                                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0 fw-bold">{{ __('Notifications') }}</h6>
-                                    {{-- <a href="#" class="small text-decoration-none">{{ __('Marquer tout comme lu') }}</a> --}}
-                                </div>
-                                <div id="notifications-list" class="py-1">
-                                    <div class="text-center py-3 text-muted small">{{ __('Chargement...') }}</div>
+                            <div class="dropdown-menu dropdown-menu-end shadow-sm" id="notifications-dropdown-menu" style="width: 280px; max-height: 350px; overflow-y: auto;">
+                                <h6 class="dropdown-header">{{ __('Notifications') }}</h6>
+                                <div id="notifications-list">
+                                    <!-- Notifications load here -->
                                 </div>
                             </div>
                         </div>
 
-                        <!-- User Profile -->
                         <div class="dropdown">
-                            <a class="d-flex align-items-center text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}" class="user-avatar shadow-sm">
-                                <span class="ms-2 d-none d-md-inline fw-semibold text-dark">{{ Auth::user()->name }}</span>
+                            <a id="navbarDropdown" class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}" class="rounded-circle me-1" style="width: 28px; height: 28px; object-fit: cover;">
+                                <span class="d-none d-sm-inline">{{ Auth::user()->name }}</span>
                             </a>
                             @include('partials.user-dropdown')
                         </div>
-                    @else
-                        <div class="d-none d-sm-flex gap-2">
-                            <a href="{{ route('login') }}" class="btn btn-link text-decoration-none fw-semibold text-dark">{{ __('Connexion') }}</a>
-                            <a href="{{ route('register') }}" class="btn btn-primary rounded-pill px-4">{{ __('Inscription') }}</a>
-                        </div>
                     @endauth
 
-                    <!-- Toggler -->
-                    <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false">
-                        <i class="bi bi-list fs-2 text-dark"></i>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+                        <span class="navbar-toggler-icon"></span>
                     </button>
                 </div>
 
-                <!-- Main Menu -->
-                <div class="collapse navbar-collapse" id="mainNavbar">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <!-- Left Side Of Navbar -->
+                    <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('library.*') ? 'active' : '' }}" href="{{ route('library.index') }}">
-                                <i class="bi bi-grid me-1"></i>{{ __('Bibliothèque') }}
-                            </a>
+                            <a class="nav-link" href="{{ route('library.index') }}">{{ __('Bibliothèque') }}</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('subscription.plans') ? 'active' : '' }}" href="{{ route('subscription.plans') }}">
-                                <i class="bi bi-award me-1"></i>{{ __('Abonnements') }}
-                            </a>
+                            <a class="nav-link" href="{{ route('subscription.plans') }}">{{ __('Abonnements') }}</a>
                         </li>
 
                         @auth
                             <li class="nav-item">
-                                <a class="nav-link fw-bold text-primary" href="
+                                <a class="nav-link fw-bold" href="
                                     @if(Auth::user()->isAdmin()) {{ route('admin.dashboard') }}
                                     @elseif(Auth::user()->isAuthor()) {{ route('author.dashboard') }}
                                     @elseif(Auth::user()->isSchool()) {{ route('school.dashboard') }}
@@ -208,58 +93,56 @@
                                     @elseif(Auth::user()->isAdultReader()) {{ route('adult.dashboard') }}
                                     @else {{ route('dashboard') }}
                                     @endif
-                                ">
-                                    <i class="bi bi-speedometer2 me-1"></i>{{ __('Tableau de bord') }}
-                                </a>
+                                ">{{ __('Mon Tableau de Bord') }}</a>
                             </li>
                         @endauth
-                        
-                        <!-- Mobile Auth Links (Inside toggler) -->
-                        @guest
-                            <li class="nav-item d-sm-none mt-3">
-                                <div class="d-grid gap-2">
-                                    <a href="{{ route('login') }}" class="btn btn-outline-primary rounded-pill">{{ __('Connexion') }}</a>
-                                    <a href="{{ route('register') }}" class="btn btn-primary rounded-pill">{{ __('Inscription') }}</a>
-                                </div>
-                            </li>
-                        @endguest
                     </ul>
 
-                    <!-- Language Switcher - Left/Bottom of mobile menu -->
-                    <ul class="navbar-nav">
+                    <!-- Right Side Of Navbar -->
+                    <ul class="navbar-nav ms-auto align-items-center">
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" v-pre>
-                                <i class="bi bi-translate me-1"></i>{{ strtoupper(app()->getLocale()) }}
+                            <a id="navbarDropdownLang" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                <i class="bi bi-translate"></i> {{ strtoupper(app()->getLocale()) }}
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item {{ app()->getLocale() == 'en' ? 'active' : '' }}" href="{{ route('change.language', 'en') }}">🇺🇸 English</a></li>
-                                <li><a class="dropdown-item {{ app()->getLocale() == 'fr' ? 'active' : '' }}" href="{{ route('change.language', 'fr') }}">🇫🇷 Français</a></li>
-                            </ul>
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownLang">
+                                <a class="dropdown-item @if(app()->getLocale() == 'en') active @endif" href="{{ route('change.language', 'en') }}">English</a>
+                                <a class="dropdown-item @if(app()->getLocale() == 'fr') active @endif" href="{{ route('change.language', 'fr') }}">Français</a>
+                            </div>
                         </li>
+
+                        @guest
+                            @if (Route::has('login'))
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
+                                </li>
+                            @endif
+                            @if (Route::has('register'))
+                                <li class="nav-item">
+                                    <a class="btn btn-primary btn-sm ms-2" href="{{ route('register') }}">{{ __('Register') }}</a>
+                                </li>
+                            @endif
+                        @endguest
                     </ul>
                 </div>
             </div>
         </nav>
 
         <main>
-            <!-- Global Feedback Section -->
-            <div class="container pt-3">
+            <div class="container mt-3">
                 @if (session('success'))
-                    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4" role="alert">
-                        <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('success') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
-
                 @if (session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ session('error') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
-
                 @if ($errors->any())
-                    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4" role="alert">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         <ul class="mb-0">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
@@ -273,57 +156,29 @@
             @yield('content')
         </main>
 
-        <footer class="footer mt-5">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                        <p class="mb-0 text-muted">&copy; {{ date('Y') }} <strong>{{ config('app.name') }}</strong>. {{ __('Tous droits réservés.') }}</p>
-                    </div>
-                    <div class="col-md-6 text-center text-md-end">
-                        <div class="dropup d-inline-block">
-                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle rounded-pill px-3" type="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-translate me-1"></i> {{ __('Langue') }}
-                            </button>
-                            <ul class="dropdown-menu shadow">
-                                <li><a class="dropdown-item" href="{{ route('change.language', 'en') }}">🇺🇸 English</a></li>
-                                <li><a class="dropdown-item" href="{{ route('change.language', 'fr') }}">🇫🇷 Français</a></li>
-                            </ul>
-                        </div>
-                    </div>
+        <footer class="bg-light py-4 mt-auto">
+            <div class="container text-center">
+                <p class="mb-2 text-muted small">&copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. {{ __('All rights reserved.') }}</p>
+                <div class="dropup d-inline-block">
+                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-translate"></i> {{ __('Language') }}
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ route('change.language', 'en') }}">English</a></li>
+                        <li><a class="dropdown-item" href="{{ route('change.language', 'fr') }}">Français</a></li>
+                    </ul>
                 </div>
             </div>
         </footer>
     </div>
 
-    <!-- jQuery & JS -->
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     <script>
         $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
-
-        // AJAX Favorites
-        $(document).on('submit', '.favorite-form', function(e) {
-            e.preventDefault();
-            let form = $(this);
-            let button = form.find('button[type="submit"]');
-            let icon = button.find('i');
-
-            $.post(form.attr('action'), form.serialize())
-                .done(function(res) {
-                    toastr.success(res.message);
-                    if (res.status === 'favorited') {
-                        icon.removeClass('far fa-heart').addClass('fas fa-heart');
-                        button.removeClass('btn-outline-danger').addClass('btn-danger');
-                    } else {
-                        icon.removeClass('fas fa-heart').addClass('far fa-heart');
-                        button.removeClass('btn-danger').addClass('btn-outline-danger');
-                        if (form.closest('.book-card-col').length) form.closest('.book-card-col').fadeOut();
-                    }
-                })
-                .fail(function() { toastr.error('{{ __('Une erreur est survenue.') }}'); });
-        });
 
         @auth
         function fetchNotifications() {
@@ -336,16 +191,11 @@
                 list.empty();
                 if (res.notifications.length > 0) {
                     res.notifications.forEach(n => {
-                        list.append(`
-                            <a class="dropdown-item p-3 border-bottom notification-item" href="${n.link ?? '#'}" data-id="${n.id}">
-                                <div class="fw-bold small mb-1 text-primary">${n.title}</div>
-                                <div class="small text-muted">${n.message}</div>
-                            </a>
-                        `);
+                        list.append(`<a class="dropdown-item border-bottom notification-item" href="${n.link ?? '#'}" data-id="${n.id}"><strong>${n.title}</strong><br><small class="text-muted">${n.message}</small></a>`);
                     });
-                    list.append('<a class="dropdown-item text-center py-2 small fw-bold text-primary" href="#">{{ __("Tout voir") }}</a>');
+                    list.append('<a class="dropdown-item text-center small py-2" href="#">{{ __("Tout voir") }}</a>');
                 } else {
-                    list.append('<div class="p-4 text-center text-muted small">{{ __("Aucune notification") }}</div>');
+                    list.append('<span class="dropdown-item text-center text-muted small py-3">{{ __("Aucune notification") }}</span>');
                 }
             });
         }
@@ -362,6 +212,22 @@
             });
         });
         @endauth
+
+        // AJAX Favorites
+        $(document).on('submit', '.favorite-form', function(e) {
+            e.preventDefault();
+            let form = $(this);
+            let btn = form.find('button[type="submit"]');
+            $.post(form.attr('action'), form.serialize()).done(function(res) {
+                toastr.success(res.message);
+                if (res.status === 'favorited') {
+                    btn.removeClass('btn-outline-danger').addClass('btn-danger').find('i').removeClass('far').addClass('fas');
+                } else {
+                    btn.removeClass('btn-danger').addClass('btn-outline-danger').find('i').removeClass('fas').addClass('far');
+                    if (form.closest('.book-card-col').length) form.closest('.book-card-col').fadeOut();
+                }
+            });
+        });
     </script>
     @stack('scripts')
 </body>
