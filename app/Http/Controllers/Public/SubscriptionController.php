@@ -38,8 +38,9 @@ class SubscriptionController extends Controller
     public function plans()
     {
         $plans = SubscriptionPlan::where('is_active', true)->orderBy('order')->get();
+        $currentSubscription = auth()->check() ? auth()->user()->activeSubscription : null;
 
-        return view('subscription.plans', compact('plans'));
+        return view('subscription.plans', compact('plans', 'currentSubscription'));
     }
 
     public function checkout(SubscriptionPlan $plan)
@@ -279,9 +280,9 @@ class SubscriptionController extends Controller
     public function cancel()
     {
         $user         = auth()->user();
-        $subscription = $user->subscription;
+        $subscription = $user->activeSubscription;
 
-        if (!$subscription || !$subscription->isActive()) {
+        if (!$subscription) {
             return back()->with('error', __('No active subscription to cancel.'));
         }
 
