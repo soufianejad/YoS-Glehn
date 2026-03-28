@@ -38,12 +38,20 @@
           #sidebar {
               min-width: 250px;
               max-width: 250px;
+              /* flex + stretch empêchait sticky : hauteur = contenu, plafonnée au viewport */
+              align-self: flex-start;
+              position: sticky;
+              top: 0;
               min-height: 100vh;
+              max-height: 100vh;
+              overflow-y: auto;
+              overflow-x: hidden;
               background: var(--primary-color);
               color: var(--text-white);
               transition: var(--transition-base);
               box-shadow: var(--shadow-md);
               z-index: 1000;
+              overscroll-behavior: contain;
           }
   
           #sidebar.active {
