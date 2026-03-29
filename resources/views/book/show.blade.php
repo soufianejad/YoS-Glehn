@@ -128,6 +128,15 @@
                             </button>
                         </form>
 
+                        @if($book->is_ai_quiz_enabled)
+                            <form action="{{ route('book.generate_ai_quiz', $book) }}" method="POST" class="mb-4">
+                                @csrf
+                                <button type="submit" class="btn btn-success w-100 btn-lg hover-shadow" onclick="return confirm('{{ __('Générer un quiz avec l\'IA basé sur ce livre ? Cela prendra quelques instants.') }}')">
+                                    <i class="fas fa-robot me-2"></i> {{ __('Générer un Quiz (IA)') }}
+                                </button>
+                            </form>
+                        @endif
+
                         <!-- PDF Access -->
                         @if($book->pdf_file || $book->files->where('file_type', 'pdf')->count() > 0)
                             <div class="mb-4">

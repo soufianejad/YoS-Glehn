@@ -41,5 +41,14 @@
 
     <a href="{{ route('admin.books.edit', $book) }}" class="btn btn-warning mt-3">{{ __('Edit Book') }}</a>
     <a href="{{ route('admin.books.index') }}" class="btn btn-secondary mt-3">{{ __('Back to Books') }}</a>
+
+    @if($book->is_ai_quiz_enabled)
+    <form action="{{ route('admin.books.generate_ai_quiz', $book) }}" method="POST" class="d-inline">
+        @csrf
+        <button type="submit" class="btn btn-success mt-3" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir générer un quiz global avec l\'IA pour ce livre ? Cela peut prendre quelques secondes.') }}')">
+            {{ __('Générer un Quiz global (IA)') }}
+        </button>
+    </form>
+    @endif
 </div>
 @endsection

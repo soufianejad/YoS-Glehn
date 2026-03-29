@@ -171,6 +171,12 @@
                             <input class="form-check-input" type="checkbox" id="is_downloadable" name="is_downloadable" value="1" {{ old('is_downloadable', $book->is_downloadable) ? 'checked' : '' }}>
                             <label class="form-check-label" for="is_downloadable">{{ __('Téléchargeable') }}</label>
                         </div>
+                        <div class="mb-3 form-check form-switch">
+                            <input type="hidden" name="is_ai_quiz_enabled" value="0">
+                            <input class="form-check-input @error('is_ai_quiz_enabled') is-invalid @enderror" type="checkbox" id="is_ai_quiz_enabled" name="is_ai_quiz_enabled" value="1" {{ old('is_ai_quiz_enabled', $book->is_ai_quiz_enabled) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="is_ai_quiz_enabled">{{ __('Activer le générateur de Quiz IA') }}</label>
+                            @error('is_ai_quiz_enabled')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary">{{ __('Mettre à jour le Livre') }}</button>
                             <a href="{{ route('admin.books.index') }}" class="btn btn-secondary mt-2">{{ __('Annuler') }}</a>
