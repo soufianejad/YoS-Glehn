@@ -216,11 +216,13 @@ class UserManagementController extends Controller
     {
         if (session()->has('impersonating')) {
             // Admin is already impersonating, so stop it first
-            Auth::loginUsingId(session('impersonating'));
-            session()->forget('impersonating');
+            $this->stopImpersonating();
         }
 
-        session()->put('impersonating', auth()->id());
+        $adminId = auth()->id();
+        session()->put('impersonating', $adminId);
+        session()->put('impersonating_hash', hash_hmac('sha256', $adminId, config('app.key')));
+
         Auth::login($user);
 
         return redirect()->route('dashboard'); // Or any other route
@@ -228,10 +230,20 @@ class UserManagementController extends Controller
 
     public function stopImpersonating()
     {
-        if (session()->has('impersonating')) {
-            Auth::loginUsingId(session('impersonating'));
-            session()->forget('impersonating');
+        if (session()->has('impersonating') && session()->has('impersonating_hash')) {
+            $impersonatingId = session('impersonating');
+            $hash = session('impersonating_hash');
+            $expectedHash = hash_hmac('sha256', $impersonatingId, config('app.key'));
+
+            if (hash_equals($expectedHash, $hash)) {
+                $adminUser = User::find($impersonatingId);
+                if ($adminUser && $adminUser->role === 'admin') {
+                    Auth::login($adminUser);
+                }
+            }
         }
+
+        session()->forget(['impersonating', 'impersonating_hash']);
 
         return redirect()->route('admin.users.index');
     }
