@@ -173,18 +173,29 @@ class StudentController extends Controller
         ]);
 
         try {
-            Excel::import(new StudentsImport($school), $request->file('students_file'));
-        } catch (ValidationException $e) {
-            $failures = $e->failures();
-            $errors = [];
-            foreach ($failures as $failure) {
-                $errors[] = 'Row '.$failure->row().': '.implode(', ', $failure->errors());
+            $import = new \App\Imports\StudentsImport($school);
+            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('students_file'));
+
+            $failures = $import->failures();
+            $errors = $import->errors();
+
+            $message = __('Successfully imported :count students.', ['count' => $import->successCount]);
+
+            if ($failures->count() > 0) {
+                $errorMessages = [];
+                foreach ($failures as $failure) {
+                    $errorMessages[] = 'Row '.$failure->row().': '.implode(', ', $failure->errors());
+                }
+                session()->flash('import_errors', $errorMessages);
+                $message .= ' ' . __('However, :count rows failed to import. Please check the errors below.', ['count' => $failures->count()]);
+                return back()->with('warning', $message);
             }
 
-            return back()->with('error', __('There were some errors with your import: <br>').implode('<br>', $errors));
+        } catch (\Exception $e) {
+            return back()->with('error', __('An error occurred during import: ') . $e->getMessage());
         }
 
-        return back()->with('success', __('Students imported successfully.'));
+        return back()->with('success', $message);
     }
 
     /**

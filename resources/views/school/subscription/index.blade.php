@@ -24,10 +24,8 @@
                 <p><strong>{{ __('Current Students:') }}</strong> {{ $school->current_students }}</p>
                 <p><strong>{{ __('Starts At:') }}</strong> {{ $subscription->start_date->format('M d, Y') }}</p>
                 <p><strong>{{ __('Ends At:') }}</strong> {{ $subscription->end_date->format('M d, Y') }}</p>
-                <p><strong>{{ __('Price:') }}</strong> {{ $subscription->price }}</p>
+                <p><strong>{{ __('Price:') }}</strong> {{ $subscription->subscriptionPlan->price }}</p>
                 {{-- Add buttons for upgrade/downgrade/renew here --}}
-                <!-- <button class="btn btn-primary me-2">{{ __('Upgrade/Downgrade Plan') }}</button> -->
-                <!-- <button class="btn btn-success">{{ __('Renew Subscription') }}</button> -->
                 <a href="{{ route('school.subscription.plans') }}" class="btn btn-info">{{ __('Changer de Plan') }}</a>
             @else
                 <p>{{ __('No active subscription found. Please subscribe to a plan.') }}</p>
