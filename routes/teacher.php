@@ -18,7 +18,7 @@ use App\Http\Controllers\Teacher\ProgressController;
     Route::post('/classes/{class}/assign', [BookAssignmentController::class, 'store'])->name('assignments.store');
 
     // Route for tracking progress
-    Route::get('/classes', [ProgressController::class, 'listClasses'])->name('progress.list-classes');
+    Route::get('/progress/classes', [ProgressController::class, 'listClasses'])->name('progress.list-classes');
     Route::get('/classes/{class}/progress', [ProgressController::class, 'index'])->name('progress.index');
     Route::get('/quiz-attempts/{attempt}', [ProgressController::class, 'showQuizAttempt'])->name('progress.quiz-attempt');
 

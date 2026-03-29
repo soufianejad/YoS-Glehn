@@ -12,6 +12,18 @@ use Illuminate\Validation\Rule;
 
 class QuizController extends Controller
 {
+    public function selectBook()
+    {
+        // Get educational books that could have quizzes
+        // Either all educational books or those assigned to the teacher's classes
+        $user = auth()->user();
+
+        // For simplicity, fetch all educational books for now
+        $books = Book::where('space', 'educational')->paginate(12);
+
+        return view('teacher.quizzes.select-book', compact('books'));
+    }
+
     public function create(Book $book)
     {
         // Authorization: Ensure the teacher can only create quizzes for educational books.
