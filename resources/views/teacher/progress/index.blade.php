@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+@extends('layouts.teacher')
 
 @section('title', 'Suivi de Progression')
 @section('header', 'Suivi de la classe : ' . $class->name)

@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+@extends('layouts.teacher')
 
 @section('title', 'Tableau de bord Professeur')
 @section('header', 'Tableau de bord')

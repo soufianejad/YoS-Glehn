@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+@extends('layouts.teacher')
 
 @section('title', 'Assigner un Livre')
 @section('header', 'Assigner un livre à la classe : ' . $class->name)

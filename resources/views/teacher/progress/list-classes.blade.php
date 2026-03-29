@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+@extends('layouts.teacher')
 
 @section('title', 'Suivi des Élèves')
 @section('header', 'Suivi des Élèves')

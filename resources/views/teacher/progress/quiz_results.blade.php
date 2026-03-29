@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+@extends('layouts.teacher')
 
 @section('title', 'Résultats du Quiz pour : ' . $attempt->user->name)
 

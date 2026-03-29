@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+@extends('layouts.teacher')
 
 @section('title', isset($quiz) ? 'Modifier le Quiz' : 'Créer un Quiz')
 @section('header', isset($quiz) ? 'Modifier le Quiz : ' . $quiz->title : 'Nouveau Quiz pour : ' . $book->title)
