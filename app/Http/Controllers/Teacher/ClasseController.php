@@ -17,7 +17,7 @@ class ClasseController extends Controller
      */
     public function index()
     {
-        $classes = Auth::user()->managedClasses()->withCount('students')->get();
+        $classes = Auth::user()->school->classes()->withCount('students')->get();
         return view('teacher.classes.index', compact('classes'));
     }
 
