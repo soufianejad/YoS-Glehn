@@ -8,6 +8,9 @@
         <div class="card-header">
             <h3 class="card-title">{{ __('Review from') }} {{ $review->user->name }} {{ __('for') }} {{ $review->book->title }}</h3>
             <div class="card-tools">
+                <a href="{{ route('admin.reviews.edit', $review) }}" class="btn btn-warning btn-sm">
+                    <i class="fas fa-edit"></i> {{ __('Edit') }}
+                </a>
                 <a href="{{ route('admin.reviews.index') }}" class="btn btn-secondary btn-sm">
                     <i class="fas fa-arrow-left"></i> {{ __('Back to Reviews') }}
                 </a>
