@@ -51,6 +51,18 @@ Route::get('/run-book-database', function () {
         'output' => Artisan::output()
     ]);
 });
+
+Route::get('/run-adult-migration', function () {
+    Artisan::call('migrate', [
+        '--path' => 'database/migrations/2026_03_29_110237_add_revoked_status_to_adult_access_table.php',
+        '--force' => true
+    ]);
+
+    return response()->json([
+        'message' => 'Migration du statut révoqué exécutée avec succès ✅',
+        'output' => Artisan::output()
+    ]);
+});
 Route::get('/clear-all-cache', function () {
 
     Artisan::call('cache:clear');
