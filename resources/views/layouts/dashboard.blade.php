@@ -25,6 +25,8 @@
       <!-- Custom CSS -->
       <link href="{{ asset('css/app.css') }}" rel="stylesheet">
   
+      @yield('styles')
+
       <!-- Inline CSS (same as provided in the second layout) -->
       <style>
         
@@ -154,11 +156,15 @@
     <div id="app" class="wrapper">
         <!-- Sidebar -->
         <nav id="sidebar">
+            @hasSection('sidebar_header')
+                @yield('sidebar_header')
+            @else
             <div class="sidebar-header">
                 <a class="navbar-brand text-white" href="#">
                     <i class="fas fa-user-cog"></i> {{ ucfirst(Auth::user()->role) }} Panel
                 </a>
             </div>
+            @endif
             @includeIf('partials.sidebar-' . Auth::user()->role)
         </nav>
 

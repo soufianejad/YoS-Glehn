@@ -7,10 +7,17 @@ use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\SkipsOnFailure;
+use Maatwebsite\Excel\Concerns\SkipsFailures;
+use Maatwebsite\Excel\Concerns\SkipsOnError;
+use Maatwebsite\Excel\Concerns\SkipsErrors;
 
-class StudentsImport implements ToModel, WithHeadingRow, WithValidation
+class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure, SkipsOnError
 {
+    use SkipsFailures, SkipsErrors;
+
     private $school;
+    public $successCount = 0;
 
     public function __construct($school)
     {
@@ -22,6 +29,12 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation
      */
     public function model(array $row)
     {
+        // Check if school reached limit before saving
+        if ($this->school->hasReachedStudentLimit()) {
+            return null; // Don't save if limit reached
+        }
+
+        $this->successCount++;
         $this->school->increment('current_students');
 
         return new User([
@@ -31,6 +44,7 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation
             'password' => Hash::make($row['password']),
             'role' => 'student',
             'school_id' => $this->school->id,
+            'status' => 'active',
         ]);
     }
 

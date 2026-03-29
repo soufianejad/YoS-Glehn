@@ -8,7 +8,7 @@ use App\Http\Controllers\Teacher\ProgressController;
 
 
     
-    Route::get('/dashboard', [TeacherController::class, 'dashboard'])->name('dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\Teacher\TeacherDashboardController::class, 'index'])->name('dashboard');
     
     // Route for managing classes
     Route::resource('classes', ClasseController::class)->only(['index', 'show']);

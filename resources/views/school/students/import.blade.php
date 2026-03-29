@@ -35,5 +35,20 @@
             @endif
         </div>
     </div>
+
+    @if(session('import_errors'))
+    <div class="card mt-4 border-danger">
+        <div class="card-header bg-danger text-white">
+            {{ __('Erreurs d\'importation') }}
+        </div>
+        <div class="card-body text-danger">
+            <ul class="mb-0">
+                @foreach(session('import_errors') as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+    @endif
 </div>
 @endsection

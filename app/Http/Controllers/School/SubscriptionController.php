@@ -40,85 +40,40 @@ class SubscriptionController extends Controller
             return redirect()->route('school.dashboard')->with('error', 'Vous n\'êtes associé à aucune école.');
         }
 
-        // Optional: Check if the school already has an active subscription
+        // Handle upgrade/downgrade
         if ($school->subscription && $school->subscription->isActive()) {
-            // Logic to handle upgrade/downgrade could go here
-            return redirect()->route('school.subscription.index')->with('info', __('Vous avez déjà un abonnement actif.'));
+            $oldSubscription = $school->subscription;
+            $oldSubscription->update(['status' => 'cancelled', 'cancelled_at' => now()]);
         }
 
         // Create the new subscription
-        $subscription = $school->subscription()->create([
-            'user_id' => $school->user_id, // Correctly link the subscription to the school's associated user
+        $subscription = Subscription::create([
+            'user_id' => $school->user_id,
             'subscription_plan_id' => $plan->id,
-            'start_date' => now(), // Corrected column name
-            'end_date' => now()->addDays($plan->duration_days), // Corrected column name
-            'status' => 'active', // Assuming immediate activation after mock payment
-            'price' => $plan->price,
-            'max_students' => $plan->max_students,
+            'start_date' => now(),
+            'end_date' => now()->addDays($plan->duration_days),
+            'status' => 'active',
+            // Notice: models like 'price' or 'max_students' shouldn't be here unless added to fillable of the model.
+            // In the DB, max_students should be updated in 'schools' directly
         ]);
 
-        // Link the new subscription to the school
-        $school->update(['subscription_id' => $subscription->id]);
+        // Link the new subscription to the school and update student limits
+        $school->update([
+            'subscription_id' => $subscription->id,
+            'max_students' => $plan->max_students
+        ]);
 
         // Simulate a payment record
-        $school->payments()->create([
-            'user_id' => $school->user_id, // Use school's user_id for the payment record
+        Payment::create([
+            'user_id' => $school->user_id,
             'subscription_id' => $subscription->id,
             'amount' => $plan->price,
-            'currency' => __('USD'), // Or your default currency
+            'currency' => __('XOF'), // Use local currency
             'status' => 'completed',
-            'payment_method' => 'card', // Use an allowed enum value
+            'payment_method' => 'card',
             'transaction_id' => 'mock_'.uniqid(),
         ]);
 
-        return redirect()->route('school.subscription.index')->with('success', __('Abonnement au plan "').$plan->name.'" réussi !');
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->route('school.dashboard')->with('success', __('Abonnement au plan "').$plan->name.'" réussi !');
     }
 }

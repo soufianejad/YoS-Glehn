@@ -3,12 +3,14 @@
 use App\Http\Controllers\School\BookAssignmentController;
 use App\Http\Controllers\School\ClassController;
 use App\Http\Controllers\School\DashboardController as SchoolDashboardController;
+use App\Http\Controllers\School\SchoolSettingsController;
+use App\Http\Controllers\School\SchoolQrCodeController;
 use App\Http\Controllers\School\StudentController;
 use Illuminate\Support\Facades\Route;
 
 // Tableau de bord
 Route::get('/', [SchoolDashboardController::class, 'index'])->name('dashboard');
-Route::get('/qr-code', [SchoolDashboardController::class, 'showQrCode'])->name('qrcode');
+Route::get('/qr-code', [SchoolQrCodeController::class, 'showQrCode'])->name('qrcode');
 Route::get('/statistics', [SchoolDashboardController::class, 'statistics'])->name('statistics');
 Route::get('/progress-report', [SchoolDashboardController::class, 'progressReport'])->name('progress-report');
 
@@ -34,9 +36,9 @@ Route::resource('books/assignments', BookAssignmentController::class)->names('bo
 Route::resource('announcements', App\Http\Controllers\School\AnnouncementController::class)->names('announcements');
 
 // Paramètres de l'école
-Route::get('/settings', [SchoolDashboardController::class, 'settings'])->name('settings');
-Route::put('/settings', [SchoolDashboardController::class, 'updateSettings'])->name('settings.update');
-Route::post('/settings/regenerate-access-code', [SchoolDashboardController::class, 'regenerateAccessCode'])->name('settings.regenerate-access-code');
+Route::get('/settings', [SchoolSettingsController::class, 'settings'])->name('settings');
+Route::put('/settings', [SchoolSettingsController::class, 'updateSettings'])->name('settings.update');
+Route::post('/settings/regenerate-access-code', [SchoolSettingsController::class, 'regenerateAccessCode'])->name('settings.regenerate-access-code');
 
 // Gestion des abonnements
 Route::prefix('subscription')->name('subscription.')->group(function () {
