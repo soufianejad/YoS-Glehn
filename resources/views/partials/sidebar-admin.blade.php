@@ -46,13 +46,16 @@
     <li class="mt-1">
         <a href="#userSubmenu"
            data-bs-toggle="collapse"
-           aria-expanded="{{ request()->routeIs('admin.users*') || request()->routeIs('admin.schools*') ? 'true' : 'false' }}"
+           aria-expanded="{{ request()->routeIs('admin.users*') || request()->routeIs('admin.schools*') || request()->routeIs('admin.adult-access*') ? 'true' : 'false' }}"
            class="dropdown-toggle nav-link sidebar-heading text-decoration-none">
             {{ __('Gestion des Utilisateurs') }}
         </a>
-        <ul class="p-0 collapse {{ request()->routeIs('admin.users*') || request()->routeIs('admin.schools*') ? 'show' : '' }}" id="userSubmenu">
+        <ul class="p-0 collapse {{ request()->routeIs('admin.users*') || request()->routeIs('admin.schools*') || request()->routeIs('admin.adult-access*') ? 'show' : '' }}" id="userSubmenu">
             <li style="display:block" class="nav-item {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
                 <a class="nav-link " href="{{ route('admin.users.index') }}"><i class="fas fa-users"></i> {{ __('Utilisateurs') }}</a>
+            </li>
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.adult-access*') ? 'active' : '' }}">
+                <a class="nav-link " href="{{ route('admin.users.adult-invitations') }}"><i class="fas fa-user-shield"></i> {{ __('Accès Adultes') }}</a>
             </li>
             <li style="display:block" class="nav-item {{ request()->routeIs('admin.schools*') ? 'active' : '' }}">
                 <a class="nav-link " href="{{ route('admin.schools.index') }}"><i class="fas fa-school"></i> {{ __('Écoles') }}</a>

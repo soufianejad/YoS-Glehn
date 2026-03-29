@@ -75,12 +75,24 @@ class AdultAccess extends Model
         $this->save();
     }
 
-    public function getDaysRemainingAttribute(): int
+    public function getDaysRemainingAttribute(): ?int
     {
-        if (! $this->expires_at || $this->isExpired()) {
+        if (! $this->expires_at) {
+            return null;
+        }
+
+        if ($this->isPast()) {
             return 0;
         }
 
         return (int) now()->diffInDays($this->expires_at, false);
+    }
+
+    /**
+     * Alias pour isPast() car utilisé par isExpired
+     */
+    public function isPast(): bool
+    {
+        return $this->expires_at && $this->expires_at->isPast();
     }
 }

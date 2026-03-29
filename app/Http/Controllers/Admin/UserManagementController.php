@@ -155,6 +155,35 @@ class UserManagementController extends Controller
         return view('admin.users.adult-invitations', compact('invitations'));
     }
 
+    public function editAdultInvitation(string $token)
+    {
+        $invitation = AdultAccess::where('access_token', $token)->firstOrFail();
+        $users = User::where('role', 'adult_reader')->get();
+
+        return view('admin.users.edit-adult-invitation', compact('invitation', 'users'));
+    }
+
+    public function updateAdultInvitation(Request $request, string $token)
+    {
+        $invitation = AdultAccess::where('access_token', $token)->firstOrFail();
+
+        $request->validate([
+            'email' => 'nullable|email',
+            'max_uses' => 'required|integer|min:1',
+            'expires_at' => 'nullable|date',
+            'status' => 'required|in:pending,used,expired,revoked',
+        ]);
+
+        $invitation->update([
+            'email' => $request->email,
+            'max_uses' => $request->max_uses,
+            'expires_at' => $request->expires_at,
+            'status' => $request->status,
+        ]);
+
+        return redirect()->route('admin.users.adult-invitations')->with('success', __('Invitation updated successfully!'));
+    }
+
     public function generateAdultInvitation(Request $request)
     {
         $request->validate([

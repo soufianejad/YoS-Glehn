@@ -241,9 +241,11 @@ Route::prefix('revenues')->name('revenues.')->group(function () {
 | Gestion de l'espace adulte
 |--------------------------------------------------------------------------
 */
-Route::prefix('adult-space')->name('adult.')->group(function () {
-    Route::get('/invitations', [UserManagementController::class, 'adultInvitations'])->name('invitations');
-    Route::post('/generate-invitation', [UserManagementController::class, 'generateAdultInvitation'])->name('generate-invitation');
+Route::prefix('adult-space')->name('users.')->group(function () {
+    Route::get('/invitations', [UserManagementController::class, 'adultInvitations'])->name('adult-invitations');
+    Route::post('/invitations', [UserManagementController::class, 'generateAdultInvitation'])->name('adult-invitation.generate');
+    Route::get('/invitations/{token}/edit', [UserManagementController::class, 'editAdultInvitation'])->name('adult-invitation.edit');
+    Route::put('/invitations/{token}', [UserManagementController::class, 'updateAdultInvitation'])->name('adult-invitation.update');
     Route::delete('/invitation/{token}', [UserManagementController::class, 'revokeInvitation'])->name('revoke-invitation');
 });
 

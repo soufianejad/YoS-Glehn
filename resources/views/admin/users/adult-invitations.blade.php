@@ -1,143 +1,154 @@
-<!-- resources/views/admin/users/adult-invitations.blade.php -->
-
 @extends('layouts.dashboard')
 
+@section('title', __('Gestion des Accès Adultes'))
+@section('header', __('Gestion des Accès Adultes'))
+
 @section('content')
-<div class="container">
-    <h1>{{ __('Adult Access Invitations') }}</h1>
-
-    <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="{{ __('generateInvitationModal') }}">
-        {{ __('Generate New Invitation') }}
-    </button>
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th>{{ __('Token') }}</th>
-                <th>{{ __('Email') }}</th>
-                <th>{{ __('Created By') }}</th>
-                <th>{{ __('Status') }}</th>
-                <th>{{ __('Uses') }}</th>
-                <th>{{ __('Max Uses') }}</th>
-                <th>{{ __('Expires At') }}</th>
-                <th>{{ __('Used By') }}</th>
-                <th>{{ __('Actions') }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($invitations as $invitation)
-                <tr>
-                    <td>{{ $invitation->access_token }}</td>
-                    <td>{{ $invitation->email ?? 'N/A' }}</td>
-                    <td>{{ $invitation->creator->name ?? 'N/A' }}</td>
-                    <td>{{ $invitation->status }}</td>
-                    <td>{{ $invitation->uses_count }}</td>
-                    <td>{{ $invitation->max_uses }}</td>
-                    <td>
-                        {{ $invitation->expires_at ? \Carbon\Carbon::parse($invitation->expires_at)->format('Y-m-d H:i') : 'Never' }}
-                    </td>
-                    <td>{{ $invitation->user->name ?? 'N/A' }}</td>
-                    <td>
-                        <button class="btn btn-sm btn-secondary copy-link-btn" data-link="{{ route('adult.invitation', ['token' => $invitation->access_token]) }}">{{ __('Copy Link') }}</button>
-                        <form action="{{ route('admin.adult.revoke-invitation', $invitation->access_token) }}" method="POST" class="d-inline">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to revoke this invitation?')">{{ __('Revoke') }}</button>
-                        </form>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-
-    {{ $invitations->links('pagination::bootstrap-5') }}
-
-    <!-- Generate Invitation Modal -->
-    <div class="modal fade" id="generateInvitationModal" tabindex="-1" aria-labelledby="generateInvitationModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="generateInvitationModalLabel">{{ __('Generate New Adult Invitation') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Générer une nouvelle invitation -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-lg mb-4">
+                <div class="card-header bg-primary text-white p-3">
+                    <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>{{ __('Générer une Invitation') }}</h5>
                 </div>
-                <form action="{{ route('admin.adult.generate-invitation') }}" method="POST">
-                    @csrf
-                    <div class="modal-body">
+                <div class="card-body p-4">
+                    <form action="{{ route('admin.users.adult-invitation.generate') }}" method="POST">
+                        @csrf
                         <div class="mb-3">
-                            <label for="email" class="form-label">{{ __('Email (Optional)') }}</label>
-                            <input type="email" class="form-control" id="email" name="email">
-                            <div class="form-text">{{ __('If provided, this invitation can only be used by this email address.') }}</div>
+                            <label for="email" class="form-label fw-bold">{{ __('Email (Optionnel)') }}</label>
+                            <input type="email" name="email" id="email" class="form-control" placeholder="exemple@email.com">
+                            <small class="text-muted">{{ __('Si spécifié, seul cet email pourra utiliser le token.') }}</small>
                         </div>
+
                         <div class="mb-3">
-                            <label for="max_uses" class="form-label">{{ __("Max Uses") }}</label>
-                            <input type="number" class="form-control" id="max_uses" name="max_uses" value="1" min="1">
+                            <label for="max_uses" class="form-label fw-bold">{{ __('Nombre d\'utilisations') }}</label>
+                            <input type="number" name="max_uses" id="max_uses" class="form-control" value="1" min="1" required>
                         </div>
+
                         <div class="mb-3">
-                            <label for="expires_at" class="form-label">{{ __('Expires At (Optional)') }}</label>
-                            <input type="datetime-local" class="form-control" id="expires_at" name="expires_at">
+                            <label for="expires_at" class="form-label fw-bold">{{ __('Date d\'expiration') }}</label>
+                            <input type="date" name="expires_at" id="expires_at" class="form-control">
+                            <small class="text-muted">{{ __('Laissez vide pour une validité illimitée.') }}</small>
                         </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary rounded-pill shadow-sm">
+                                <i class="fas fa-magic me-2"></i>{{ __('Générer le Token') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des invitations -->
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-lg">
+                <div class="card-header bg-white p-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-primary font-weight-bold"><i class="fas fa-list me-2"></i>{{ __('Invitations & Accès') }}</h5>
+                    <span class="badge bg-light text-primary">{{ $invitations->total() }} total</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">{{ __('Token / Email') }}</th>
+                                    <th>{{ __('Statut') }}</th>
+                                    <th>{{ __('Utilisation') }}</th>
+                                    <th>{{ __('Expire le') }}</th>
+                                    <th class="text-end pe-4">{{ __('Actions') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($invitations as $invitation)
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="d-flex flex-column">
+                                                <code class="text-primary fw-bold mb-1">{{ Str::limit($invitation->access_token, 10) }}...</code>
+                                                <span class="small text-muted">{{ $invitation->email ?? __('Tout email') }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @php
+                                                $statusClass = [
+                                                    'pending' => 'bg-info',
+                                                    'used' => 'bg-success',
+                                                    'expired' => 'bg-danger',
+                                                    'revoked' => 'bg-secondary'
+                                                ][$invitation->status] ?? 'bg-light text-dark';
+                                            @endphp
+                                            <span class="badge {{ $statusClass }} rounded-pill px-3">
+                                                {{ ucfirst(__($invitation->status)) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="height: 6px; width: 80px;">
+                                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ ($invitation->uses_count / $invitation->max_uses) * 100 }}%"></div>
+                                            </div>
+                                            <small class="text-muted">{{ $invitation->uses_count }} / {{ $invitation->max_uses }}</small>
+                                        </td>
+                                        <td>
+                                            @if($invitation->expires_at)
+                                                <span class="{{ $invitation->isExpired() ? 'text-danger fw-bold' : '' }}">
+                                                    {{ $invitation->expires_at->format('d/m/Y') }}
+                                                </span>
+                                            @else
+                                                <span class="badge bg-light text-dark border">{{ __('Illimité') }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <div class="btn-group shadow-sm rounded-pill overflow-hidden">
+                                                <button class="btn btn-sm btn-light copy-token" data-token="{{ $invitation->access_token }}" title="{{ __('Copier le token') }}">
+                                                    <i class="fas fa-copy text-primary"></i>
+                                                </button>
+                                                <a href="{{ route('admin.users.adult-invitation.edit', $invitation->access_token) }}" class="btn btn-sm btn-light" title="{{ __('Modifier') }}">
+                                                    <i class="fas fa-edit text-warning"></i>
+                                                </a>
+                                                @if($invitation->status !== 'revoked')
+                                                    <form action="{{ route('admin.users.adult-invitation.revoke', $invitation->access_token) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Révoquer cet accès ?') }}')">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-light" title="{{ __('Révoquer') }}">
+                                                            <i class="fas fa-ban text-danger"></i>
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5">
+                                            <p class="text-muted mb-0">{{ __('Aucune invitation générée.') }}</p>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}</button>
-                        <button type="submit" class="btn btn-primary">{{ __('Generate Invitation') }}</button>
+                </div>
+                @if($invitations->hasPages())
+                    <div class="card-footer bg-white border-0 py-3">
+                        {{ $invitations->links() }}
                     </div>
-                </form>
+                @endif
             </div>
         </div>
     </div>
 </div>
-@endsection
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const copyLinkButtons = document.querySelectorAll('.copy-link-btn');
-
-        copyLinkButtons.forEach(button => {
-            button.addEventListener('click', function () {
-                const link = this.dataset.link;
-                const button = this;
-
-                if (navigator.clipboard && window.isSecureContext) {
-                    // Use Clipboard API in secure contexts
-                    navigator.clipboard.writeText(link).then(() => {
-                        showCopiedMessage(button);
-                    }).catch(err => {
-                        console.error('Failed to copy: ', err);
-                    });
-                } else {
-                    // Fallback for non-secure contexts
-                    const textArea = document.createElement('textarea');
-                    textArea.value = link;
-                    textArea.style.position = 'fixed'; // Prevent scrolling to bottom of page in MS Edge.
-                    textArea.style.top = '0';
-                    textArea.style.left = '0';
-                    textArea.style.opacity = '0';
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-
-                    try {
-                        const successful = document.execCommand('copy');
-                        if (successful) {
-                            showCopiedMessage(button);
-                        }
-                    } catch (err) {
-                        console.error('Fallback: Oops, unable to copy', err);
-                    }
-
-                    document.body.removeChild(textArea);
-                }
+    $(document).ready(function() {
+        $('.copy-token').click(function() {
+            let token = $(this).data('token');
+            let fullUrl = "{{ route('adult.invitation', '') }}/" + token;
+            navigator.clipboard.writeText(fullUrl).then(function() {
+                toastr.success("{{ __('Lien d\'invitation copié !') }}");
             });
         });
-
-        function showCopiedMessage(button) {
-            const originalText = button.textContent;
-            button.textContent = 'Copied!';
-            setTimeout(() => {
-                button.textContent = originalText;
-            }, 2000);
-        }
     });
 </script>
 @endpush
+@endsection
