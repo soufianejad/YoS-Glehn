@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->prefix('messaging')->group(function () {
     Route::get('/users/messageable', [MessagingController::class, 'getMessageableUsers'])->name('messaging.users.messageable');
+    Route::get('/search', [MessagingController::class, 'search'])->name('messaging.search');
     Route::get('/', [MessagingController::class, 'index'])->name('messaging.index');
     Route::get('/archived', [MessagingController::class, 'archivedConversations'])->name('messaging.archived');
     Route::get('/{conversation}/new', [MessagingController::class, 'getNewMessages'])->name('messaging.new');

@@ -249,6 +249,60 @@ class MessagingController extends Controller
     }
 
     /**
+     * Search messages for the current user.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function search(Request $request)
+    {
+        $query = $request->input('q');
+        $user = Auth::user();
+
+        if (empty($query)) {
+            return response()->json([]);
+        }
+
+        // Get conversation IDs the user is a part of
+        $conversationIds = $user->conversations()
+            ->wherePivotNull('deleted_at')
+            ->pluck('conversations.id');
+
+        // Search messages in those conversations
+        $messages = Message::whereIn('conversation_id', $conversationIds)
+            ->where('content', 'LIKE', '%' . $query . '%')
+            ->with(['conversation.participants' => function ($q) use ($user) {
+                $q->where('user_id', '!=', $user->id);
+            }, 'sender'])
+            ->orderBy('created_at', 'desc')
+            ->limit(50)
+            ->get();
+
+        // Group the messages by conversation
+        $groupedMessages = $messages->groupBy('conversation_id')->map(function ($conversationMessages) use ($user) {
+            $conversation = $conversationMessages->first()->conversation;
+            $participant = $conversation->participants->first();
+            $conversationName = $conversation->name ?? ($participant->name ?? 'Conversation');
+
+            return [
+                'conversation_id' => $conversation->id,
+                'conversation_name' => $conversationName,
+                'avatar_url' => $participant->avatar_url ?? asset('images/default-avatar.png'),
+                'messages' => $conversationMessages->map(function ($message) {
+                    return [
+                        'id' => $message->id,
+                        'content' => $message->content,
+                        'sender_name' => $message->sender->name,
+                        'created_at' => $message->created_at->diffForHumans(null, true),
+                    ];
+                })->values()
+            ];
+        })->values();
+
+        return response()->json($groupedMessages);
+    }
+
+    /**
      * Display the list of archived conversations for the current user.
      *
      * @return \Illuminate\View\View

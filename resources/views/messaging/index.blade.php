@@ -163,9 +163,25 @@
                 </button>
             </div>
             <div class="mt-3">
-                <input type="text" class="form-control" placeholder="{{ __('Search conversations...') }}">
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" id="search-conversations-input" placeholder="{{ __('Search conversations...') }}">
+                </div>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="search-messages-input" placeholder="{{ __('Search messages...') }}">
+                    <button class="btn btn-outline-secondary" type="button" id="search-messages-btn"><i class="fas fa-search"></i></button>
+                </div>
             </div>
         </div>
+
+        <div id="search-results-container" class="d-none">
+            <div class="p-2 border-bottom">
+                <h6 class="mb-0 text-muted">{{ __('Search Results') }}</h6>
+            </div>
+            <div class="search-results-list" id="search-results-list" style="overflow-y: auto; height: calc(100% - 40px);">
+                <!-- Search results will be injected here -->
+            </div>
+        </div>
+
         <div class="conversations-list" id="conversations-list">
             @forelse($conversations as $conversation)
                 @php
@@ -297,6 +313,7 @@
         data-user_id="{{ Auth::id() }}"
         data-route_store="{{ route('messaging.store') }}"
         data-route_messageable_users="{{ route('messaging.users.messageable') }}"
+        data-route_search="{{ route('messaging.search') }}"
     ></script>
     <script src="{{ asset('js/messaging-custom.js') }}"></script>
 

@@ -11,7 +11,8 @@ $(function () {
         user_id: messagingDataElement.dataset.user_id,
         routes: {
             store: messagingDataElement.dataset.route_store,
-            messageable_users: messagingDataElement.dataset.route_messageable_users
+            messageable_users: messagingDataElement.dataset.route_messageable_users,
+            search: messagingDataElement.dataset.route_search
         }
     };
     
@@ -154,7 +155,103 @@ $(function () {
     function stopTypingIndicator() {
     }
 
+    function escapeHtml(unsafe) {
+        return (unsafe || '').toString()
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
+    }
+
+    function performSearch(query) {
+        if (!query) {
+            $('#conversations-list').removeClass('d-none');
+            $('#search-results-container').addClass('d-none');
+            return;
+        }
+
+        $('#conversations-list').addClass('d-none');
+        $('#search-results-container').removeClass('d-none');
+        $('#search-results-list').html('<div class="text-center p-3"><i class="fas fa-spinner fa-spin text-primary"></i></div>');
+
+        $.ajax({
+            url: MESSAGING_DATA.routes.search,
+            method: 'GET',
+            data: { q: query },
+            success: function(results) {
+                let html = '';
+                if (results.length === 0) {
+                    html = '<p class="p-3 text-muted text-center">No messages found.</p>';
+                } else {
+                    results.forEach(group => {
+                        html += `
+                            <div class="search-result-group border-bottom p-2">
+                                <h6 class="mb-1 text-primary"><i class="fas fa-comments me-2"></i>${escapeHtml(group.conversation_name)}</h6>
+                        `;
+                        group.messages.forEach(msg => {
+                            html += `
+                                <div class="search-result-item p-2 mb-1 rounded bg-light cursor-pointer" data-conversation-id="${group.conversation_id}" onclick="openMobileChat()">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small class="fw-bold">${escapeHtml(msg.sender_name)}</small>
+                                        <small class="text-muted">${escapeHtml(msg.created_at)}</small>
+                                    </div>
+                                    <div class="text-truncate small">${escapeHtml(msg.content)}</div>
+                                </div>
+                            `;
+                        });
+                        html += `</div>`;
+                    });
+                }
+                $('#search-results-list').html(html);
+            },
+            error: function(xhr) {
+                console.error('Search error:', xhr);
+                $('#search-results-list').html('<p class="text-danger p-3 text-center">Error occurred during search.</p>');
+            }
+        });
+    }
+
     // --- Event Handlers ---
+
+    $(document).on('click', '.search-result-item', function() {
+        const conversationId = $(this).data('conversation-id');
+
+        // Find or create the conversation item to trigger click
+        let convItem = $(`.conversation-item[data-conversation-id="${conversationId}"]`);
+
+        if (convItem.length) {
+            convItem.trigger('click');
+        } else {
+            // Load messages directly if conversation item isn't in the list
+            loadMessages(conversationId);
+        }
+    });
+
+    let searchTimeout;
+    $('#search-messages-input').on('input', function() {
+        clearTimeout(searchTimeout);
+        const query = $(this).val().trim();
+        searchTimeout = setTimeout(() => {
+            performSearch(query);
+        }, 300);
+    });
+
+    $('#search-messages-btn').on('click', function() {
+        performSearch($('#search-messages-input').val().trim());
+    });
+
+    $('#search-conversations-input').on('input', function() {
+        const term = $(this).val().toLowerCase();
+        $('.conversation-item').each(function() {
+            const name = $(this).find('h6').text().toLowerCase();
+            if (name.includes(term)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
 
     $(document).on('click', '.conversation-item', function() {
         $('.conversation-item.active').removeClass('active');
