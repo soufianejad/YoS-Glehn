@@ -282,7 +282,7 @@
                 @yield('content')
             </main>
 
-            <footer class="footer mt-auto py-3 bg-white border-top">
+            <footer class="mt-auto py-3 bg-white border-top">
                 <div class="container-fluid px-4">
                     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center text-muted small">
                         <div class="mb-2 mb-sm-0">
