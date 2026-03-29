@@ -127,6 +127,16 @@
           #navbarDropdown {
               color: var(--text-primary);
           }
+
+          /* Fix for floating dropdowns in top nav */
+          .navbar .dropdown-menu {
+              position: absolute !important;
+              top: 100%;
+              right: 0;
+              left: auto;
+              float: none;
+              z-index: 1050;
+          }
   
           @media (max-width: 768px) {
               #sidebar {
