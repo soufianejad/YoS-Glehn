@@ -164,33 +164,20 @@ class DashboardController extends Controller
         }
 
         $search = $request->input('search');
-        $classmates = collect();
 
-        foreach ($student->classes as $class) {
-            $classmates = $classmates->merge($class->students()->where('users.id', '!=', $student->id)->get());
-        }
-
-        $classmates = $classmates->unique('id');
-
-        if ($search) {
-            $classmates = $classmates->filter(function ($classmate) use ($search) {
-                return Str::contains(strtolower($classmate->first_name), strtolower($search)) ||
-                       Str::contains(strtolower($classmate->last_name), strtolower($search)) ||
-                       Str::contains(strtolower($classmate->email), strtolower($search));
-            });
-        }
-
-        $page = request()->get('page', 1);
-        $perPage = 10;
-        $offset = ($page * $perPage) - $perPage;
-
-        $classmates = new LengthAwarePaginator(
-            $classmates->slice($offset, $perPage),
-            $classmates->count(),
-            $perPage,
-            $page,
-            ['path' => request()->url(), 'query' => request()->query()]
-        );
+        $classmates = User::where('id', '!=', $student->id)
+            ->whereHas('classes.students', function ($query) use ($student) {
+                $query->where('users.id', $student->id);
+            })
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('first_name', 'like', '%'.$search.'%')
+                        ->orWhere('last_name', 'like', '%'.$search.'%')
+                        ->orWhere('email', 'like', '%'.$search.'%');
+                });
+            })
+            ->paginate(10)
+            ->withQueryString();
 
         return view('student.school.classmates', compact('classmates', 'search'));
     }
