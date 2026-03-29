@@ -160,67 +160,76 @@
                     <a href="{{ route('users.stop-impersonating') }}">{{ __('Stop Impersonating') }}</a>
                 </div>
             @endif
-            <nav class="navbar navbar-expand-lg navbar-light">
-                <div class="container-fluid">
-                    <button type="button" id="sidebarCollapse" class="btn btn-dark">
-                        <i class="fas fa-align-left"></i>
-                        <span class="ms-2 d-none d-md-inline">{{ __('Menu') }}</span>
-                    </button>
-                    <ul class="navbar-nav ms-auto">
-                        @if(Auth::user()->isAdultReader() && Auth::user()->adultAccess)
-                            <li class="nav-item me-3 d-flex align-items-center">
-                                <span class="badge {{ Auth::user()->adultAccess->isExpired() ? 'bg-danger' : 'bg-success' }}">
-                                    <i class="bi bi-clock-history me-1"></i>
-                                    {{ __('Temps restant :') }} {{ Auth::user()->adultAccess->time_remaining_display }}
-                                </span>
-                            </li>
-                        @endif
-                        <!-- Notifications Dropdown -->
-                        <li class="nav-item dropdown me-2">
-                            <a id="navbarDropdownNotifications" class="nav-link dropdown-toggle position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                <i class="bi bi-bell"></i>
-                                <span class="badge bg-danger d-none" id="unread-notifications-count" style="position: absolute; top: 0px; right: 0px; padding: 3px 6px; border-radius: 50%; font-size: 0.6rem;">0</span>
-                            </a>
+            <nav class="navbar navbar-light bg-white border-bottom shadow-sm px-3">
+                <div class="container-fluid d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <button type="button" id="sidebarCollapse" class="btn btn-dark btn-sm me-3">
+                            <i class="fas fa-align-left"></i>
+                        </button>
+                        <h5 class="mb-0 d-none d-lg-block">@yield('header')</h5>
+                    </div>
 
-                            <div class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="navbarDropdownNotifications" id="notifications-dropdown-menu" style="width: 300px; max-height: 400px; overflow-y: auto;">
-                                <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center bg-light">
-                                    <h6 class="dropdown-header p-0 mb-0 fw-bold">{{ __('Notifications') }}</h6>
-                                    <button class="btn btn-link btn-sm p-0 d-none text-decoration-none" id="mark-all-read-btn" title="{{ __('Marquer tout comme lu') }}">
-                                        <i class="bi bi-check2-all me-1"></i><small>{{ __('Tout lire') }}</small>
-                                    </button>
-                                </div>
-                                <div id="notifications-list">
-                                    <div class="p-3 text-center">
-                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                            <span class="visually-hidden">Loading...</span>
+                    <div class="d-flex align-items-center">
+                        @if(Auth::user() && (Auth::user()->isAdultReader() || Auth::user()->role === 'adult') && Auth::user()->adultAccess)
+                            <div class="me-2 me-md-3">
+                                <span class="badge {{ Auth::user()->adultAccess->isExpired() ? 'bg-danger' : 'bg-success' }} d-flex align-items-center py-2 px-3">
+                                    <i class="bi bi-clock-history me-1"></i>
+                                    <span class="d-none d-sm-inline me-1">{{ __('Temps restant :') }}</span>
+                                    {{ Auth::user()->adultAccess->time_remaining_display }}
+                                </span>
+                            </div>
+                        @endif
+
+                        <ul class="navbar-nav d-flex flex-row align-items-center">
+                            <!-- Notifications Dropdown -->
+                            <li class="nav-item dropdown me-2 me-md-3">
+                                <a id="navbarDropdownNotifications" class="nav-link position-relative p-1" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-bell fs-5"></i>
+                                    <span class="badge bg-danger d-none" id="unread-notifications-count" style="position: absolute; top: -5px; right: -5px; padding: 3px 6px; border-radius: 50%; font-size: 0.6rem;">0</span>
+                                </a>
+
+                                <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2" aria-labelledby="navbarDropdownNotifications" id="notifications-dropdown-menu" style="width: 280px; max-height: 400px; overflow-y: auto;">
+                                    <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center bg-light">
+                                        <h6 class="dropdown-header p-0 mb-0 fw-bold">{{ __('Notifications') }}</h6>
+                                        <button class="btn btn-link btn-sm p-0 d-none text-decoration-none" id="mark-all-read-btn" title="{{ __('Marquer tout comme lu') }}">
+                                            <i class="bi bi-check2-all me-1"></i><small>{{ __('Tout lire') }}</small>
+                                        </button>
+                                    </div>
+                                    <div id="notifications-list">
+                                        <div class="p-3 text-center">
+                                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
                                         </div>
                                     </div>
+                                    <div class="p-2 border-top text-center bg-light">
+                                        <a class="dropdown-item small text-primary fw-bold" href="{{ route('admin.notifications.index') }}">{{ __('Voir tout') }}</a>
+                                    </div>
                                 </div>
-                                <div class="p-2 border-top text-center bg-light">
-                                    <a class="dropdown-item small text-primary fw-bold" href="{{ route('admin.notifications.index') }}">{{ __('Voir toutes les notifications') }}</a>
-                                </div>
-                            </div>
-                        </li>
+                            </li>
 
-                        <li class="nav-item dropdown">
-                            <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                <i class="fas fa-user-circle me-1"></i> {{ Auth::user()->name }}
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                <a class="dropdown-item" href="{{ route('profile') }}">
-                                    <i class="fas fa-user me-2"></i> {{ __('Profile') }}
+                            <li class="nav-item dropdown">
+                                <a id="navbarDropdown" class="nav-link dropdown-toggle d-flex align-items-center p-1" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-user-circle fs-5 me-1"></i>
+                                    <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
                                 </a>
-                                <a class="dropdown-item" href="{{ route('profile.notifications.edit') }}">
-                                    <i class="fas fa-bell me-2"></i> {{ __('Notifications') }}
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                    <i class="fas fa-sign-out-alt me-2"></i> {{ __('Logout') }}
-                                </a>
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
-                            </div>
-                        </li>
-                    </ul>
+                                <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2" aria-labelledby="navbarDropdown">
+                                    <div class="dropdown-header d-md-none fw-bold border-bottom mb-2">{{ Auth::user()->name }}</div>
+                                    <a class="dropdown-item" href="{{ route('profile') }}">
+                                        <i class="fas fa-user me-2 text-muted"></i> {{ __('Profile') }}
+                                    </a>
+                                    <a class="dropdown-item" href="{{ route('profile.notifications.edit') }}">
+                                        <i class="fas fa-bell me-2 text-muted"></i> {{ __('Notifications') }}
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item text-danger" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                        <i class="fas fa-sign-out-alt me-2"></i> {{ __('Logout') }}
+                                    </a>
+                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </nav>
 
