@@ -72,6 +72,7 @@
                                 <option value="author" {{ ($role ?? '') == 'author' ? 'selected' : '' }}>{{ __('Auteur') }}</option>
                                 <option value="school" {{ ($role ?? '') == 'school' ? 'selected' : '' }}>{{ __('École') }}</option>
                                 <option value="student" {{ ($role ?? '') == 'student' ? 'selected' : '' }}>{{ __('Étudiant') }}</option>
+                                <option value="teacher" {{ ($role ?? '') == 'teacher' ? 'selected' : '' }}>{{ __('Enseignant') }}</option>
                                 <option value="reader" {{ ($role ?? '') == 'reader' ? 'selected' : '' }}>{{ __('Lecteur') }}</option>
                                 <option value="adult_reader" {{ ($role ?? '') == 'adult_reader' ? 'selected' : '' }}>{{ __('Lecteur Adulte') }}</option>
                             </select>

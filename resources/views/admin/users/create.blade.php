@@ -60,6 +60,7 @@
                                 <select class="form-select @error('role') is-invalid @enderror" id="role" name="role">
                                     <option value="reader" {{ old('role') == 'reader' ? 'selected' : '' }}>{{ __('Lecteur') }}</option>
                                     <option value="student" {{ old('role') == 'student' ? 'selected' : '' }}>{{ __('Étudiant') }}</option>
+                                    <option value="teacher" {{ old('role') == 'teacher' ? 'selected' : '' }}>{{ __('Enseignant') }}</option>
                                     <option value="author" {{ old('role') == 'author' ? 'selected' : '' }}>{{ __('Auteur') }}</option>
                                     <option value="school" {{ old('role') == 'school' ? 'selected' : '' }}>{{ __('École') }}</option>
                                     <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>{{ __('Admin') }}</option>
@@ -70,7 +71,7 @@
                                 @enderror
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="school_id" class="form-label">{{ __('École (si étudiant)') }}</label>
+                                <label for="school_id" class="form-label">{{ __('École (si étudiant ou enseignant)') }}</label>
                                 <input type="number" class="form-control @error('school_id') is-invalid @enderror" id="school_id" name="school_id" value="{{ old('school_id') }}">
                                  @error('school_id')
                                     <div class="invalid-feedback">{{ $message }}</div>

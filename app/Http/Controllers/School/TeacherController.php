@@ -90,7 +90,7 @@ class TeacherController extends Controller
     {
         $school = $this->getSchool();
         // Ensure the teacher belongs to the school
-        if ($teacher->school_id !== $school->id || $teacher->role !== 'teacher') {
+        if ((int)$teacher->school_id !== (int)$school->id || $teacher->role !== 'teacher') {
             abort(404);
         }
 
@@ -104,7 +104,7 @@ class TeacherController extends Controller
     {
         $school = $this->getSchool();
         // Ensure the teacher belongs to the school
-        if ($teacher->school_id !== $school->id || $teacher->role !== 'teacher') {
+        if ((int)$teacher->school_id !== (int)$school->id || $teacher->role !== 'teacher') {
             abort(403);
         }
 
@@ -141,7 +141,7 @@ class TeacherController extends Controller
     {
         $school = $this->getSchool();
         // Ensure the teacher belongs to the school
-        if ($teacher->school_id !== $school->id || $teacher->role !== 'teacher') {
+        if ((int)$teacher->school_id !== (int)$school->id || $teacher->role !== 'teacher') {
             abort(403);
         }
 
