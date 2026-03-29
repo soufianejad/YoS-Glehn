@@ -53,7 +53,7 @@
                 <div class="card shadow-sm">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h6 class="m-0 font-weight-bold text-primary">{{ __('Questions') }}</h6>
-                        <button type="button" class="btn btn-sm btn-success" id="add-question-btn">
+                        <button type="button" class="btn btn-sm btn-success" id="add-question">
                             <i class="fas fa-plus"></i> {{ __('Ajouter une question') }}
                         </button>
                     </div>
