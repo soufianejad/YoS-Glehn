@@ -143,7 +143,10 @@
     $(document).ready(function() {
         $('.copy-token').click(function() {
             let token = $(this).data('token');
-            let fullUrl = "{{ route('adult.invitation', '') }}/" + token;
+            // On utilise un placeholder pour générer l'URL proprement avec Laravel
+            let baseUrl = "{{ route('adult.invitation', ['token' => 'TOKEN_PLACEHOLDER']) }}";
+            let fullUrl = baseUrl.replace('TOKEN_PLACEHOLDER', token);
+            
             navigator.clipboard.writeText(fullUrl).then(function() {
                 toastr.success("{{ __('Lien d\'invitation copié !') }}");
             });
