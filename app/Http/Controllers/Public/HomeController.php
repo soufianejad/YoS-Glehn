@@ -33,6 +33,8 @@ class HomeController extends Controller
             return redirect()->route('admin.dashboard');
         } elseif ($user->isStudent()) {
             return redirect()->route('student.dashboard');
+        } elseif ($user->isTeacher()) {
+            return redirect()->route('teacher.dashboard');
         } elseif ($user->isAuthor()) {
             return redirect()->route('author.dashboard');
         } elseif ($user->isSchool()) {

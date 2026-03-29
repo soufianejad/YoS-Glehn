@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
+use App\Services\NotificationService;
 
 class TeacherController extends Controller
 {
@@ -44,26 +46,41 @@ class TeacherController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, NotificationService $notificationService)
     {
         $school = $this->getSchool();
         $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'nullable|string|min:8|confirmed',
         ]);
 
-        User::create([
+        $password = $request->password ?: Str::random(10);
+
+        $teacher = User::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($password),
             'role' => 'teacher',
             'school_id' => $school->id,
         ]);
 
-        return redirect()->route('school.teachers.index')->with('success', __('Teacher added successfully.'));
+        // Send email/notification to the teacher with their credentials
+        $title = __('Bienvenue sur :app_name', ['app_name' => config('app.name')]);
+        $message = __('Bonjour :name, votre compte enseignant a été créé par l\'école :school. Voici vos identifiants temporaires : Email: :email | Mot de passe: :password', [
+            'name' => $teacher->first_name,
+            'school' => $school->name,
+            'email' => $teacher->email,
+            'password' => $password
+        ]);
+        $link = route('login');
+
+        // Note: As the account is freshly created, we ensure they can receive it by default
+        $notificationService->sendNotification($teacher, $title, $message, $link, 'info', true);
+
+        return redirect()->route('school.teachers.index')->with('success', __('Teacher added successfully. An email has been sent with their credentials.'));
     }
 
     /**
