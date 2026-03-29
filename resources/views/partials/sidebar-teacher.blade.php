@@ -18,7 +18,12 @@
 
     <!-- Quiz Management -->
     <li class="sidebar-heading mt-4">{{ __("Quiz Management") }}</li>
-    <li class="nav-item {{ request()->routeIs('teacher.quizzes.*') ? 'active' : '' }}">
+    <li class="nav-item {{ request()->routeIs('teacher.quizzes.index') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('teacher.quizzes.index') }}">
+            <i class="fas fa-list"></i> {{ __('All Quizzes') }}
+        </a>
+    </li>
+    <li class="nav-item {{ request()->routeIs('teacher.quizzes.select-book') || request()->routeIs('teacher.quizzes.create') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('teacher.quizzes.select-book') }}">
             <i class="fas fa-plus-circle"></i> {{ __('Create Quiz') }}
         </a>

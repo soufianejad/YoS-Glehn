@@ -12,6 +12,18 @@ use Illuminate\Validation\Rule;
 
 class QuizController extends Controller
 {
+    public function index()
+    {
+        // Pour les enseignants, on liste les quiz rattachés aux livres éducatifs.
+        // Si les quiz sont globaux à la plateforme pour les livres éducatifs, il les verra tous.
+        // Si un système d'assignation existe, on pourrait filtrer. Ici on prend tous les quiz éducatifs.
+        $quizzes = Quiz::whereHas('book', function($q) {
+            $q->where('space', 'educational');
+        })->with('book')->paginate(15);
+
+        return view('teacher.quizzes.index', compact('quizzes'));
+    }
+
     public function selectBook()
     {
         // Get educational books that could have quizzes
@@ -197,5 +209,15 @@ class QuizController extends Controller
         });
 
         return redirect()->route('teacher.dashboard')->with('success', __('Quiz mis à jour avec succès !'));
+    }
+
+    public function destroy(Quiz $quiz)
+    {
+        if ($quiz->book->space !== 'educational') {
+            abort(403, 'Vous ne pouvez supprimer des quiz que pour les livres de l\'espace éducatif.');
+        }
+
+        $quiz->delete();
+        return redirect()->route('teacher.quizzes.index')->with('success', __('Quiz supprimé avec succès !'));
     }
 }
