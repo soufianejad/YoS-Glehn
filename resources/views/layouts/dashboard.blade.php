@@ -171,12 +171,7 @@
                             <li class="nav-item me-3 d-flex align-items-center">
                                 <span class="badge {{ Auth::user()->adultAccess->isExpired() ? 'bg-danger' : 'bg-success' }}">
                                     <i class="bi bi-clock-history me-1"></i>
-                                    {{ __('Jours restants :') }} 
-                                    @if(is_null(Auth::user()->adultAccess->days_remaining))
-                                        {{ __('Illimité') }}
-                                    @else
-                                        {{ Auth::user()->adultAccess->days_remaining }}
-                                    @endif
+                                    {{ __('Temps restant :') }} {{ Auth::user()->adultAccess->time_remaining_display }}
                                 </span>
                             </li>
                         @endif

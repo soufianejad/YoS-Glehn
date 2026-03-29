@@ -89,6 +89,39 @@ class AdultAccess extends Model
     }
 
     /**
+     * Retourne une chaîne formatée du temps restant (ex: 2 jours, 5 heures, etc.)
+     */
+    public function getTimeRemainingDisplayAttribute(): string
+    {
+        if (! $this->expires_at) {
+            return __('Illimité');
+        }
+
+        if ($this->isPast()) {
+            return __('Expiré');
+        }
+
+        $now = now();
+        $days = (int) $now->diffInDays($this->expires_at);
+        
+        if ($days >= 1) {
+            return $days . ' ' . ($days > 1 ? __('jours') : __('jour'));
+        }
+
+        $hours = (int) $now->diffInHours($this->expires_at);
+        if ($hours >= 1) {
+            return $hours . ' ' . ($hours > 1 ? __('heures') : __('heure'));
+        }
+
+        $minutes = (int) $now->diffInMinutes($this->expires_at);
+        if ($minutes >= 1) {
+            return $minutes . ' ' . ($minutes > 1 ? __('minutes') : __('minute'));
+        }
+
+        return __('Moins d\'une minute');
+    }
+
+    /**
      * Alias pour isPast() car utilisé par isExpired
      */
     public function isPast(): bool
