@@ -29,7 +29,7 @@
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
     <style>
-        /* Dropdown dans la navbar — desktop */
+        /* ── Dropdowns desktop ── */
         .navbar .dropdown-menu {
             position: absolute !important;
             top: 100%;
@@ -38,46 +38,32 @@
             z-index: 1050;
         }
 
-        /* Mobile : menu collapse dans le flux normal */
+        /* ── Mobile collapse ── */
         @media (max-width: 767.98px) {
+            /* Collapse dans le flux, pas en absolute */
             .navbar-collapse {
-                background: white;
-                padding: 0.5rem 0;
-                border-top: 0.5px solid rgba(0, 0, 0, 0.1);
+                border-top: 1px solid rgba(0,0,0,.08);
+                padding: .25rem 0 .5rem;
+            }
+            /* Liens empilés verticalement */
+            #navbarSupportedContent .navbar-nav {
+                flex-direction: column !important;
                 width: 100%;
             }
-
-            /* Les nav-items s'empilent verticalement */
-            .navbar-nav {
-                flex-direction: column;
-                width: 100%;
+            #navbarSupportedContent .nav-link {
+                padding: .5rem 1rem;
             }
-
-            .navbar-nav .nav-link {
-                padding: 0.5rem 1rem;
-            }
-
-            /* Dropdown dans le collapse mobile : statique, sans ombre */
-            .navbar-collapse .dropdown-menu {
+            /* Dropdowns inline sur mobile */
+            #navbarSupportedContent .dropdown-menu {
                 position: static !important;
-                box-shadow: none;
-                border: none;
+                box-shadow: none !important;
+                border: none !important;
                 background: #f8f9fa;
                 padding-left: 1rem;
             }
-
-            /* Conteneur cloche + toggler sur mobile */
-            .navbar-mobile-right {
-                display: flex;
-                align-items: center;
-                gap: 4px;
-            }
-        }
-
-        /* Cacher le bloc mobile sur desktop */
-        @media (min-width: 768px) {
-            .navbar-mobile-right {
-                display: none;
+            /* Avatar sur mobile : afficher le nom */
+            #navbarSupportedContent .d-none.d-lg-inline {
+                display: inline !important;
             }
         }
     </style>
@@ -89,130 +75,115 @@
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm" style="z-index: 100">
             <div class="container">
 
-                <!-- Brand + contrôles mobile sur la même ligne -->
-                <div class="d-flex align-items-center justify-content-between w-100 w-md-auto">
-                    <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}">
-                        <img src="{{ asset('images/logo.jpg') }}" alt="{{ __('Logo') }}" height="32" class="me-2">
-                    </a>
+                <!-- Logo (toujours visible) -->
+                <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}">
+                    <img src="{{ asset('images/logo.jpg') }}" alt="{{ __('Logo') }}" height="32" class="me-2">
+                </a>
 
-                    <!-- Cloche + toggler (mobile uniquement) -->
-                    <div class="navbar-mobile-right">
-                        @auth
-                            <div class="dropdown">
-                                <a class="nav-link position-relative p-2"
-                                   href="#"
-                                   role="button"
-                                   data-bs-toggle="dropdown"
-                                   aria-haspopup="true"
-                                   aria-expanded="false">
-                                    <i class="bi bi-bell fs-5"></i>
-                                    <span class="badge bg-danger d-none unread-notifications-count"
-                                          style="position: absolute; top: 0; right: 0; padding: 3px 6px; border-radius: 50%; font-size: 0.6rem;">0</span>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-end shadow-sm border-0"
-                                     style="width: 280px; max-height: 400px; overflow-y: auto;">
-                                    <h6 class="dropdown-header">{{ __('Notifications') }}</h6>
-                                    <div class="notifications-list-container"></div>
-                                </div>
-                            </div>
-                        @endauth
-
-                        <button class="navbar-toggler border-0 p-2"
-                                type="button"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#navbarSupportedContent"
-                                aria-controls="navbarSupportedContent"
-                                aria-expanded="false"
-                                aria-label="{{ __('Toggle navigation') }}">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
+                <!-- Cloche mobile (visible uniquement sur mobile, hors collapse) -->
+                @auth
+                <div class="d-flex d-md-none align-items-center me-2">
+                    <div class="dropdown">
+                        <a class="nav-link position-relative p-2"
+                           href="#" role="button"
+                           data-bs-toggle="dropdown"
+                           aria-haspopup="true" aria-expanded="false">
+                            <i class="bi bi-bell fs-5"></i>
+                            <span class="badge bg-danger d-none unread-notifications-count"
+                                  style="position:absolute;top:0;right:0;padding:3px 6px;border-radius:50%;font-size:.6rem;">0</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end shadow-sm border-0"
+                             style="width:280px;max-height:400px;overflow-y:auto;">
+                            <h6 class="dropdown-header">{{ __('Notifications') }}</h6>
+                            <div class="notifications-list-container"></div>
+                        </div>
                     </div>
                 </div>
+                @endauth
 
+                <!-- Toggler mobile -->
+                <button class="navbar-toggler border-0" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarSupportedContent"
+                        aria-controls="navbarSupportedContent"
+                        aria-expanded="false"
+                        aria-label="{{ __('Toggle navigation') }}">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Collapse : liens gauche + éléments droite -->
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <!-- Liens gauche + éléments droite dans une seule ul -->
-                    <ul class="navbar-nav w-100 align-items-md-center">
-                        <!-- Liens principaux (gauche) -->
+
+                    <!-- GAUCHE : liens principaux -->
+                    <ul class="navbar-nav me-auto">
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('library.index') }}">{{ __('Bibliothèque') }}</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('subscription.plans') }}">{{ __('Abonnements') }}</a>
                         </li>
-
                         @auth
-                            <li class="nav-item">
-                                <a class="nav-link fw-bold text-primary" href="
-                                    @if(Auth::user()->isAdmin()) {{ route('admin.dashboard') }}
-                                    @elseif(Auth::user()->isAuthor()) {{ route('author.dashboard') }}
-                                    @elseif(Auth::user()->isSchool()) {{ route('school.dashboard') }}
-                                    @elseif(Auth::user()->isTeacher()) {{ route('teacher.dashboard') }}
-                                    @elseif(Auth::user()->isStudent()) {{ route('student.dashboard') }}
-                                    @elseif(Auth::user()->isParent()) {{ route('parent.dashboard') }}
-                                    @elseif(Auth::user()->isAdultReader()) {{ route('adult.dashboard') }}
-                                    @else {{ route('dashboard') }}
-                                    @endif
-                                ">{{ __('Mon Tableau de Bord') }}</a>
-                            </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold text-primary" href="
+                                @if(Auth::user()->isAdmin()) {{ route('admin.dashboard') }}
+                                @elseif(Auth::user()->isAuthor()) {{ route('author.dashboard') }}
+                                @elseif(Auth::user()->isSchool()) {{ route('school.dashboard') }}
+                                @elseif(Auth::user()->isTeacher()) {{ route('teacher.dashboard') }}
+                                @elseif(Auth::user()->isStudent()) {{ route('student.dashboard') }}
+                                @elseif(Auth::user()->isParent()) {{ route('parent.dashboard') }}
+                                @elseif(Auth::user()->isAdultReader()) {{ route('adult.dashboard') }}
+                                @else {{ route('dashboard') }}
+                                @endif
+                            ">{{ __('Mon Tableau de Bord') }}</a>
+                        </li>
                         @endauth
+                    </ul>
 
-                        <!-- Séparateur : pousse les éléments suivants à droite sur desktop -->
-                        <li class="nav-item ms-md-auto"></li>
+                    <!-- DROITE : langue, cloche desktop, avatar -->
+                    <ul class="navbar-nav ms-auto align-items-md-center">
 
-                        <!-- Éléments droite -->
-                        <!-- Language Switcher -->
-                        <li class="nav-item dropdown me-2">
-                            <a id="navbarDropdownLang"
-                               class="nav-link dropdown-toggle"
-                               href="#"
-                               role="button"
+                        <!-- Langue -->
+                        <li class="nav-item dropdown me-md-2">
+                            <a id="navbarDropdownLang" class="nav-link dropdown-toggle"
+                               href="#" role="button"
                                data-bs-toggle="dropdown"
-                               aria-haspopup="true"
-                               aria-expanded="false">
+                               aria-haspopup="true" aria-expanded="false">
                                 <i class="bi bi-translate"></i> {{ strtoupper(app()->getLocale()) }}
                             </a>
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownLang">
                                 <a class="dropdown-item @if(app()->getLocale() == 'en') active @endif"
-                                   href="{{ route('change.language', 'en') }}">
-                                    {{ __('English') }}
-                                </a>
+                                   href="{{ route('change.language', 'en') }}">{{ __('English') }}</a>
                                 <a class="dropdown-item @if(app()->getLocale() == 'fr') active @endif"
-                                   href="{{ route('change.language', 'fr') }}">
-                                    {{ __('French') }}
-                                </a>
+                                   href="{{ route('change.language', 'fr') }}">{{ __('French') }}</a>
                             </div>
                         </li>
 
-                        <!-- Authentication Links -->
                         @guest
                             @if (Route::has('login'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
-                                </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
+                            </li>
                             @endif
-
                             @if (Route::has('register'))
-                                <li class="nav-item">
-                                    <a class="btn btn-primary btn-sm ms-md-2" href="{{ route('register') }}">{{ __('Register') }}</a>
-                                </li>
+                            <li class="nav-item">
+                                <a class="btn btn-primary btn-sm ms-md-2" href="{{ route('register') }}">{{ __('Register') }}</a>
+                            </li>
                             @endif
                         @else
                             <!-- Cloche desktop uniquement -->
-                            <li class="nav-item dropdown d-none d-md-block me-2">
+                            <li class="nav-item dropdown d-none d-md-flex align-items-center me-2">
                                 <a id="navbarDropdownNotifications"
                                    class="nav-link position-relative p-2"
-                                   href="#"
-                                   role="button"
+                                   href="#" role="button"
                                    data-bs-toggle="dropdown"
-                                   aria-haspopup="true"
-                                   aria-expanded="false">
+                                   aria-haspopup="true" aria-expanded="false">
                                     <i class="bi bi-bell fs-5"></i>
                                     <span class="badge bg-danger d-none unread-notifications-count"
-                                          style="position: absolute; top: 0; right: 0; padding: 3px 6px; border-radius: 50%; font-size: 0.6rem;">0</span>
+                                          style="position:absolute;top:0;right:0;padding:3px 6px;border-radius:50%;font-size:.6rem;">0</span>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2"
                                      aria-labelledby="navbarDropdownNotifications"
-                                     style="width: 300px; max-height: 400px; overflow-y: auto;">
+                                     style="width:300px;max-height:400px;overflow-y:auto;">
                                     <h6 class="dropdown-header bg-light py-2">{{ __('Notifications') }}</h6>
                                     <div class="notifications-list-container"></div>
                                     <div class="dropdown-divider mb-0"></div>
@@ -224,18 +195,15 @@
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown"
                                    class="nav-link dropdown-toggle d-flex align-items-center"
-                                   href="#"
-                                   role="button"
+                                   href="#" role="button"
                                    data-bs-toggle="dropdown"
-                                   aria-haspopup="true"
-                                   aria-expanded="false">
+                                   aria-haspopup="true" aria-expanded="false">
                                     <img src="{{ Auth::user()->avatar_url }}"
                                          alt="{{ Auth::user()->name }}"
                                          class="rounded-circle me-1"
-                                         style="width: 30px; height: 30px; object-fit: cover;">
-                                    <span class="d-none d-lg-inline">{{ Auth::user()->name }}</span>
+                                         style="width:30px;height:30px;object-fit:cover;">
+                                    <span>{{ Auth::user()->name }}</span>
                                 </a>
-
                                 @include('partials.user-dropdown')
                             </li>
                         @endguest
