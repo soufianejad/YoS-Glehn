@@ -246,7 +246,7 @@ Route::prefix('adult-space')->name('users.')->group(function () {
     Route::post('/invitations', [UserManagementController::class, 'generateAdultInvitation'])->name('adult-invitation.generate');
     Route::get('/invitations/{token}/edit', [UserManagementController::class, 'editAdultInvitation'])->name('adult-invitation.edit');
     Route::put('/invitations/{token}', [UserManagementController::class, 'updateAdultInvitation'])->name('adult-invitation.update');
-    Route::delete('/invitation/{token}', [UserManagementController::class, 'revokeInvitation'])->name('revoke-invitation');
+    Route::post('/invitation/{token}/revoke', [UserManagementController::class, 'revokeInvitation'])->name('adult-invitation.revoke');
 });
 
 /*
