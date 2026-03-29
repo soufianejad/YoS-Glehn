@@ -28,20 +28,75 @@
     <!-- Custom CSS -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
+    <style>
+        /* Fix for floating dropdowns in top nav */
+        .navbar .dropdown-menu {
+            position: absolute !important;
+            top: 100%;
+            right: 0;
+            left: auto;
+            float: none;
+            z-index: 1050;
+        }
+
+        /* Ensure navbar items stay on one line where possible on mobile */
+        @media (max-width: 767.98px) {
+            .navbar-nav {
+                flex-direction: row;
+                align-items: center;
+            }
+            .navbar-nav .nav-link {
+                padding-right: .5rem;
+                padding-left: .5rem;
+            }
+            .navbar-collapse {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                padding: 1rem;
+                box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+                z-index: 1000;
+            }
+            /* Only apply the absolute positioning to the main collapse, 
+               not the inner dropdowns which are handled above */
+            .navbar-collapse.show {
+                display: block;
+            }
+        }
+    </style>
+
     @stack('styles')
 </head>
 <body>
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm" style="z-index: 100">
             <div class="container">
-                <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}">
-                    <img src="{{ asset('images/logo.jpg') }}" alt="{{ __('Logo') }}" height="32" class="me-2">
-                    {{-- <span>{{ config('app.name', 'Laravel') }}</span> --}}
-                </a>
-                
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                <div class="d-flex align-items-center justify-content-between w-100 w-md-auto">
+                    <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}">
+                        <img src="{{ asset('images/logo.jpg') }}" alt="{{ __('Logo') }}" height="32" class="me-2">
+                    </a>
+                    
+                    <div class="d-flex d-md-none align-items-center">
+                        @auth
+                            <div class="dropdown me-2">
+                                <a id="navbarDropdownNotificationsMobile" class="nav-link position-relative p-2" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-bell fs-5"></i>
+                                    <span class="badge bg-danger d-none unread-notifications-count" style="position: absolute; top: 0px; right: 0px; padding: 3px 6px; border-radius: 50%; font-size: 0.6rem;">0</span>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="navbarDropdownNotificationsMobile" style="width: 280px; max-height: 400px; overflow-y: auto;">
+                                    <h6 class="dropdown-header">{{ __('Notifications') }}</h6>
+                                    <div class="notifications-list-container"></div>
+                                </div>
+                            </div>
+                        @endauth
+
+                        <button class="navbar-toggler border-0 p-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                    </div>
+                </div>
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
@@ -55,7 +110,7 @@
 
                         @auth
                             <li class="nav-item">
-                                <a class="nav-link fw-bold" href="
+                                <a class="nav-link fw-bold text-primary" href="
                                     @if(Auth::user()->isAdmin()) {{ route('admin.dashboard') }}
                                     @elseif(Auth::user()->isAuthor()) {{ route('author.dashboard') }}
                                     @elseif(Auth::user()->isSchool()) {{ route('school.dashboard') }}
@@ -73,7 +128,7 @@
                     <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ms-auto align-items-center">
                         <!-- Language Switcher -->
-                        <li class="nav-item dropdown">
+                        <li class="nav-item dropdown me-2">
                             <a id="navbarDropdownLang" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="bi bi-translate"></i> {{ strtoupper(app()->getLocale()) }}
                             </a>
@@ -97,28 +152,29 @@
 
                             @if (Route::has('register'))
                                 <li class="nav-item">
-                                    <a class="btn btn-primary ms-2" href="{{ route('register') }}">{{ __('Register') }}</a>
+                                    <a class="btn btn-primary btn-sm ms-md-2" href="{{ route('register') }}">{{ __('Register') }}</a>
                                 </li>
                             @endif
                         @else
-                            <li class="nav-item dropdown">
-                                <a id="navbarDropdownNotifications" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                    <i class="bi bi-bell"></i>
-                                    <span class="badge bg-danger" id="unread-notifications-count" style="position: absolute; top: 5px; right: 5px; padding: 5px 8px; border-radius: 50%;">0</span>
+                            <li class="nav-item dropdown d-none d-md-block me-2">
+                                <a id="navbarDropdownNotifications" class="nav-link position-relative p-2" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-bell fs-5"></i>
+                                    <span class="badge bg-danger d-none unread-notifications-count" style="position: absolute; top: 0px; right: 0px; padding: 3px 6px; border-radius: 50%; font-size: 0.6rem;">0</span>
                                 </a>
 
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownNotifications" id="notifications-dropdown-menu">
-                                    <h6 class="dropdown-header">{{ __('Notifications') }}</h6>
-                                    <div id="notifications-list">
+                                <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2 unread-notifications-count" aria-labelledby="navbarDropdownNotifications" style="width: 300px; max-height: 400px; overflow-y: auto;">
+                                    <h6 class="dropdown-header bg-light py-2">{{ __('Notifications') }}</h6>
+                                    <div class="notifications-list-container">
                                         <!-- Notifications will be loaded here -->
-                                        <a class="dropdown-item text-center" href="#">{{ __('View all notifications') }}</a>
                                     </div>
+                                    <div class="dropdown-divider mb-0"></div>
+                                    <a class="dropdown-item text-center small py-2" href="#">{{ __('View all notifications') }}</a>
                                 </div>
                             </li>
                             <li class="nav-item dropdown">
-                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                <a id="navbarDropdown" class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}" class="rounded-circle me-1" style="width: 30px; height: 30px; object-fit: cover;">
-                                    {{ Auth::user()->name }}
+                                    <span class="d-none d-lg-inline">{{ Auth::user()->name }}</span>
                                 </a>
 
                                 @include('partials.user-dropdown')
@@ -133,12 +189,12 @@
             @yield('content')
         </main>
 
-        <footer class="bg-light py-4 mt-auto">
+        <footer class="bg-light py-4 mt-auto border-top">
             <div class="container text-center">
-                <p class="mb-2">&copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. {{ __('All rights reserved.') }}</p>
+                <p class="mb-2 text-muted small">&copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. {{ __('All rights reserved.') }}</p>
                 <div class="dropup d-inline-block">
-                    <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownLanguageFooter" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-translate"></i> {{ __('Language') }}
+                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="dropdownLanguageFooter" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-translate me-1"></i> {{ __('Language') }}
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownLanguageFooter">
                         <li><a class="dropdown-item @if(app()->getLocale() == 'en') active @endif" href="{{ route('change.language', 'en') }}">{{ __('English') }}</a></li>
@@ -162,13 +218,6 @@
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
-        });
-
-        document.addEventListener("DOMContentLoaded", function() {
-            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'))
-            var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
-                return new bootstrap.Dropdown(dropdownToggleEl)
-            })
         });
 
         $(document).on('submit', '.favorite-form', function(e) {
@@ -225,38 +274,36 @@
                 url: @json(route('api.notifications.index')),
                 method: 'GET',
                 success: function(response) {
-                    let countEl = $('#unread-notifications-count');
+                    let countEls = $('.unread-notifications-count');
                     let markAllBtn = $('#mark-all-read-btn');
-                    countEl.text(response.unread_count);
+                    
+                    countEls.text(response.unread_count);
 
                     if (response.unread_count > 0) {
-                        countEl.removeClass('d-none').show();
+                        countEls.removeClass('d-none');
                         markAllBtn.removeClass('d-none');
                     } else {
-                        countEl.addClass('d-none').hide();
+                        countEls.addClass('d-none');
                         markAllBtn.addClass('d-none');
                     }
 
-                    let notificationsList = $('#notifications-list');
-                    notificationsList.empty();
+                    let notificationsContainers = $('.notifications-list-container');
+                    notificationsContainers.empty();
 
                     if (response.notifications.length > 0) {
                         response.notifications.forEach(function(n) {
-                            notificationsList.append(`
+                            notificationsContainers.append(`
                                 <div class="dropdown-item border-bottom p-3 d-flex align-items-start gap-2">
                                     <a href="${n.link ?? '#'}" class="text-decoration-none flex-grow-1 notification-item" data-id="${n.id}">
                                         <div class="fw-bold small mb-1 text-primary text-wrap">${n.title}</div>
                                         <div class="small text-muted text-wrap">${n.message}</div>
                                         <div class="mt-1" style="font-size: 0.7rem; color: #adb5bd;">${new Date(n.created_at).toLocaleString()}</div>
                                     </a>
-                                    <button class="btn btn-link btn-sm p-0 text-muted mark-single-read" data-id="${n.id}" title="{{ __('Marquer comme lu') }}">
-                                        <i class="bi bi-check2"></i>
-                                    </button>
                                 </div>
                             `);
                         });
                     } else {
-                        notificationsList.append(
+                        notificationsContainers.append(
                             '<div class="p-4 text-center text-muted small">' +
                             @json(__('No new notifications.')) +
                             '</div>'
@@ -275,25 +322,6 @@
         // Refresh every 60s
         setInterval(fetchNotifications, 60000);
 
-        // Mark single as read
-        $(document).on('click', '.mark-single-read', function(e) {
-            e.stopPropagation();
-            let id = $(this).data('id');
-            $.post(`/api/notifications/${id}/mark-as-read`).done(() => {
-                fetchNotifications();
-            });
-        });
-
-        // Mark all as read
-        $(document).on('click', '#mark-all-read-btn', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            $.post("{{ route('api.notifications.markAllRead') }}").done(() => {
-                fetchNotifications();
-                toastr.success("{{ __('Toutes les notifications ont été marquées comme lues') }}");
-            });
-        });
-
         // Mark as read and navigate
         $(document).on('click', '.notification-item', function(e) {
             e.preventDefault();
@@ -303,9 +331,6 @@
             $.ajax({
                 url: `/api/notifications/${notificationId}/mark-as-read`,
                 method: 'POST',
-                data: {
-                    _token: @json(csrf_token())
-                },
                 success: function(response) {
                     fetchNotifications();
                     if (notificationLink && notificationLink !== '#') {
