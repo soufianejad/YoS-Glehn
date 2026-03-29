@@ -29,40 +29,55 @@
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
     <style>
-        /* Fix for floating dropdowns in top nav */
+        /* Dropdown dans la navbar — desktop */
         .navbar .dropdown-menu {
             position: absolute !important;
             top: 100%;
             right: 0;
             left: auto;
-            float: none;
             z-index: 1050;
         }
 
-        /* Ensure navbar items stay on one line where possible on mobile */
+        /* Mobile : menu collapse dans le flux normal */
         @media (max-width: 767.98px) {
-            .navbar-nav {
-                flex-direction: row;
-                align-items: center;
-            }
-            .navbar-nav .nav-link {
-                padding-right: .5rem;
-                padding-left: .5rem;
-            }
             .navbar-collapse {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
                 background: white;
-                padding: 1rem;
-                box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
-                z-index: 1000;
+                padding: 0.5rem 0;
+                border-top: 0.5px solid rgba(0, 0, 0, 0.1);
+                width: 100%;
             }
-            /* Only apply the absolute positioning to the main collapse, 
-               not the inner dropdowns which are handled above */
-            .navbar-collapse.show {
-                display: block;
+
+            /* Les nav-items s'empilent verticalement */
+            .navbar-nav {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .navbar-nav .nav-link {
+                padding: 0.5rem 1rem;
+            }
+
+            /* Dropdown dans le collapse mobile : statique, sans ombre */
+            .navbar-collapse .dropdown-menu {
+                position: static !important;
+                box-shadow: none;
+                border: none;
+                background: #f8f9fa;
+                padding-left: 1rem;
+            }
+
+            /* Conteneur cloche + toggler sur mobile */
+            .navbar-mobile-right {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+        }
+
+        /* Cacher le bloc mobile sur desktop */
+        @media (min-width: 768px) {
+            .navbar-mobile-right {
+                display: none;
             }
         }
     </style>
@@ -73,26 +88,42 @@
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm" style="z-index: 100">
             <div class="container">
+
+                <!-- Brand + contrôles mobile sur la même ligne -->
                 <div class="d-flex align-items-center justify-content-between w-100 w-md-auto">
                     <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}">
                         <img src="{{ asset('images/logo.jpg') }}" alt="{{ __('Logo') }}" height="32" class="me-2">
                     </a>
-                    
-                    <div class="d-flex d-md-none align-items-center">
+
+                    <!-- Cloche + toggler (mobile uniquement) -->
+                    <div class="navbar-mobile-right">
                         @auth
-                            <div class="dropdown me-2">
-                                <a id="navbarDropdownNotificationsMobile" class="nav-link position-relative p-2" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <div class="dropdown">
+                                <a class="nav-link position-relative p-2"
+                                   href="#"
+                                   role="button"
+                                   data-bs-toggle="dropdown"
+                                   aria-haspopup="true"
+                                   aria-expanded="false">
                                     <i class="bi bi-bell fs-5"></i>
-                                    <span class="badge bg-danger d-none unread-notifications-count" style="position: absolute; top: 0px; right: 0px; padding: 3px 6px; border-radius: 50%; font-size: 0.6rem;">0</span>
+                                    <span class="badge bg-danger d-none unread-notifications-count"
+                                          style="position: absolute; top: 0; right: 0; padding: 3px 6px; border-radius: 50%; font-size: 0.6rem;">0</span>
                                 </a>
-                                <div class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="navbarDropdownNotificationsMobile" style="width: 280px; max-height: 400px; overflow-y: auto;">
+                                <div class="dropdown-menu dropdown-menu-end shadow-sm border-0"
+                                     style="width: 280px; max-height: 400px; overflow-y: auto;">
                                     <h6 class="dropdown-header">{{ __('Notifications') }}</h6>
                                     <div class="notifications-list-container"></div>
                                 </div>
                             </div>
                         @endauth
 
-                        <button class="navbar-toggler border-0 p-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+                        <button class="navbar-toggler border-0 p-2"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#navbarSupportedContent"
+                                aria-controls="navbarSupportedContent"
+                                aria-expanded="false"
+                                aria-label="{{ __('Toggle navigation') }}">
                             <span class="navbar-toggler-icon"></span>
                         </button>
                     </div>
@@ -129,14 +160,22 @@
                     <ul class="navbar-nav ms-auto align-items-center">
                         <!-- Language Switcher -->
                         <li class="nav-item dropdown me-2">
-                            <a id="navbarDropdownLang" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a id="navbarDropdownLang"
+                               class="nav-link dropdown-toggle"
+                               href="#"
+                               role="button"
+                               data-bs-toggle="dropdown"
+                               aria-haspopup="true"
+                               aria-expanded="false">
                                 <i class="bi bi-translate"></i> {{ strtoupper(app()->getLocale()) }}
                             </a>
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownLang">
-                                <a class="dropdown-item @if(app()->getLocale() == 'en') active @endif" href="{{ route('change.language', 'en') }}">
+                                <a class="dropdown-item @if(app()->getLocale() == 'en') active @endif"
+                                   href="{{ route('change.language', 'en') }}">
                                     {{ __('English') }}
                                 </a>
-                                <a class="dropdown-item @if(app()->getLocale() == 'fr') active @endif" href="{{ route('change.language', 'fr') }}">
+                                <a class="dropdown-item @if(app()->getLocale() == 'fr') active @endif"
+                                   href="{{ route('change.language', 'fr') }}">
                                     {{ __('French') }}
                                 </a>
                             </div>
@@ -156,24 +195,42 @@
                                 </li>
                             @endif
                         @else
+                            <!-- Cloche desktop uniquement -->
                             <li class="nav-item dropdown d-none d-md-block me-2">
-                                <a id="navbarDropdownNotifications" class="nav-link position-relative p-2" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <a id="navbarDropdownNotifications"
+                                   class="nav-link position-relative p-2"
+                                   href="#"
+                                   role="button"
+                                   data-bs-toggle="dropdown"
+                                   aria-haspopup="true"
+                                   aria-expanded="false">
                                     <i class="bi bi-bell fs-5"></i>
-                                    <span class="badge bg-danger d-none unread-notifications-count" style="position: absolute; top: 0px; right: 0px; padding: 3px 6px; border-radius: 50%; font-size: 0.6rem;">0</span>
+                                    <span class="badge bg-danger d-none unread-notifications-count"
+                                          style="position: absolute; top: 0; right: 0; padding: 3px 6px; border-radius: 50%; font-size: 0.6rem;">0</span>
                                 </a>
-
-                                <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2 unread-notifications-count" aria-labelledby="navbarDropdownNotifications" style="width: 300px; max-height: 400px; overflow-y: auto;">
+                                <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2"
+                                     aria-labelledby="navbarDropdownNotifications"
+                                     style="width: 300px; max-height: 400px; overflow-y: auto;">
                                     <h6 class="dropdown-header bg-light py-2">{{ __('Notifications') }}</h6>
-                                    <div class="notifications-list-container">
-                                        <!-- Notifications will be loaded here -->
-                                    </div>
+                                    <div class="notifications-list-container"></div>
                                     <div class="dropdown-divider mb-0"></div>
                                     <a class="dropdown-item text-center small py-2" href="#">{{ __('View all notifications') }}</a>
                                 </div>
                             </li>
+
+                            <!-- Avatar + dropdown utilisateur -->
                             <li class="nav-item dropdown">
-                                <a id="navbarDropdown" class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}" class="rounded-circle me-1" style="width: 30px; height: 30px; object-fit: cover;">
+                                <a id="navbarDropdown"
+                                   class="nav-link dropdown-toggle d-flex align-items-center"
+                                   href="#"
+                                   role="button"
+                                   data-bs-toggle="dropdown"
+                                   aria-haspopup="true"
+                                   aria-expanded="false">
+                                    <img src="{{ Auth::user()->avatar_url }}"
+                                         alt="{{ Auth::user()->name }}"
+                                         class="rounded-circle me-1"
+                                         style="width: 30px; height: 30px; object-fit: cover;">
                                     <span class="d-none d-lg-inline">{{ Auth::user()->name }}</span>
                                 </a>
 
@@ -193,7 +250,11 @@
             <div class="container text-center">
                 <p class="mb-2 text-muted small">&copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. {{ __('All rights reserved.') }}</p>
                 <div class="dropup d-inline-block">
-                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="dropdownLanguageFooter" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                            type="button"
+                            id="dropdownLanguageFooter"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
                         <i class="bi bi-translate me-1"></i> {{ __('Language') }}
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownLanguageFooter">
@@ -245,7 +306,7 @@
                                 @json(__('Retirer des favoris'))
                             );
                         }
-                    } else { // unfavorited
+                    } else {
                         icon.removeClass('fas fa-heart').addClass('far fa-heart');
                         button.removeClass('btn-danger').addClass('btn-outline-danger');
                         if (buttonTextSpan.length) {
@@ -276,7 +337,7 @@
                 success: function(response) {
                     let countEls = $('.unread-notifications-count');
                     let markAllBtn = $('#mark-all-read-btn');
-                    
+
                     countEls.text(response.unread_count);
 
                     if (response.unread_count > 0) {
