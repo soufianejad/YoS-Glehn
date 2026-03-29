@@ -166,13 +166,13 @@ $(function () {
 
     function performSearch(query) {
         if (!query) {
-            $('#conversations-list').removeClass('d-none');
-            $('#search-results-container').addClass('d-none');
+            $('#conversations-list').removeClass('d-none').addClass('d-flex');
+            $('#search-results-container').addClass('d-none').removeClass('d-flex');
             return;
         }
 
-        $('#conversations-list').addClass('d-none');
-        $('#search-results-container').removeClass('d-none');
+        $('#conversations-list').addClass('d-none').removeClass('d-flex');
+        $('#search-results-container').removeClass('d-none').addClass('d-flex');
         $('#search-results-list').html('<div class="text-center p-3"><i class="fas fa-spinner fa-spin text-primary"></i></div>');
 
         $.ajax({

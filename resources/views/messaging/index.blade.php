@@ -154,8 +154,8 @@
 @section('content')
 <div class="messaging-wrapper" id="messaging-container">
     <!-- Conversations Sidebar -->
-    <div class="conversations-sidebar">
-        <div class="conversations-header">
+    <div class="conversations-sidebar d-flex flex-column">
+        <div class="conversations-header flex-shrink-0">
             <div class="d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">{{ __('Conversations') }}</h4>
                 <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#startConversationModal">
@@ -173,16 +173,16 @@
             </div>
         </div>
 
-        <div id="search-results-container" class="d-none">
-            <div class="p-2 border-bottom">
+        <div id="search-results-container" class="d-none d-flex flex-column flex-grow-1 overflow-hidden">
+            <div class="p-2 border-bottom bg-white flex-shrink-0">
                 <h6 class="mb-0 text-muted">{{ __('Search Results') }}</h6>
             </div>
-            <div class="search-results-list" id="search-results-list" style="overflow-y: auto; height: calc(100% - 40px);">
+            <div class="search-results-list flex-grow-1" id="search-results-list" style="overflow-y: auto;">
                 <!-- Search results will be injected here -->
             </div>
         </div>
 
-        <div class="conversations-list" id="conversations-list">
+        <div class="conversations-list d-flex flex-column flex-grow-1" id="conversations-list" style="overflow-y: auto;">
             @forelse($conversations as $conversation)
                 @php
                     $participant = $conversation->participants->first();
