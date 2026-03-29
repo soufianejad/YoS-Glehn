@@ -47,6 +47,45 @@ class ReviewController extends Controller
     }
 
     /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Review $review)
+    {
+        $review->load('user', 'book');
+
+        return view('admin.reviews.edit', compact('review'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Review $review)
+    {
+        $validated = $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'required|string',
+            'is_approved' => 'required|boolean',
+        ]);
+
+        $wasApproved = $review->is_approved;
+
+        $review->update($validated);
+
+        // Notify the book's author if newly approved
+        if (!$wasApproved && $review->is_approved && $review->book && $review->book->author) {
+            $this->notificationService->sendNotification(
+                $review->book->author,
+                'Nouvel avis sur votre livre',
+                "Un nouvel avis a été approuvé et publié sur votre livre '{$review->book->title}'.",
+                route('book.show', $review->book->slug),
+                'new_review'
+            );
+        }
+
+        return redirect()->route('admin.reviews.index')->with('success', __('Review updated successfully.'));
+    }
+
+    /**
      * Approve the specified review.
      */
     public function approve(Review $review)
