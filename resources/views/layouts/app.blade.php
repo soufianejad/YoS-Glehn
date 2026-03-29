@@ -130,8 +130,9 @@
                 </div>
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <!-- Left Side Of Navbar -->
-                    <ul class="navbar-nav me-auto">
+                    <!-- Liens gauche + éléments droite dans une seule ul -->
+                    <ul class="navbar-nav w-100 align-items-md-center">
+                        <!-- Liens principaux (gauche) -->
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('library.index') }}">{{ __('Bibliothèque') }}</a>
                         </li>
@@ -154,10 +155,11 @@
                                 ">{{ __('Mon Tableau de Bord') }}</a>
                             </li>
                         @endauth
-                    </ul>
 
-                    <!-- Right Side Of Navbar -->
-                    <ul class="navbar-nav ms-auto align-items-center">
+                        <!-- Séparateur : pousse les éléments suivants à droite sur desktop -->
+                        <li class="nav-item ms-md-auto"></li>
+
+                        <!-- Éléments droite -->
                         <!-- Language Switcher -->
                         <li class="nav-item dropdown me-2">
                             <a id="navbarDropdownLang"
