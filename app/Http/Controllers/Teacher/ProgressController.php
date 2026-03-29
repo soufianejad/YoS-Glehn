@@ -33,7 +33,7 @@ class ProgressController extends Controller
      */
     public function index(Classe $class)
     {
-        if ($class->teacher_id !== Auth::id()) {
+        if ((int)$class->teacher_id !== (int)Auth::id() && (int)$class->school_id !== (int)Auth::user()->school_id) {
             abort(403, __('Accès non autorisé.'));
         }
 

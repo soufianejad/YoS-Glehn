@@ -29,8 +29,8 @@ class ClasseController extends Controller
      */
     public function show(Classe $class)
     {
-        // Authorization: Ensure the teacher is assigned to this class.
-        if ($class->teacher_id !== Auth::id()) {
+        // Authorization: Ensure the teacher is assigned to this class or belongs to the same school.
+        if ((int)$class->teacher_id !== (int)Auth::id() && (int)$class->school_id !== (int)Auth::user()->school_id) {
             abort(403, __('Accès non autorisé.'));
         }
 
