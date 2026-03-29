@@ -71,9 +71,8 @@ class ProgressController extends Controller
         $teacher = Auth::user();
         $student = $attempt->user;
 
-        // Authorization: Check if the student is in any of the teacher's classes.
-        $teacherClassIds = $teacher->managedClasses()->pluck('id');
-        $isMyStudent = $student->classes()->whereIn('classes.id', $teacherClassIds)->exists();
+        // Authorization: Check if the student is in any of the teacher's classes or the same school.
+        $isMyStudent = (int)$student->school_id === (int)$teacher->school_id;
 
         if (!$isMyStudent) {
             abort(403, 'Vous n\'êtes pas autorisé à voir les résultats de cet élève.');
