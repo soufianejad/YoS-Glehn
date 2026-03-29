@@ -24,11 +24,13 @@ use App\Http\Controllers\Teacher\ProgressController;
 
     // Routes for creating quizzes
     Route::prefix('quizzes')->name('quizzes.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Teacher\QuizController::class, 'index'])->name('index');
         Route::get('/select-book', [\App\Http\Controllers\Teacher\QuizController::class, 'selectBook'])->name('select-book');
         Route::get('/create/{book}', [\App\Http\Controllers\Teacher\QuizController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\Teacher\QuizController::class, 'store'])->name('store');
         Route::get('/{quiz}/edit', [\App\Http\Controllers\Teacher\QuizController::class, 'edit'])->name('edit');
         Route::put('/{quiz}', [\App\Http\Controllers\Teacher\QuizController::class, 'update'])->name('update');
+        Route::delete('/{quiz}', [\App\Http\Controllers\Teacher\QuizController::class, 'destroy'])->name('destroy');
     });
 
 
