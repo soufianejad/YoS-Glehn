@@ -5,7 +5,7 @@
 
 // === CONFIGURATION ===
 $quiz_name = 'My Superhero Quiz';
-$csv_file = 'questions.csv';
+$csv_file = __DIR__ . '/../questions.csv';
 
 // === 1. LIRE LE CSV (avec $escape pour éviter les warnings) ===
 $questions = [];
@@ -206,7 +206,7 @@ $sql .= mysql_escape(serialize($pinfo)).', ';
 $sql .= '2, NOW(), 0);';
 
 // === 8. SAUVEGARDER ===
-file_put_contents('import_quiz.sql', $sql);
+file_put_contents(__DIR__ . '/../import_quiz.sql', $sql);
 
 echo "<pre style='background:#f0f0f0;padding:15px;border-left:5px solid #4CAF50;'>";
 echo "Quiz généré avec succès !\n";
