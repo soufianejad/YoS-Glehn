@@ -12,9 +12,26 @@ class CheckAdultAccessExpiration
     {
         $user = Auth::user();
 
-        if ($user && $user->isAdultReader() && ($user->adultAccess && $user->adultAccess->isExpired())) {
-            Auth::logout();
-            return redirect()->route('login')->with('error', __('Votre accès a expiré. Veuillez contacter l\'administrateur.'));
+        // Si l'utilisateur est connecté et n'est pas un admin
+        if ($user && !$user->isAdmin()) {
+            
+            // On vérifie s'il a un accès adulte (soit par son rôle, soit par une invitation liée)
+            $isAdult = $user->isAdultReader() || $user->role === 'adult';
+            $adultAccess = $user->adultAccess;
+
+            // Si c'est un adulte ou s'il a un enregistrement d'accès adulte
+            if ($isAdult || $adultAccess) {
+                // Si l'accès est expiré
+                if ($adultAccess && $adultAccess->isExpired()) {
+                    Auth::logout();
+                    
+                    // On invalide la session pour être sûr
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+
+                    return redirect()->route('login')->with('error', __('Votre accès à l\'espace adulte a expiré. Veuillez contacter l\'administrateur.'));
+                }
+            }
         }
 
         return $next($request);

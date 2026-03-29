@@ -21,11 +21,11 @@ class AdultAccess extends Model
         'used_at',
     ];
 
-    protected $dates = [
-        'expires_at',
-        'used_at',
-        'created_at',
-        'updated_at',
+    protected $casts = [
+        'expires_at' => 'datetime',
+        'used_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**
@@ -49,7 +49,7 @@ class AdultAccess extends Model
      */
     public function isExpired(): bool
     {
-        return $this->expires_at && $this->expires_at->isPast();
+        return ($this->status === 'expired') || ($this->expires_at && $this->expires_at->isPast());
     }
 
     /**
