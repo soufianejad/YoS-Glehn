@@ -45,15 +45,15 @@ class AdultAccess extends Model
     }
 
     /**
-     * Vérifie si le token est expiré
+     * Vérifie si l'accès est invalide (expiré ou révoqué)
      */
     public function isExpired(): bool
     {
-        return ($this->status === 'expired') || ($this->expires_at && $this->expires_at->isPast());
+        return in_array($this->status, ['expired', 'revoked']) || ($this->expires_at && $this->expires_at->isPast());
     }
 
     /**
-     * Vérifie si le token peut encore être utilisé
+     * Vérifie si le token peut encore être utilisé pour une inscription
      */
     public function canUse(): bool
     {

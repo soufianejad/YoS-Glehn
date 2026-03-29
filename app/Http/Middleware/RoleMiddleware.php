@@ -32,16 +32,22 @@ class RoleMiddleware
             // Check if the user has a valid invitation/access record
             $adultAccess = \App\Models\AdultAccess::where('user_id', $user->id)->first();
 
-            // Check for expiration if access record exists
+            // Check for expiration or revocation if access record exists
             if ($adultAccess && $adultAccess->isExpired()) {
+                $status = $adultAccess->status;
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
-                return redirect()->route('login')->with('error', __('Votre accès à l\'espace adulte a expiré.'));
+                
+                $message = ($status === 'revoked') 
+                    ? __('Votre accès à l\'espace adulte a été révoqué.')
+                    : __('Votre accès à l\'espace adulte a expiré.');
+
+                return redirect()->route('login')->with('error', $message);
             }
 
             // Grant access if they have a record OR if their role is 'adult_reader' or 'adult'
-            if (($adultAccess && $adultAccess->status === 'used') || $user->role === 'adult_reader' || $user->role === 'adult') {
+            if (($adultAccess && in_array($adultAccess->status, ['used', 'pending'])) || $user->role === 'adult_reader' || $user->role === 'adult') {
                 return $next($request);
             }
 

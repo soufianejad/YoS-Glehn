@@ -21,15 +21,20 @@ class CheckAdultAccessExpiration
 
             // Si c'est un adulte ou s'il a un enregistrement d'accès adulte
             if ($isAdult || $adultAccess) {
-                // Si l'accès est expiré
+                // Si l'accès est expiré ou révoqué
                 if ($adultAccess && $adultAccess->isExpired()) {
+                    $status = $adultAccess->status;
                     Auth::logout();
                     
                     // On invalide la session pour être sûr
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
 
-                    return redirect()->route('login')->with('error', __('Votre accès à l\'espace adulte a expiré. Veuillez contacter l\'administrateur.'));
+                    $message = ($status === 'revoked') 
+                        ? __('Votre accès à l\'espace adulte a été révoqué par l\'administrateur.')
+                        : __('Votre accès à l\'espace adulte a expiré. Veuillez contacter l\'administrateur.');
+
+                    return redirect()->route('login')->with('error', $message);
                 }
             }
         }

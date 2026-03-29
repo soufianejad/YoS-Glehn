@@ -24,17 +24,23 @@ class AdultAccessMiddleware
         // Check if the user is an adult reader or has the adult role
         if (! $user->isAdultReader() && $user->role !== 'adult') {
             // Check if they have an invitation/access record even if role is different
-            if (! $user->adultAccess || $user->adultAccess->status !== 'used') {
+            if (! $user->adultAccess || !in_array($user->adultAccess->status, ['used', 'pending'])) {
                 abort(403, __('Accès réservé aux adultes'));
             }
         }
 
-        // Double check expiration here as well
+        // Double check expiration/revocation here as well
         if ($user->adultAccess && $user->adultAccess->isExpired()) {
+            $status = $user->adultAccess->status;
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
-            return redirect()->route('login')->with('error', __('Votre accès à l\'espace adulte a expiré.'));
+            
+            $message = ($status === 'revoked') 
+                ? __('Votre accès à l\'espace adulte a été révoqué.')
+                : __('Votre accès à l\'espace adulte a expiré.');
+
+            return redirect()->route('login')->with('error', $message);
         }
 
         return $next($request);
