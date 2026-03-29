@@ -281,6 +281,23 @@
                 </div>
                 @yield('content')
             </main>
+
+            <footer class="footer mt-auto py-3 bg-white border-top">
+                <div class="container-fluid px-4">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center text-muted small">
+                        <div class="mb-2 mb-sm-0">
+                            <span>&copy; {{ date('Y') }} <strong>{{ config('app.name', 'Laravel') }}</strong>. {{ __('Tous droits réservés.') }}</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-light text-dark border me-2">{{ ucfirst(Auth::user()->role) }} Mode</span>
+                            <nav class="nav">
+                                <a class="nav-link p-0 text-muted me-3" href="{{ url('/') }}">{{ __('Site Public') }}</a>
+                                <a class="nav-link p-0 text-muted" href="{{ route('profile') }}">{{ __('Aide') }}</a>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </footer>
         </div>
     </div>
 
