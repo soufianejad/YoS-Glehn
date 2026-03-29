@@ -20,7 +20,8 @@ class ProgressController extends Controller
     public function listClasses()
     {
         $teacher = Auth::user();
-        $classes = $teacher->managedClasses()->withCount('students')->get();
+        // Since we allow teachers to view classes from their school, we fetch classes belonging to their school
+        $classes = $teacher->school->classes()->withCount('students')->get();
 
         return view('teacher.progress.list-classes', compact('classes'));
     }

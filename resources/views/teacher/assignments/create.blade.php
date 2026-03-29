@@ -34,9 +34,10 @@
                 </div>
 
                 <!-- Actions -->
-                <div class="mt-4 text-end">
+                <div class="mt-4 text-end position-relative" style="z-index: 10;">
                     <a href="{{ route('teacher.classes.show', $class) }}" class="btn btn-light me-2">{{ __('Annuler') }}</a>
-                    {{ __('Assigner le livre') }}
+                    <button type="submit" class="btn btn-primary position-relative" style="z-index: 10;">
+                        <i class="fas fa-check me-1"></i> {{ __('Assigner le livre') }}
                     </button>
                 </div>
             </form>
