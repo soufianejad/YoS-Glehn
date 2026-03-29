@@ -292,13 +292,13 @@ Route::prefix('api')->name('api.')->middleware('auth')->group(function () {
     });
 });
 
-    // Student Registration via Code/QR
-    Route::get('/student-registration-code', [App\Http\Controllers\Public\StudentRegistrationController::class, 'showRegistrationForm'])->name('student.register.code');
-    Route::post('/student-registration-code', [App\Http\Controllers\Public\StudentRegistrationController::class, 'register'])->name('student.register.submit.code');
-
 // Specific Static Pages
 Route::view('/about', 'public.about')->name('about');
 Route::view('/faq', 'public.faq')->name('faq');
+
+// Student Registration via Code/QR
+Route::get('/student-registration-code', [App\Http\Controllers\Public\StudentRegistrationController::class, 'showRegistrationForm'])->name('student.register.code');
+Route::post('/student-registration-code', [App\Http\Controllers\Public\StudentRegistrationController::class, 'register'])->name('student.register.submit.code');
 
 // Generic Static Pages (CMS) - MUST BE LAST
 Route::get('/{slug}', [PageController::class, 'show'])->name('page.show');
