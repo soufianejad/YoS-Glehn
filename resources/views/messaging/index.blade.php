@@ -288,7 +288,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">{{ __('Select User(s)') }}</label>
-                        <select class="form-control" name="recipient_ids[]" required multiple style="height: 120px;">
+                        <select class="form-control" id="recipient-select"  name="recipient_ids[]" required multiple style="height: 120px;">
                             <!-- AJAX content -->
                         </select>
                     </div>
@@ -298,7 +298,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}
                     {{ __('Start') }}</button>
                 </div>
             </form>
@@ -318,23 +318,17 @@
     <script src="{{ asset('js/messaging-custom.js') }}"></script>
 
     <script>
-        // Fonctions pour gérer l'affichage mobile
         function openMobileChat() {
             if (window.innerWidth <= 768) {
                 document.getElementById('messaging-container').classList.add('show-chat');
             }
         }
-
         function closeMobileChat() {
             document.getElementById('messaging-container').classList.remove('show-chat');
         }
-
-        // Si on arrive sur la page avec une conversation active déjà sélectionnée (PHP)
         document.addEventListener('DOMContentLoaded', function() {
             @if($activeConversation || $recipient)
-                if (window.innerWidth <= 768) {
-                    openMobileChat();
-                }
+                if (window.innerWidth <= 768) { openMobileChat(); }
             @endif
         });
     </script>
