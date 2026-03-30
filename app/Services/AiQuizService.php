@@ -105,12 +105,17 @@ class AiQuizService
 
         if (isset($quizData['questions']) && is_array($quizData['questions'])) {
             foreach ($quizData['questions'] as $index => $q) {
+                $correctIndex = array_search($q['correct_answer'], $q['options']);
+                if ($correctIndex === false) {
+                    $correctIndex = 0; // Fallback in case of AI mismatch
+                }
+
                 Question::create([
                     'quiz_id' => $quiz->id,
                     'question_text' => $q['question_text'],
                     'question_type' => 'multiple_choice',
                     'options' => $q['options'],
-                    'correct_answer' => $q['correct_answer'],
+                    'correct_answer' => (string) $correctIndex,
                     'explanation' => $q['explanation'] ?? null,
                     'order' => $index + 1,
                     'points' => 1,
