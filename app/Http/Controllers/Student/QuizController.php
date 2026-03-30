@@ -137,7 +137,7 @@ class QuizController extends Controller
 
     public function results(QuizAttempt $attempt)
     {
-        if ($attempt->user_id !== auth()->id()) {
+        if ((int) $attempt->user_id !== (int) auth()->id()) {
             abort(403);
         }
 

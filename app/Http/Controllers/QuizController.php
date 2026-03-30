@@ -68,7 +68,7 @@ class QuizController extends Controller
 
         $attempt = QuizAttempt::findOrFail($request->attempt_id);
 
-        if ($attempt->user_id !== Auth::id() || $attempt->quiz_id !== $quiz->id) {
+        if ((int) $attempt->user_id !== (int) Auth::id() || (int) $attempt->quiz_id !== (int) $quiz->id) {
             abort(403);
         }
 
@@ -149,7 +149,7 @@ class QuizController extends Controller
      */
     public function result(QuizAttempt $attempt)
     {
-        if ($attempt->user_id !== Auth::id()) {
+        if ((int) $attempt->user_id !== (int) Auth::id()) {
             abort(403);
         }
 
