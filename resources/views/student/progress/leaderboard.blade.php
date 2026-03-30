@@ -11,15 +11,26 @@
             <tr>
                 <th>{{ __('Rank') }}</th>
                 <th>{{ __('Name') }}</th>
+                <th>{{ __('Points') }}</th>
                 <th>{{ __('Books Read') }}</th>
-                {{-- Add more metrics like quiz scores, badges earned, etc. --}}
             </tr>
         </thead>
         <tbody>
-            @foreach($leaderboard as $student)
-                <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $student->name }}</td>
+            @foreach($leaderboard as $index => $student)
+                <tr @if($student->id === auth()->id()) class="table-primary fw-bold" @endif>
+                    <td>
+                        @if ($leaderboard->firstItem() + $index == 1)
+                            <i class="fas fa-trophy text-warning"></i> 1
+                        @elseif ($leaderboard->firstItem() + $index == 2)
+                            <i class="fas fa-medal text-secondary"></i> 2
+                        @elseif ($leaderboard->firstItem() + $index == 3)
+                            <i class="fas fa-medal text-danger"></i> 3
+                        @else
+                            {{ $leaderboard->firstItem() + $index }}
+                        @endif
+                    </td>
+                    <td>{{ $student->first_name }} {{ $student->last_name }}</td>
+                    <td>{{ number_format($student->points) }}</td>
                     <td>{{ $student->reading_progress_count }}</td>
                 </tr>
             @endforeach

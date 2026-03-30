@@ -83,6 +83,9 @@ class BadgeService
     {
         $user->badges()->attach($badge->id, ['earned_at' => now()]);
 
+        // Update user points
+        $user->updatePoints();
+
         // Send a notification for the new badge
         $this->notificationService->sendNotification(
             $user,

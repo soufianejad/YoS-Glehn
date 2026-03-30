@@ -35,6 +35,7 @@ class User extends Authenticatable
         'parent_id', // Added parent_id
         'can_receive_messages',
         'notification_preferences',
+        'points',
     ];
 
     // Relations
@@ -388,8 +389,8 @@ class User extends Authenticatable
         return $this->quizAttempts()->where('is_passed', true)->count();
     }
 
-    // Calculer les points de gamification
-    public function getTotalPoints(): int
+    // Mettre à jour et récupérer les points de gamification
+    public function updatePoints(): int
     {
         $booksPoints = $this->getCompletedBooksCount() * 10;
         $quizPoints = $this->quizAttempts()
@@ -397,7 +398,16 @@ class User extends Authenticatable
             ->sum('score');
         $badgePoints = $this->badges()->sum('points');
 
-        return $booksPoints + $quizPoints + $badgePoints;
+        $total = $booksPoints + $quizPoints + $badgePoints;
+
+        $this->update(['points' => $total]);
+
+        return $total;
+    }
+
+    public function getTotalPoints(): int
+    {
+        return $this->points;
     }
 
     /**

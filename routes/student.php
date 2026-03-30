@@ -4,6 +4,7 @@ use App\Http\Controllers\Student\DashboardController;
 use App\Http\Controllers\Student\LibraryController;
 use App\Http\Controllers\Student\ProgressController;
 use App\Http\Controllers\Student\QuizController;
+use App\Http\Controllers\Student\CertificateController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -66,6 +67,8 @@ Route::prefix('progress')->name('progress.')->group(function () {
     Route::get('/quizzes', [ProgressController::class, 'quizzes'])->name('quizzes');
     Route::get('/badges', [ProgressController::class, 'badges'])->name('badges');
     Route::get('/leaderboard', [ProgressController::class, 'leaderboard'])->name('leaderboard');
+    Route::get('/certificates', [CertificateController::class, 'index'])->name('certificates.index');
+    Route::get('/certificates/{type}', [CertificateController::class, 'generate'])->name('certificates.generate');
 });
 
 /*

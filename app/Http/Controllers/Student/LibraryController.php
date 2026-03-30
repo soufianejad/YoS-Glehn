@@ -232,6 +232,7 @@ class LibraryController extends Controller
         $progress->save();
 
         $this->badgeService->checkAndAwardBadges($user);
+        $user->updatePoints();
 
         return response()->json(['message' => __('Reading progress updated.'), 'progress' => $progress]);
     }
@@ -264,6 +265,7 @@ class LibraryController extends Controller
         $progress->save();
         
         $this->badgeService->checkAndAwardBadges($user);
+        $user->updatePoints();
 
         return response()->json(['message' => __('Audio progress updated.'), 'progress' => $progress]);
     }
