@@ -28,13 +28,10 @@ Route::match(['get', 'post'], '/payment/callback/{service}',
 
 Route::get('/run-specific-migrations', function () {
     Artisan::call('migrate', [
-        '--path' => 'database/migrations/2026_03_29_165458_add_user_id_to_quizzes_table.php',
+        '--path' => 'database/migrations/2026_03_30_183005_add_points_to_users_table.php',
     ]);
 
-    Artisan::call('migrate', [
-        '--path' => 'database/migrations/2026_03_29_165450_add_is_ai_quiz_enabled_to_books_table.php',
-    ]);
-
+ 
     return "Migrations exécutées avec succès";
 });
 
