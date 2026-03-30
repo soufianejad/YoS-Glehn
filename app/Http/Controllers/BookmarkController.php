@@ -58,7 +58,7 @@ class BookmarkController extends Controller
     public function update(Request $request, Bookmark $bookmark)
     {
         // Authorize that the user owns the bookmark
-        if ($bookmark->user_id !== Auth::id()) {
+        if ((int) $bookmark->user_id !== (int) Auth::id()) {
             abort(403, __('Unauthorized action.'));
         }
 
@@ -79,7 +79,7 @@ class BookmarkController extends Controller
     public function destroy(Bookmark $bookmark)
     {
         // Authorize that the user owns the bookmark
-        if ($bookmark->user_id !== Auth::id()) {
+        if ((int) $bookmark->user_id !== (int) Auth::id()) {
             abort(403, __('Unauthorized action.'));
         }
 
