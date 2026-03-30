@@ -110,7 +110,7 @@ class ClassController extends Controller
             abort(403);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'name' => [
                 'required',
                 'string',
@@ -123,7 +123,7 @@ class ClassController extends Controller
             'teacher_id' => ['nullable', 'exists:users,id', Rule::in(User::where('school_id', $school->id)->where('role', 'teacher')->pluck('id'))],
         ]);
 
-        $class->update($request->all());
+        $class->update($validated);
 
         return redirect()->route('school.classes.show', $class)->with('success', __('Class updated successfully.'));
     }

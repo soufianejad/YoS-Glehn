@@ -89,6 +89,8 @@ Route::prefix('reviews')->name('reviews.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\ReviewController::class, 'index'])->name('index');
     Route::get('/pending', [\App\Http\Controllers\Admin\ReviewController::class, 'pending'])->name('pending');
     Route::get('/{review}', [\App\Http\Controllers\Admin\ReviewController::class, 'show'])->name('show');
+    Route::get('/{review}/edit', [\App\Http\Controllers\Admin\ReviewController::class, 'edit'])->name('edit');
+    Route::put('/{review}', [\App\Http\Controllers\Admin\ReviewController::class, 'update'])->name('update');
     Route::post('/{review}/approve', [\App\Http\Controllers\Admin\ReviewController::class, 'approve'])->name('approve');
     Route::post('/{review}/reject', [\App\Http\Controllers\Admin\ReviewController::class, 'reject'])->name('reject');
     Route::delete('/{review}', [\App\Http\Controllers\Admin\ReviewController::class, 'destroy'])->name('destroy');

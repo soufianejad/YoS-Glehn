@@ -154,8 +154,8 @@
 @section('content')
 <div class="messaging-wrapper" id="messaging-container">
     <!-- Conversations Sidebar -->
-    <div class="conversations-sidebar">
-        <div class="conversations-header">
+    <div class="conversations-sidebar d-flex flex-column">
+        <div class="conversations-header flex-shrink-0">
             <div class="d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">{{ __('Conversations') }}</h4>
                 <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#startConversationModal">
@@ -163,10 +163,26 @@
                 </button>
             </div>
             <div class="mt-3">
-                <input type="text" class="form-control" placeholder="{{ __('Search conversations...') }}">
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" id="search-conversations-input" placeholder="{{ __('Search conversations...') }}">
+                </div>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="search-messages-input" placeholder="{{ __('Search messages...') }}">
+                    <button class="btn btn-outline-secondary" type="button" id="search-messages-btn"><i class="fas fa-search"></i></button>
+                </div>
             </div>
         </div>
-        <div class="conversations-list" id="conversations-list">
+
+        <div id="search-results-container" class="d-none d-flex flex-column flex-grow-1 overflow-hidden">
+            <div class="p-2 border-bottom bg-white flex-shrink-0">
+                <h6 class="mb-0 text-muted">{{ __('Search Results') }}</h6>
+            </div>
+            <div class="search-results-list flex-grow-1" id="search-results-list" style="overflow-y: auto;">
+                <!-- Search results will be injected here -->
+            </div>
+        </div>
+
+        <div class="conversations-list d-flex flex-column flex-grow-1" id="conversations-list" style="overflow-y: auto;">
             @forelse($conversations as $conversation)
                 @php
                     $participant = $conversation->participants->first();
@@ -272,7 +288,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">{{ __('Select User(s)') }}</label>
-                        <select class="form-control" name="recipient_ids[]" required multiple style="height: 120px;">
+                        <select class="form-control" id="recipient-select"  name="recipient_ids[]" required multiple style="height: 120px;">
                             <!-- AJAX content -->
                         </select>
                     </div>
@@ -282,7 +298,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}
                     {{ __('Start') }}</button>
                 </div>
             </form>
@@ -297,27 +313,22 @@
         data-user_id="{{ Auth::id() }}"
         data-route_store="{{ route('messaging.store') }}"
         data-route_messageable_users="{{ route('messaging.users.messageable') }}"
+        data-route_search="{{ route('messaging.search') }}"
     ></script>
     <script src="{{ asset('js/messaging-custom.js') }}"></script>
 
     <script>
-        // Fonctions pour gérer l'affichage mobile
         function openMobileChat() {
             if (window.innerWidth <= 768) {
                 document.getElementById('messaging-container').classList.add('show-chat');
             }
         }
-
         function closeMobileChat() {
             document.getElementById('messaging-container').classList.remove('show-chat');
         }
-
-        // Si on arrive sur la page avec une conversation active déjà sélectionnée (PHP)
         document.addEventListener('DOMContentLoaded', function() {
             @if($activeConversation || $recipient)
-                if (window.innerWidth <= 768) {
-                    openMobileChat();
-                }
+                if (window.innerWidth <= 768) { openMobileChat(); }
             @endif
         });
     </script>
