@@ -92,7 +92,7 @@ class QuizController extends Controller
 
         // Check for perfect score to award badges
         if ($percentage === 100.0) {
-            $this->badgeService->checkAndAwardBadges(Auth::user(), 'quiz_passed_perfectly');
+            $this->badgeService->checkAndAwardBadges(Auth::user());
         }
 
         $attempt->update([

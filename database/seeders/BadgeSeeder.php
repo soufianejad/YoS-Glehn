@@ -18,6 +18,8 @@ class BadgeSeeder extends Seeder
             'description' => 'Vous avez terminé votre premier livre ! Continuez comme ça.',
             'icon' => 'fas fa-book-reader',
             'color' => '#28a745',
+            'books_required' => 1,
+            'points' => 10,
         ]);
 
         Badge::updateOrCreate(['slug' => 'lecteur-assidu'], [
@@ -26,6 +28,8 @@ class BadgeSeeder extends Seeder
             'description' => 'Félicitations ! Vous avez lu 10 livres.',
             'icon' => 'fas fa-award',
             'color' => '#007bff',
+            'books_required' => 10,
+            'points' => 50,
         ]);
 
         Badge::updateOrCreate(['slug' => 'maitre-des-quiz'], [
@@ -34,6 +38,8 @@ class BadgeSeeder extends Seeder
             'description' => 'Vous avez réussi 5 quiz avec un score parfait.',
             'icon' => 'fas fa-graduation-cap',
             'color' => '#ffc107',
+            'quizzes_required' => 5,
+            'points' => 50,
         ]);
 
         Badge::updateOrCreate(['slug' => 'curieux-des-contes'], [
@@ -50,6 +56,7 @@ class BadgeSeeder extends Seeder
             'description' => 'Vous êtes le lecteur le plus actif ce mois-ci.',
             'icon' => 'fas fa-trophy',
             'color' => '#dc3545',
+            'points' => 100,
         ]);
     }
 }
