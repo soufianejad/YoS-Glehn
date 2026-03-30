@@ -46,12 +46,13 @@ Route::prefix('book')->name('book.')->group(function () {
 */
 Route::prefix('quiz')->name('quiz.')->group(function () {
     Route::get('/', [QuizController::class, 'index'])->name('index');
+    Route::get('/book/{book:slug}', [QuizController::class, 'bookQuiz'])->name('book-quiz');
     Route::get('/{quiz}', [QuizController::class, 'show'])->name('show');
     Route::match(['get', 'post'], '/{quiz}/start', [QuizController::class, 'start'])->name('start');
     Route::post('/{quiz}/submit', [QuizController::class, 'submit'])->name('submit');
     Route::get('/{attempt}/results', [QuizController::class, 'results'])->name('results');
-    Route::get('/book/{book}', [QuizController::class, 'bookQuiz'])->name('book-quiz');
 });
+
 
 /*
 |--------------------------------------------------------------------------
