@@ -26,30 +26,16 @@ Route::match(['get', 'post'], '/payment/callback/{service}',
     [\App\Http\Controllers\PaymentCallbackController::class, 'handle']
 )->name('payment.callback');
 
-Route::get('/run-book-database', function () {
-
-    // Migration 1
+Route::get('/run-specific-migrations', function () {
     Artisan::call('migrate', [
-        '--path' => 'database/migrations/2026_02_25_183133_create_book_files_table.php',
-        '--force' => true
+        '--path' => 'database/migrations/2026_03_29_165458_add_user_id_to_quizzes_table.php',
     ]);
 
-    // Migration 2
     Artisan::call('migrate', [
-        '--path' => 'database/migrations/2026_02_25_202044_add_book_file_id_to_progress_and_purchases_tables.php',
-        '--force' => true
+        '--path' => 'database/migrations/2026_03_29_165450_add_is_ai_quiz_enabled_to_books_table.php',
     ]);
 
-    // Seeder
-    Artisan::call('db:seed', [
-        '--class' => 'LanguageSettingSeeder',
-        '--force' => true
-    ]);
-
-    return response()->json([
-        'message' => 'Migrations spécifiques + seeder exécutés avec succès ✅',
-        'output' => Artisan::output()
-    ]);
+    return "Migrations exécutées avec succès";
 });
 
 Route::get('/run-adult-migration', function () {
