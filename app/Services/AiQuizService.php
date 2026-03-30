@@ -109,7 +109,7 @@ class AiQuizService
                     'quiz_id' => $quiz->id,
                     'question_text' => $q['question_text'],
                     'question_type' => 'multiple_choice',
-                    'options' => json_encode($q['options']),
+                    'options' => $q['options'],
                     'correct_answer' => $q['correct_answer'],
                     'explanation' => $q['explanation'] ?? null,
                     'order' => $index + 1,
