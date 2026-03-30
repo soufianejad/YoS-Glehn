@@ -139,6 +139,8 @@ class QuizController extends Controller
             }
         }
 
+        Auth::user()->updatePoints();
+
         return redirect()->route('quiz.result', $attempt);
     }
 

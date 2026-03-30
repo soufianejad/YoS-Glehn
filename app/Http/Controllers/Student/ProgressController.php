@@ -124,11 +124,18 @@ class ProgressController extends Controller
         return view('student.progress.badges', compact('badges', 'search'));
     }
 
-    public function leaderboard()
+    public function leaderboard(Request $request)
     {
-        $leaderboard = User::where('role', 'student')
-            ->withCount('readingProgress')
-            ->orderByDesc('reading_progress_count')
+        $student = auth()->user();
+
+        // Scope to school if the student belongs to one
+        $query = User::where('role', 'student');
+        if ($student->school_id) {
+            $query->where('school_id', $student->school_id);
+        }
+
+        $leaderboard = $query->withCount('readingProgress')
+            ->orderByDesc('points')
             ->paginate(10);
 
         return view('student.progress.leaderboard', compact('leaderboard'));

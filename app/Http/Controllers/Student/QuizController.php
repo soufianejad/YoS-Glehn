@@ -130,6 +130,8 @@ class QuizController extends Controller
             $this->badgeService->checkAndAwardBadges(auth()->user());
         }
 
+        auth()->user()->updatePoints();
+
         return redirect()->route('student.quiz.results', $attempt)->with('success', __('Quiz submitted successfully!'));
     }
 

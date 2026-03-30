@@ -63,5 +63,27 @@
             </a>
         </div>
     </div>
+
+    <!-- Leaderboard and Certificates Row -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <a href="{{ route('student.progress.leaderboard') }}" class="card text-decoration-none lift-hover h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-trophy fa-3x text-danger mb-3"></i>
+                    <h5 class="card-title">{{ __('Classement') }}</h5>
+                    <p class="card-text text-muted">{{ __('Découvrez votre position parmi les autres étudiants.') }}</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <a href="{{ route('student.progress.certificates.index') }}" class="card text-decoration-none lift-hover h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-certificate fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">{{ __('Mes Certificats') }}</h5>
+                    <p class="card-text text-muted">{{ __('Téléchargez vos certificats virtuels gagnés.') }}</p>
+                </div>
+            </a>
+        </div>
+    </div>
 </div>
 @endsection
