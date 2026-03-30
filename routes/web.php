@@ -148,6 +148,9 @@ Route::middleware(['auth'])->group(function () {
     // Favoris
     Route::post('/favorites/{book:slug}/toggle', [App\Http\Controllers\FavoriteController::class, 'toggleFavorite'])->name('favorites.toggle');
 
+    // Génération de quiz IA par l'utilisateur
+    Route::post('/book/{book}/generate-ai-quiz', [App\Http\Controllers\AiQuizController::class, 'generate'])->name('book.generate_ai_quiz');
+
     // Avis
     Route::post('/book/{book:slug}/review', [App\Http\Controllers\Public\BookController::class, 'storeReview'])->name('review.store');
     Route::put('/review/{review}', [App\Http\Controllers\Public\BookController::class, 'updateReview'])->name('review.update');

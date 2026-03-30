@@ -38,9 +38,11 @@ class Book extends Model
         'has_quiz',
         'is_downloadable',
         'is_featured',
+        'is_ai_quiz_enabled',
     ];
 
     protected $casts = [
+        'is_ai_quiz_enabled' => 'boolean',
         'pdf_pages' => 'integer',
         'audio_duration' => 'integer',
         'published_year' => 'integer',

@@ -41,6 +41,15 @@
                 <a href="{{ route('student.quiz.book-quiz', $book->slug) }}" class="btn btn-warning">{{ __('Take the Quiz') }}</a>
             @endif
 
+            @if($book->is_ai_quiz_enabled)
+                <form action="{{ route('book.generate_ai_quiz', $book) }}" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-success" onclick="return confirm('{{ __('Générer un quiz avec l\'IA basé sur ce livre ? Cela prendra quelques instants.') }}')">
+                        <i class="fas fa-robot"></i> {{ __('Générer un Quiz (IA)') }}
+                    </button>
+                </form>
+            @endif
+
             <hr>
 
             @auth

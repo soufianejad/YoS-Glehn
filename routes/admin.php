@@ -70,6 +70,7 @@ Route::prefix('books')->name('books.')->group(function () {
     Route::get('/{book}', [BookManagementController::class, 'show'])->name('show');
     Route::get('/{book}/edit', [BookManagementController::class, 'edit'])->name('edit');
     Route::put('/{book}', [BookManagementController::class, 'update'])->name('update');
+    Route::post('/{book}/generate-ai-quiz', [BookManagementController::class, 'generateAiQuiz'])->name('generate_ai_quiz');
     Route::delete('/{book}', [BookManagementController::class, 'destroy'])->name('destroy');
 
     // Validation des livres

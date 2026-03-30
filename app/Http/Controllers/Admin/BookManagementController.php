@@ -11,6 +11,7 @@ use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\AiQuizService;
 
 class BookManagementController extends Controller
 {
@@ -97,6 +98,7 @@ class BookManagementController extends Controller
             'pdf_price' => 'nullable|numeric|min:0',
             'audio_price' => 'nullable|numeric|min:0',
             'status' => 'required|string|in:draft,pending,published,archived',
+            'is_ai_quiz_enabled' => 'boolean',
             'files.*.language' => 'required|string|max:255',
             'files.*.pdf_file' => 'nullable|mimes:pdf|max:10000',
             'files.*.audio_file' => 'nullable|mimes:mp3,wav,ogg|max:20000',
@@ -127,6 +129,7 @@ class BookManagementController extends Controller
         }
 
         $bookData['slug'] = Str::slug($request->title);
+        $bookData['is_ai_quiz_enabled'] = $request->boolean('is_ai_quiz_enabled');
 
         $book = Book::create($bookData);
 
@@ -191,6 +194,7 @@ class BookManagementController extends Controller
             'audio_price' => 'nullable|numeric|min:0',
             'status' => 'required|string|in:draft,pending,published,archived',
             'is_downloadable' => 'boolean',
+            'is_ai_quiz_enabled' => 'boolean',
             'existing_files.*.language' => 'required|string|max:255',
             'existing_files.*.pdf_file' => 'nullable|mimes:pdf|max:10000',
             'existing_files.*.audio_file' => 'nullable|mimes:mp3,wav,ogg|max:20000',
@@ -239,6 +243,7 @@ class BookManagementController extends Controller
 
 
         $bookData['slug'] = Str::slug($request->title);
+        $bookData['is_ai_quiz_enabled'] = $request->boolean('is_ai_quiz_enabled');
 
         $book->update($bookData);
 
@@ -308,6 +313,21 @@ class BookManagementController extends Controller
         }
 
         return redirect()->route('admin.books.index')->with('success', __('Book updated successfully.'));
+    }
+
+    public function generateAiQuiz(Book $book, AiQuizService $aiQuizService)
+    {
+        if (!$book->is_ai_quiz_enabled) {
+            return back()->with('error', __('Le générateur de quiz IA n\'est pas activé pour ce livre.'));
+        }
+
+        $quiz = $aiQuizService->generateQuiz($book, null);
+
+        if ($quiz) {
+            return back()->with('success', __('Quiz global généré avec succès par l\'IA !'));
+        }
+
+        return back()->with('error', __('Erreur lors de la génération du quiz. Vérifiez vos clés API ou réessayez plus tard.'));
     }
 
     public function destroy(Book $book)

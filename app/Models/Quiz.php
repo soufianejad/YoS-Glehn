@@ -11,6 +11,7 @@ class Quiz extends Model
 
     protected $fillable = [
         'book_id',
+        'user_id',
         'title',
         'description',
         'questions_count',
@@ -33,6 +34,11 @@ class Quiz extends Model
     public function book()
     {
         return $this->belongsTo(Book::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function questions()
