@@ -65,7 +65,8 @@
         @endforeach
 
         <div class="text-center">
-            {{ __('Soumettre mes réponses') }}
+            <button type="submit" class="btn btn-primary btn-lg">
+                {{ __('Soumettre mes réponses') }}
             </button>
         </div>
     </form>
