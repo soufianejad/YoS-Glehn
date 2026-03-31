@@ -315,18 +315,27 @@ class BookManagementController extends Controller
         return redirect()->route('admin.books.index')->with('success', __('Book updated successfully.'));
     }
 
-    public function generateAiQuiz(Book $book, AiQuizService $aiQuizService)
+    public function generateAiQuiz(Request $request, Book $book, AiQuizService $aiQuizService)
     {
         if (!$book->is_ai_quiz_enabled) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => __('Le générateur de quiz IA n\'est pas activé pour ce livre.')], 403);
+            }
             return back()->with('error', __('Le générateur de quiz IA n\'est pas activé pour ce livre.'));
         }
 
         $quiz = $aiQuizService->generateQuiz($book, null);
 
         if ($quiz) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true, 'message' => __('Quiz global généré avec succès par l\'IA !')]);
+            }
             return back()->with('success', __('Quiz global généré avec succès par l\'IA !'));
         }
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => false, 'message' => __('Erreur lors de la génération du quiz. Vérifiez vos clés API ou réessayez plus tard.')], 500);
+        }
         return back()->with('error', __('Erreur lors de la génération du quiz. Vérifiez vos clés API ou réessayez plus tard.'));
     }
 
