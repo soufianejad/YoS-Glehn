@@ -43,12 +43,77 @@
     <a href="{{ route('admin.books.index') }}" class="btn btn-secondary mt-3">{{ __('Back to Books') }}</a>
 
     @if($book->is_ai_quiz_enabled)
-    <form action="{{ route('admin.books.generate_ai_quiz', $book) }}" method="POST" class="d-inline">
+    <form action="{{ route('admin.books.generate_ai_quiz', $book) }}" method="POST" class="d-inline" id="ai-quiz-form">
         @csrf
-        <button type="submit" class="btn btn-success mt-3" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir générer un quiz global avec l\'IA pour ce livre ? Cela peut prendre quelques secondes.') }}')">
+        <button type="button" id="generate-ai-quiz-btn" class="btn btn-success mt-3" onclick="generateAiQuiz()">
             {{ __('Générer un Quiz global (IA)') }}
         </button>
     </form>
+
+    <div id="ai-quiz-progress-container" class="mt-3" style="display: none; max-width: 400px;">
+        <p class="mb-1 text-muted small">{{ __('Génération du quiz en cours, veuillez patienter...') }}</p>
+        <div class="progress" style="height: 10px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+    </div>
+
+    <div id="ai-quiz-message-container" class="mt-3" style="display: none; max-width: 400px;"></div>
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    function generateAiQuiz() {
+        if (!confirm('{{ __("Êtes-vous sûr de vouloir générer un quiz global avec l\'IA pour ce livre ? Cela peut prendre quelques secondes.") }}')) {
+            return;
+        }
+
+        const form = document.getElementById('ai-quiz-form');
+        const btn = document.getElementById('generate-ai-quiz-btn');
+        const progressContainer = document.getElementById('ai-quiz-progress-container');
+        const messageContainer = document.getElementById('ai-quiz-message-container');
+
+        // Reset state
+        btn.disabled = true;
+        progressContainer.style.display = 'block';
+        messageContainer.style.display = 'none';
+        messageContainer.className = 'mt-3 alert';
+        messageContainer.innerHTML = '';
+
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json().then(data => ({ status: response.status, body: data })))
+        .then(result => {
+            progressContainer.style.display = 'none';
+            btn.disabled = false;
+
+            messageContainer.style.display = 'block';
+            if (result.status >= 200 && result.status < 300 && result.body.success) {
+                messageContainer.classList.add('alert-success');
+                messageContainer.innerHTML = '<i class="fas fa-check-circle"></i> ' + (result.body.message || '{{ __("Quiz généré avec succès !") }}');
+            } else {
+                messageContainer.classList.add('alert-danger');
+                messageContainer.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + (result.body.message || '{{ __("Une erreur est survenue.") }}');
+            }
+        })
+        .catch(error => {
+            progressContainer.style.display = 'none';
+            btn.disabled = false;
+
+            messageContainer.style.display = 'block';
+            messageContainer.classList.add('alert-danger');
+            messageContainer.innerHTML = '<i class="fas fa-exclamation-circle"></i> {{ __("Une erreur réseau est survenue.") }}';
+            console.error('Error:', error);
+        });
+    }
+</script>
+@endpush
