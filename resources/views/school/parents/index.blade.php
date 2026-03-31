@@ -41,6 +41,7 @@
                                 @endforelse
                             </td>
                             <td>
+                                <a href="{{ route('school.parents.show', $parent) }}" class="btn btn-sm btn-info">{{ __('View') }}</a>
                                 <a href="{{ route('school.parents.edit', $parent) }}" class="btn btn-sm btn-warning">{{ __('Edit') }}</a>
                                 <form action="{{ route('school.parents.destroy', $parent) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this parent? This will not delete the student accounts.') }}');">
                                     @csrf
