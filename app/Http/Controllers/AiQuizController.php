@@ -20,29 +20,23 @@ class AiQuizController extends Controller
             return back()->with('error', __('Le générateur de quiz IA n\'est pas activé pour ce livre.'));
         }
 
-        $userId = auth()->id();
+        $user = auth()->user();
+        if (!$user || !$user->isStudent()) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => __('Seuls les étudiants peuvent générer des quiz IA.')], 403);
+            }
+            return back()->with('error', __('Seuls les étudiants peuvent générer des quiz IA.'));
+        }
+
+        $userId = $user->id;
 
         $quiz = $aiQuizService->generateQuiz($book, $userId);
 
         if ($quiz) {
+            $quizUrl = route('student.quiz.start', $quiz);
+            $message = __('Votre quiz IA personnalisé a été généré avec succès !') . ' <a href="' . $quizUrl . '" class="btn btn-sm btn-outline-success ms-2">' . __('Prendre le quiz') . '</a>';
+
             if ($request->expectsJson()) {
-                $user = auth()->user();
-                $quizUrl = null;
-
-                if ($user) {
-                    if ($user->isStudent() && \Illuminate\Support\Facades\Route::has('student.quiz.show')) {
-                        $quizUrl = route('student.quiz.show', $quiz);
-                    } else if (\Illuminate\Support\Facades\Route::has('quiz.show')) {
-                        // The public quiz show route expects the book slug
-                        $quizUrl = route('quiz.show', $book->slug);
-                    }
-                }
-
-                $message = __('Votre quiz IA personnalisé a été généré avec succès !');
-                if ($quizUrl) {
-                    $message .= ' <a href="' . $quizUrl . '" class="btn btn-sm btn-outline-success ms-2">' . __('Prendre le quiz') . '</a>';
-                }
-
                 return response()->json([
                     'success' => true,
                     'message' => $message,
@@ -50,23 +44,7 @@ class AiQuizController extends Controller
                 ]);
             }
 
-            // Non-JSON request
-            $user = auth()->user();
-            $quizUrl = null;
-            if ($user) {
-                if ($user->isStudent() && \Illuminate\Support\Facades\Route::has('student.quiz.show')) {
-                    $quizUrl = route('student.quiz.show', $quiz);
-                } else if (\Illuminate\Support\Facades\Route::has('quiz.show')) {
-                    $quizUrl = route('quiz.show', $book->slug);
-                }
-            }
-
-            $successMsg = __('Votre quiz IA personnalisé a été généré avec succès !');
-            if ($quizUrl) {
-                $successMsg .= ' <a href="' . $quizUrl . '" class="btn btn-sm btn-outline-success ms-2">' . __('Prendre le quiz') . '</a>';
-            }
-
-            return back()->with('success', $successMsg);
+            return back()->with('success', $message);
         }
 
         if ($request->expectsJson()) {

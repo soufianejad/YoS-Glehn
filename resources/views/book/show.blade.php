@@ -128,7 +128,7 @@
                             </button>
                         </form>
 
-                        @if($book->is_ai_quiz_enabled)
+                        @if($book->is_ai_quiz_enabled && auth()->check() && auth()->user()->isStudent())
                             <form action="{{ route('book.generate_ai_quiz', $book) }}" method="POST" class="mb-4" id="ai-quiz-form">
                                 @csrf
                                 <button type="button" id="generate-ai-quiz-btn" class="btn btn-success w-100 btn-lg hover-shadow" onclick="generateAiQuiz()">
