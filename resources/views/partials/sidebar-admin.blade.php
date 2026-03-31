@@ -75,19 +75,28 @@
             <li style="display:block" class="nav-item {{ request()->routeIs('admin.subscription-plans*') ? 'active' : '' }}">
                 <a class="nav-link " href="{{ route('admin.subscription-plans.index') }}"><i class="fas fa-id-card"></i> {{ __("Plans d'Abonnement")}}</a>
             </li>
-            <li style="display:block" class="nav-item {{ request()->routeIs('admin.payments*') ? 'active' : '' }}">
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.payments.index') ? 'active' : '' }}">
                 <a class="nav-link " href="{{ route('admin.payments.index') }}"><i class="fas fa-money-bill-wave"></i> {{ __('Paiements') }}</a>
             </li>
-            <li style="display:block" class="nav-item {{ request()->routeIs('admin.settings.payment') ? 'active' : '' }}">
-                <a class="nav-link " href="{{ route('admin.settings.payment') }}"><i class="fas fa-credit-card"></i> {{ __('Paramètres de Paiement') }}</a>
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.payments.monthly-report') ? 'active' : '' }}">
+                <a class="nav-link " href="{{ route('admin.payments.monthly-report') }}"><i class="fas fa-file-invoice-dollar"></i> {{ __('Rapport Mensuel') }}</a>
             </li>
-            <li style="display:block" class="nav-item {{ request()->routeIs('admin.revenues*') ? 'active' : '' }}">
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.payments.annual-report') ? 'active' : '' }}">
+                <a class="nav-link " href="{{ route('admin.payments.annual-report') }}"><i class="fas fa-file-contract"></i> {{ __('Rapport Annuel') }}</a>
+            </li>
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.revenues.index') ? 'active' : '' }}">
                 <a class="nav-link " href="{{ route('admin.revenues.index') }}">
                     <i class="fas fa-chart-line"></i> {{ __('Revenus') }}
                     @if(isset($pendingRevenuesCount) && $pendingRevenuesCount > 0)
                         <span class="badge bg-warning float-end">{{ $pendingRevenuesCount }}</span>
                     @endif
                 </a>
+            </li>
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.revenues.authors') ? 'active' : '' }}">
+                <a class="nav-link " href="{{ route('admin.revenues.authors') }}"><i class="fas fa-user-tie"></i> {{ __('Auteurs & Revenus') }}</a>
+            </li>
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.revenues.payouts.index') ? 'active' : '' }}">
+                <a class="nav-link " href="{{ route('admin.revenues.payouts.index') }}"><i class="fas fa-hand-holding-usd"></i> {{ __('Paiements Auteurs') }}</a>
             </li>
         </ul>
     </li>
@@ -124,23 +133,50 @@
         </ul>
     </li>
 
+    <!-- Reports & Statistics -->
+    <li class="mt-1">
+        <a href="#reportsSubmenu"
+           data-bs-toggle="collapse"
+           aria-expanded="{{ request()->routeIs('admin.statistics*') || request()->routeIs('admin.activity.report') ? 'true' : 'false' }}"
+           class="dropdown-toggle nav-link sidebar-heading text-decoration-none">
+            {{ __('Rapports & Stats') }}
+        </a>
+        <ul class="p-0 collapse {{ request()->routeIs('admin.statistics*') || request()->routeIs('admin.activity.report') ? 'show' : '' }}" id="reportsSubmenu">
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.statistics') ? 'active' : '' }}">
+                <a class="nav-link " href="{{ route('admin.statistics') }}"><i class="fas fa-chart-bar"></i> {{ __('Statistiques') }}</a>
+            </li>
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.activity.report') ? 'active' : '' }}">
+                <a class="nav-link " href="{{ route('admin.activity.report') }}"><i class="fas fa-clipboard-list"></i> {{ __("Rapport d'Activité") }}</a>
+            </li>
+        </ul>
+    </li>
+
     <!-- System -->
     <li class="mt-1">
         <a href="#systemSubmenu"
            data-bs-toggle="collapse"
-           aria-expanded="{{ request()->routeIs('admin.settings*') ? 'true' : 'false' }}"
+           aria-expanded="{{ request()->routeIs('admin.settings*') || request()->routeIs('admin.jobs*') ? 'true' : 'false' }}"
            class="dropdown-toggle nav-link sidebar-heading text-decoration-none">
             {{ __('Système') }}
         </a>
-        <ul class="p-0 collapse {{ request()->routeIs('admin.settings*') ? 'show' : '' }}" id="systemSubmenu">
-            <li style="display:block" class="nav-item {{ request()->routeIs('admin.settings.general') ? 'active' : '' }}">
-                <a class="nav-link " href="{{ route('admin.settings.general') }}"><i class="fas fa-cog"></i> {{ __('Paramètres Généraux') }}</a>
+        <ul class="p-0 collapse {{ request()->routeIs('admin.settings*') || request()->routeIs('admin.jobs*') ? 'show' : '' }}" id="systemSubmenu">
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.settings.index') || request()->routeIs('admin.settings.general') ? 'active' : '' }}">
+                <a class="nav-link " href="{{ route('admin.settings.index') }}"><i class="fas fa-cog"></i> {{ __('Paramètres Généraux') }}</a>
+            </li>
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.settings.appearance') ? 'active' : '' }}">
+                <a class="nav-link " href="{{ route('admin.settings.appearance') }}"><i class="fas fa-paint-brush"></i> {{ __('Apparence') }}</a>
+            </li>
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.settings.email') ? 'active' : '' }}">
+                <a class="nav-link " href="{{ route('admin.settings.email') }}"><i class="fas fa-envelope"></i> {{ __('Emails') }}</a>
             </li>
             <li style="display:block" class="nav-item {{ request()->routeIs('admin.settings.payment') ? 'active' : '' }}">
                 <a class="nav-link " href="{{ route('admin.settings.payment') }}"><i class="fas fa-credit-card"></i> {{ __('Paramètres de Paiement') }}</a>
             </li>
             <li style="display:block" class="nav-item {{ request()->routeIs('admin.settings.languages') ? 'active' : '' }}">
                 <a class="nav-link " href="{{ route('admin.settings.languages') }}"><i class="fas fa-language"></i> {{ __('Langues') }}</a>
+            </li>
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.jobs.index') ? 'active' : '' }}">
+                <a class="nav-link " href="{{ route('admin.jobs.index') }}"><i class="fas fa-cogs"></i> {{ __('Tâches (Jobs)') }}</a>
             </li>
         </ul>
     </li>

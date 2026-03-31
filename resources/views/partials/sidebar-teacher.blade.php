@@ -4,8 +4,8 @@
             <i class="fas fa-tachometer-alt"></i> {{ __('Dashboard') }}
         </a>
     </li>
-    <li class="nav-item {{ request()->routeIs('teacher.dashboard') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('teacher.dashboard') }}">
+    <li class="nav-item {{ request()->routeIs('teacher.classes.index') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('teacher.classes.index') }}">
             <i class="fas fa-school"></i> {{ __('My Classes') }}
         </a>
     </li>

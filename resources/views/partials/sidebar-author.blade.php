@@ -7,7 +7,7 @@
            class="dropdown-toggle nav-link sidebar-heading text-decoration-none">
             {{ __('Général') }}
         </a>
-        <ul class="p-0 collapse {{ request()->routeIs('author.dashboard*') ? 'show' : '' }}" id="generalSubmenu">
+        <ul class="p-0 collapse {{ request()->routeIs('author.dashboard*') || request()->routeIs('author.profile') ? 'show' : '' }}" id="generalSubmenu">
             <li style="display:block" class="nav-item {{ request()->routeIs('author.dashboard*') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('author.dashboard') }}">
                     <i class="fas fa-tachometer-alt"></i> {{ __('Tableau de Bord') }}
@@ -18,9 +18,9 @@
                     <i class="fas fa-heart"></i> {{ __('Mes Favoris') }}
                 </a>
             </li>
-            <li style="display:block" class="nav-item {{ request()->routeIs('reader.profile') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('reader.profile') }}">
-                    <i class="fas fa-user"></i> {{ __('Profil') }}
+            <li style="display:block" class="nav-item {{ request()->routeIs('author.profile') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('author.profile') }}">
+                    <i class="fas fa-user"></i> {{ __('Profil Auteur') }}
                 </a>
             </li>
         </ul>
