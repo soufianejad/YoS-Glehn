@@ -391,6 +391,16 @@ class BookManagementController extends Controller
     {
         $book->update(['status' => 'rejected']);
 
+        if ($book->author) {
+            $this->notificationService->sendNotification(
+                $book->author,
+                __('Livre rejeté'),
+                __("Votre livre ':title' a été rejeté. Veuillez vérifier s'il respecte toutes les consignes de publication.", ['title' => $book->title]),
+                null,
+                'danger'
+            );
+        }
+
         return back()->with('success', __('Book rejected.'));
     }
 

@@ -9,9 +9,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use App\Services\NotificationService;
 
 class UserManagementController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -127,12 +135,28 @@ class UserManagementController extends Controller
     {
         $user->update(['is_active' => true]);
 
+        $this->notificationService->sendNotification(
+            $user,
+            __('Compte activé'),
+            __('Votre compte a été activé avec succès.'),
+            null,
+            'success'
+        );
+
         return back()->with('success', __('User activated successfully.'));
     }
 
     public function deactivate(User $user)
     {
         $user->update(['is_active' => false]);
+
+        $this->notificationService->sendNotification(
+            $user,
+            __('Compte désactivé'),
+            __('Votre compte a été désactivé par un administrateur.'),
+            null,
+            'warning'
+        );
 
         return back()->with('success', __('User deactivated successfully.'));
     }
@@ -144,6 +168,14 @@ class UserManagementController extends Controller
         ]);
 
         $user->update(['role' => $request->role]);
+
+        $this->notificationService->sendNotification(
+            $user,
+            __('Rôle mis à jour'),
+            __('Votre rôle a été mis à jour par un administrateur. Nouveau rôle : :role.', ['role' => __($request->role)]),
+            null,
+            'info'
+        );
 
         return back()->with('success', __('User role updated successfully.'));
     }

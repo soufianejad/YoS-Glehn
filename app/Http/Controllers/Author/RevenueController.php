@@ -7,9 +7,17 @@ use App\Models\AuthorPayout;
 use App\Models\Revenue;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use App\Services\NotificationService;
 
 class RevenueController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     public function index(Request $request)
     {
         $author = auth()->user();
@@ -140,6 +148,21 @@ class RevenueController extends Controller
             'period_start' => $periodStart ?? now(),
             'period_end' => $periodEnd ?? now(),
         ]);
+
+        $admins = \App\Models\User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            $this->notificationService->sendNotification(
+                $admin,
+                __('Nouvelle demande de paiement'),
+                __("L'auteur :author a soumis une demande de paiement d'un montant de :amount :currency.", [
+                    'author' => $author->name,
+                    'amount' => number_format($availableBalance, 0, ',', ' '),
+                    'currency' => __('XOF'),
+                ]),
+                route('admin.revenues.payouts.index'),
+                'info'
+            );
+        }
 
         return redirect()->route('author.revenues.history')->with('success', __('Votre demande de versement a été envoyée avec succès.'));
     }
