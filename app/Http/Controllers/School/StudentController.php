@@ -8,9 +8,17 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
+use App\Services\NotificationService;
 
 class StudentController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -143,6 +151,14 @@ class StudentController extends Controller
 
         $student->update(['is_active' => false]);
 
+        $this->notificationService->sendNotification(
+            $student,
+            __('Compte désactivé'),
+            __('Votre compte étudiant a été désactivé par votre école (:school).', ['school' => $school->name]),
+            null,
+            'warning'
+        );
+
         return back()->with('success', __('Student deactivated successfully.'));
     }
 
@@ -155,6 +171,14 @@ class StudentController extends Controller
         }
 
         $student->update(['is_active' => true]);
+
+        $this->notificationService->sendNotification(
+            $student,
+            __('Compte activé'),
+            __('Votre compte étudiant a été activé par votre école (:school). Vous pouvez maintenant y accéder.', ['school' => $school->name]),
+            null,
+            'success'
+        );
 
         return back()->with('success', __('Student activated successfully.'));
     }
