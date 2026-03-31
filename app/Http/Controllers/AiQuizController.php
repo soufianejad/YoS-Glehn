@@ -26,10 +26,22 @@ class AiQuizController extends Controller
 
         if ($quiz) {
             if ($request->expectsJson()) {
+                $user = auth()->user();
+                $quizUrl = null;
+
+                if ($user) {
+                    if ($user->isStudent() && \Illuminate\Support\Facades\Route::has('student.quiz.show')) {
+                        $quizUrl = route('student.quiz.show', $quiz);
+                    } else if (\Illuminate\Support\Facades\Route::has('quiz.show')) {
+                        // The public quiz show route expects the book slug
+                        $quizUrl = route('quiz.show', $book->slug);
+                    }
+                }
+
                 return response()->json([
                     'success' => true,
                     'message' => __('Votre quiz IA personnalisé a été généré avec succès !'),
-                    'quiz_url' => auth()->user()->isStudent() ? route('student.quiz.show', $quiz) : null
+                    'quiz_url' => $quizUrl
                 ]);
             }
             // Redirect logic depending on whether user is student or normal reader
