@@ -95,6 +95,21 @@ class QuizManagementController extends Controller
             $request->difficulty
         );
 
+        if ($request->expectsJson()) {
+            if ($quiz) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('Quiz generated successfully!'),
+                    'redirect_url' => route('admin.quiz.show', $quiz)
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Failed to generate quiz.')
+                ], 400);
+            }
+        }
+
         if ($quiz) {
             return redirect()->route('admin.quiz.show', $quiz)->with('success', __('Quiz generated successfully!'));
         } else {
@@ -192,9 +207,25 @@ class QuizManagementController extends Controller
         return redirect()->route('admin.quizzes.index')->with('success', __('Quiz deleted successfully.'));
     }
 
-    public function regenerate(Quiz $quiz, QuizGeneratorService $quizGeneratorService)
+    public function regenerate(Request $request, Quiz $quiz, QuizGeneratorService $quizGeneratorService)
     {
-        if ($quizGeneratorService->regenerateQuiz($quiz)) {
+        $success = $quizGeneratorService->regenerateQuiz($quiz);
+
+        if ($request->expectsJson()) {
+            if ($success) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('Quiz questions regenerated successfully!')
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Failed to regenerate quiz questions.')
+                ], 400);
+            }
+        }
+
+        if ($success) {
             return back()->with('success', __('Quiz questions regenerated successfully!'));
         } else {
             return back()->with('error', __('Failed to regenerate quiz questions.'));

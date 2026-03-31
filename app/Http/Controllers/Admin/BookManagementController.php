@@ -328,7 +328,11 @@ class BookManagementController extends Controller
 
         if ($quiz) {
             if ($request->expectsJson()) {
-                return response()->json(['success' => true, 'message' => __('Quiz global généré avec succès par l\'IA !')]);
+                return response()->json([
+                    'success' => true,
+                    'message' => __('Quiz global généré avec succès par l\'IA !'),
+                    'quiz_url' => route('admin.quiz.show', $quiz)
+                ]);
             }
             return back()->with('success', __('Quiz global généré avec succès par l\'IA !'));
         }

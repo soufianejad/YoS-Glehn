@@ -36,7 +36,7 @@ class AiQuizService
                     'messages' => [
                         [
                             'role' => 'system',
-                            'content' => 'You are an expert educator who generates high-quality multiple-choice quizzes in French based on book information. You must respond strictly in JSON format.'
+                            'content' => 'You are an expert educator who generates high-quality multiple-choice quizzes in ' . app()->getLocale() . ' based on book information. You must respond strictly in JSON format.'
                         ],
                         [
                             'role' => 'user',
