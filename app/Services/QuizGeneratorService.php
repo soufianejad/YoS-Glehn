@@ -193,6 +193,7 @@ class QuizGeneratorService
      */
     protected function buildPrompt(string $content, string $bookTitle, int $count): string
     {
+        $locale = app()->getLocale();
         return <<<PROMPT
 Tu es un expert en création de quiz éducatifs. Basé sur le contenu suivant du livre "{$bookTitle}", génère {$count} questions de quiz pertinentes et variées.
 
@@ -201,7 +202,7 @@ CONTENU DU LIVRE:
 
 INSTRUCTIONS CRITIQUES:
 1. Crée exactement {$count} questions basées sur le contenu du livre
-2. Les questions doivent être claires, précises et en français
+2. Les questions doivent être claires, précises et dans la langue : {$locale}
 3. Chaque question doit avoir 4 options de réponse (A, B, C, D)
 4. Une seule réponse correcte par question
 5. Ajoute une explication courte pour chaque réponse correcte
