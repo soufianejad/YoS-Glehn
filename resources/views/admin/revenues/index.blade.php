@@ -102,6 +102,13 @@
                                     <a href="{{ route('admin.revenues.edit', $revenue) }}" class="btn btn-warning btn-sm" title="{{ __('Edit') }}">
                                         <i class="fas fa-pencil-alt"></i>
                                     </a>
+                                    <form action="{{ route('admin.revenues.destroy', $revenue) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Êtes-vous sûr de vouloir supprimer ce revenu ?') }}');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm" title="{{ __('Delete') }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         @empty

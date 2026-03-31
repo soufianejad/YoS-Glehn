@@ -39,6 +39,7 @@
                     <td>{{ $announcement->published_at->format('M d, Y H:i') }}</td>
                     <td>{{ $announcement->expires_at ? $announcement->expires_at->format('M d, Y H:i') : __('N/A') }}</td>
                     <td>
+                        <a href="{{ route('school.announcements.show', $announcement) }}" class="btn btn-sm btn-info">{{ __('View') }}</a>
                         <a href="{{ route('school.announcements.edit', $announcement) }}" class="btn btn-sm btn-warning">{{ __('Edit') }}</a>
                         <form action="{{ route('school.announcements.destroy', $announcement) }}" method="POST" class="d-inline">
                             @csrf

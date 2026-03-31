@@ -41,14 +41,13 @@
                                         <a href="{{ route('reader.library.show', $bookmark->book->slug) }}" class="btn btn-info btn-circle btn-sm" title="{{ __('Voir le livre') }}">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        {{-- Assuming a route for deleting bookmarks exists --}}
-                                        {{-- <form action="{{ route('reader.bookmarks.destroy', $bookmark) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('bookmarks.destroy', $bookmark) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger btn-circle btn-sm" onclick="return confirm('Êtes-vous sûr ?')" title="Supprimer">
                                                 <i class="fas fa-trash"></i>
                                             </button>
-                                        </form> --}}
+                                        </form>
                                     </td>
                                 </tr>
                             @endforeach

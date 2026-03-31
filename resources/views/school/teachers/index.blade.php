@@ -33,6 +33,7 @@
                             <td>{{ $teacher->last_name }}</td>
                             <td>{{ $teacher->email }}</td>
                             <td>
+                                <a href="{{ route('school.teachers.show', $teacher) }}" class="btn btn-sm btn-info">{{ __('View') }}</a>
                                 <a href="{{ route('school.teachers.edit', $teacher) }}" class="btn btn-sm btn-warning">{{ __('Edit') }}</a>
                                 <form action="{{ route('school.teachers.destroy', $teacher) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this teacher?') }}');">
                                     @csrf
