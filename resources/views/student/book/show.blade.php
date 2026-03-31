@@ -41,7 +41,7 @@
                 <a href="{{ route('student.quiz.book-quiz', $book->slug) }}" class="btn btn-warning">{{ __('Take the Quiz') }}</a>
             @endif
 
-            @if($book->is_ai_quiz_enabled)
+            @if($book->is_ai_quiz_enabled && auth()->check() && auth()->user()->isStudent())
                 <form action="{{ route('book.generate_ai_quiz', $book) }}" method="POST" class="d-inline" id="ai-quiz-form">
                     @csrf
                     <button type="button" id="generate-ai-quiz-btn" class="btn btn-success" onclick="generateAiQuiz()">
@@ -140,11 +140,7 @@
             messageContainer.style.display = 'block';
             if (result.status >= 200 && result.status < 300 && result.body.success) {
                 messageContainer.classList.add('alert-success');
-                let successHtml = '<i class="fas fa-check-circle"></i> ' + (result.body.message || '{{ __("Quiz généré avec succès !") }}');
-                if (result.body.quiz_url) {
-                    successHtml += ' <a href="' + result.body.quiz_url + '" class="btn btn-sm btn-outline-success ms-2">{{ __("Prendre le quiz") }}</a>';
-                }
-                messageContainer.innerHTML = successHtml;
+                messageContainer.innerHTML = '<i class="fas fa-check-circle"></i> ' + (result.body.message || '{{ __("Quiz généré avec succès !") }}');
             } else {
                 messageContainer.classList.add('alert-danger');
                 messageContainer.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + (result.body.message || '{{ __("Une erreur est survenue.") }}');

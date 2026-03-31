@@ -20,26 +20,31 @@ class AiQuizController extends Controller
             return back()->with('error', __('Le générateur de quiz IA n\'est pas activé pour ce livre.'));
         }
 
-        $userId = auth()->id();
+        $user = auth()->user();
+        if (!$user || !$user->isStudent()) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => __('Seuls les étudiants peuvent générer des quiz IA.')], 403);
+            }
+            return back()->with('error', __('Seuls les étudiants peuvent générer des quiz IA.'));
+        }
+
+        $userId = $user->id;
 
         $quiz = $aiQuizService->generateQuiz($book, $userId);
 
         if ($quiz) {
+            $quizUrl = route('student.quiz.start', $quiz);
+            $message = __('Votre quiz IA personnalisé a été généré avec succès !') . ' <a href="' . $quizUrl . '" class="btn btn-sm btn-outline-success ms-2">' . __('Prendre le quiz') . '</a>';
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => __('Votre quiz IA personnalisé a été généré avec succès !'),
-                    'quiz_url' => auth()->user()->isStudent() ? route('student.quiz.show', $quiz) : null
+                    'message' => $message,
+                    'quiz_url' => $quizUrl
                 ]);
             }
-            // Redirect logic depending on whether user is student or normal reader
-            if (auth()->user()->isStudent()) {
-                // If they are a student, we assume there's a specific route for them to view the quiz,
-                // but let's just go back with a success message for now since we just generated it.
-                return back()->with('success', __('Votre quiz IA personnalisé a été généré avec succès !'));
-            } else {
-                return back()->with('success', __('Votre quiz IA personnalisé a été généré avec succès !'));
-            }
+
+            return back()->with('success', $message);
         }
 
         if ($request->expectsJson()) {

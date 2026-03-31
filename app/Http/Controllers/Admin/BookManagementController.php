@@ -327,14 +327,17 @@ class BookManagementController extends Controller
         $quiz = $aiQuizService->generateQuiz($book, null);
 
         if ($quiz) {
+            $quizUrl = route('admin.quiz.show', $quiz);
+            $message = __('Quiz global généré avec succès par l\'IA !') . ' <a href="' . $quizUrl . '" class="btn btn-sm btn-outline-success ms-2">' . __('Voir le quiz') . '</a>';
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => __('Quiz global généré avec succès par l\'IA !'),
-                    'quiz_url' => route('admin.quiz.show', $quiz)
+                    'message' => $message,
+                    'quiz_url' => $quizUrl
                 ]);
             }
-            return back()->with('success', __('Quiz global généré avec succès par l\'IA !'));
+            return back()->with('success', $message);
         }
 
         if ($request->expectsJson()) {
