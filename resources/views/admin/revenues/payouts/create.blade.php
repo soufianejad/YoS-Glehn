@@ -1,6 +1,6 @@
 <!-- resources/views/admin/revenues/payouts/create.blade.php -->
 
-@extends('@extends('layouts.dashboard')outs.dashboard')')
+@extends('layouts.dashboard')
 
 @section('content')
 <div class="container">

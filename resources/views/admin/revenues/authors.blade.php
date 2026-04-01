@@ -1,6 +1,6 @@
 <!-- resources/views/admin/revenues/authors.blade.php -->
 
-@extends('@extends('layouts.dashboard')outs.dashboard')')
+@extends('layouts.dashboard')
 
 @section('content')
 <div class="container">
