@@ -1,6 +1,6 @@
 <!-- resources/views/admin/payments/monthly-report.blade.php -->
 
-@extends('@extends('layouts.dashboard')outs.dashboard')outs.dashboard')')
+@extends('layouts.dashboard')
 
 @section('content')
 <div class="container">
