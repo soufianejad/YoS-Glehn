@@ -182,7 +182,7 @@
     </li>
 </ul>
 <style>
-    .components .nav-link. {
+    .components .nav-link {
         padding-left: 2.5rem !important;
     }
 
