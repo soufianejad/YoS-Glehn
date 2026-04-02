@@ -37,11 +37,26 @@ class PaymentService
 
     public function getGlobalConfigurations(): array
     {
-        return ['countries' => $this->countryConfigs, 'methods' => $this->supportedMethods];
+        // Dynamically fetch countries from DB
+        $countries = \App\Models\Country::orderBy('order')->get()->keyBy('iso')->toArray();
+
+        // Merge with defaults so we don't lose default countries if DB only has custom ones.
+        if (empty($countries)) {
+            $countries = $this->countryConfigs;
+        } else {
+            foreach ($this->countryConfigs as $iso => $config) {
+                if (!isset($countries[$iso])) {
+                    $countries[$iso] = $config;
+                }
+            }
+        }
+
+        return ['countries' => $countries, 'methods' => $this->supportedMethods];
     }
 
     private function initializeConfigurations(): void
     {
+        // Default configs, just in case DB is empty. Real data is in the database now.
         $this->countryConfigs = [
             'CI' => ['currency' => 'XOF', 'code' => '225', 'iso' => 'CI', 'name' => "Côte d'Ivoire"],
             'BJ' => ['currency' => 'XOF', 'code' => '229', 'iso' => 'BJ', 'name' => 'Bénin'],

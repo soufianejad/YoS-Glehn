@@ -31,18 +31,62 @@ class SettingsController extends Controller
         return view('admin.settings.payment', compact('settings', 'payment_methods'));
     }
 
+    public function storeCountry(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'iso' => 'required|string|size:2|unique:countries,iso',
+            'currency' => 'required|string|size:3',
+            'code' => 'nullable|string|max:10',
+        ]);
+
+        $maxOrder = \App\Models\Country::max('order') ?? 0;
+        $validated['order'] = $maxOrder + 1;
+        $validated['iso'] = strtoupper($validated['iso']);
+        $validated['currency'] = strtoupper($validated['currency']);
+
+        \App\Models\Country::create($validated);
+
+        return back()->with('success', __('Pays ajouté avec succès.'));
+    }
+
     public function updatePayment(Request $request)
     {
+        // Update countries order
+        $countriesOrder = $request->input('countries_order', []);
+        if (!empty($countriesOrder)) {
+            foreach ($countriesOrder as $index => $iso) {
+                \App\Models\Country::where('iso', $iso)->update(['order' => $index + 1]);
+            }
+        }
+
         // We expect an array of [country_code][method_code] = on
         $methods = $request->input('methods', []);
+        $methodsOrder = $request->input('methods_order', []);
+
+        // Sort the checked methods array according to the order submitted
+        $orderedMethods = [];
+        foreach ($methods as $iso => $countryMethods) {
+            if (isset($methodsOrder[$iso])) {
+                $orderedMethods[$iso] = [];
+                // Add methods in the order they appear in methods_order
+                foreach ($methodsOrder[$iso] as $methodCode) {
+                    if (isset($countryMethods[$methodCode])) {
+                        $orderedMethods[$iso][$methodCode] = $countryMethods[$methodCode];
+                    }
+                }
+            } else {
+                $orderedMethods[$iso] = $countryMethods;
+            }
+        }
         
         $setting = Setting::firstOrNew(['key' => 'payment_methods', 'group' => 'payment']);
-        $setting->value = json_encode($methods);
+        $setting->value = json_encode($orderedMethods);
         $setting->type = 'json';
         $setting->save();
 
         // Also update other individual payment settings if any
-        foreach ($request->except(['_token', '_method', 'methods']) as $key => $value) {
+        foreach ($request->except(['_token', '_method', 'methods', 'countries_order', 'methods_order']) as $key => $value) {
             $s = Setting::firstOrNew(['key' => $key, 'group' => 'payment']);
             $s->value = $value;
             $s->type = 'string';

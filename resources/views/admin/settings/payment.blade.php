@@ -12,24 +12,62 @@
     // Regrouper les méthodes par provider pour les filtres
     $providers = collect($allMethods)->pluck('provider')->unique()->sort()->values();
     $groups    = collect($allMethods)->pluck('group')->unique()->sort()->values();
+
+    // The payment_methods config format: [iso => ['methodCode1', 'methodCode2', ...]] or [iso => ['methodCode1' => 'on', ...]]
+    // Let's ensure it's handled uniformly.
 @endphp
 
 @section('content')
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <div class="container-fluid px-4 py-4">
 
     {{-- En-tête --}}
     <div class="d-flex align-items-center justify-content-between mb-4">
         <div>
             <h4 class="fw-bold mb-1" style="color:#1e293b;">⚙️ Modes de paiement</h4>
-            <p class="text-muted small mb-0">Activez ou désactivez chaque méthode par pays. Les changements s'appliquent immédiatement.</p>
+            <p class="text-muted small mb-0">Ajoutez des pays, activez, désactivez et réorganisez (drag & drop) les méthodes de paiement pour chaque pays.</p>
         </div>
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-select-all">
-                <i class="fas fa-check-double me-1"></i> Tout sélectionner
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addCountryModal">
+                <i class="fas fa-plus me-1"></i> Ajouter un pays
             </button>
-            <button type="button" class="btn btn-sm btn-outline-danger" id="btn-clear-all">
-                <i class="fas fa-times me-1"></i> Tout désélectionner
-            </button>
+        </div>
+    </div>
+
+    {{-- Modal Ajouter un pays --}}
+    <div class="modal fade" id="addCountryModal" tabindex="-1" aria-labelledby="addCountryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form action="{{ route('admin.settings.payment.country.store') }}" method="POST">
+                @csrf
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addCountryModalLabel">Ajouter un nouveau pays</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="country_name" class="form-label">Nom du pays</label>
+                            <input type="text" class="form-control" id="country_name" name="name" required placeholder="ex: Sénégal">
+                        </div>
+                        <div class="mb-3">
+                            <label for="country_iso" class="form-label">Code ISO (2 lettres)</label>
+                            <input type="text" class="form-control" id="country_iso" name="iso" required placeholder="ex: SN" maxlength="2" style="text-transform: uppercase;">
+                        </div>
+                        <div class="mb-3">
+                            <label for="country_currency" class="form-label">Devise</label>
+                            <input type="text" class="form-control" id="country_currency" name="currency" required placeholder="ex: XOF" maxlength="3" style="text-transform: uppercase;">
+                        </div>
+                        <div class="mb-3">
+                            <label for="country_code" class="form-label">Indicatif téléphonique</label>
+                            <input type="text" class="form-control" id="country_code" name="code" placeholder="ex: 221">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -75,15 +113,26 @@
         <div id="countries-container">
             @foreach($countries as $iso => $country)
             @php
-                // Méthodes disponibles pour ce pays
-                $countryMethods = collect($allMethods)->filter(fn($m) => in_array($iso, $m['countries']));
+                // Toutes les méthodes sont désormais disponibles
+                $countryMethods = collect($allMethods);
+
+                // Déterminer l'ordre des méthodes à partir des paramètres
+                $savedCountryMethods = isset($payment_methods[$iso]) ? $payment_methods[$iso] : [];
+                $orderedKeys = is_array($savedCountryMethods) && count($savedCountryMethods) > 0 && is_numeric(key($savedCountryMethods))
+                    ? $savedCountryMethods
+                    : array_keys(array_filter($savedCountryMethods, fn($v) => $v === 'on'));
+
+                $countryMethods = $countryMethods->sortBy(function($method, $methodCode) use ($orderedKeys) {
+                    $pos = array_search($methodCode, $orderedKeys);
+                    return $pos !== false ? $pos : 9999;
+                });
             @endphp
-            @if($countryMethods->isEmpty()) @continue @endif
 
             <div class="card border-0 shadow-sm mb-3 country-card"
                  style="border-radius:12px; overflow:hidden;"
                  data-country-name="{{ strtolower($country['name']) }}"
                  data-country-iso="{{ $iso }}">
+                <input type="hidden" name="countries_order[]" value="{{ $iso }}">
 
                 {{-- Header pays --}}
                 <div class="card-header bg-white border-0 py-3 px-4 d-flex align-items-center justify-content-between"
@@ -92,6 +141,9 @@
                      data-bs-target="#country-{{ $iso }}">
 
                     <div class="d-flex align-items-center gap-3">
+                        <div class="drag-handle-country text-muted me-2" style="cursor: grab;">
+                            <i class="fas fa-grip-vertical"></i>
+                        </div>
                         <div class="country-flag fw-bold text-white d-flex align-items-center justify-content-center rounded-circle"
                              style="width:42px;height:42px;background:linear-gradient(135deg,#3b82f6,#6366f1);font-size:.8rem;flex-shrink:0;">
                             {{ $iso }}
@@ -123,7 +175,7 @@
                 {{-- Méthodes --}}
                 <div class="collapse show" id="country-{{ $iso }}">
                     <div class="card-body px-4 py-3">
-                        <div class="row g-2">
+                        <div class="row g-2 methods-sortable" data-iso="{{ $iso }}">
                             @foreach($countryMethods as $methodCode => $method)
                             @php
                                 $isChecked = isset($payment_methods[$iso][$methodCode]) && $payment_methods[$iso][$methodCode] === 'on';
@@ -139,9 +191,13 @@
                             <div class="col-6 col-md-4 col-lg-3 method-item"
                                  data-provider="{{ $method['provider'] }}"
                                  data-group="{{ $method['group'] }}">
+                                <input type="hidden" name="methods_order[{{ $iso }}][]" value="{{ $methodCode }}">
                                 <label class="method-card d-flex align-items-center gap-2 p-2 rounded-3 w-100 {{ $isChecked ? 'active' : '' }}"
                                        for="check_{{ $iso }}_{{ $methodCode }}"
-                                       style="cursor:pointer; border: 1.5px solid {{ $isChecked ? $method['icon_color'] : '#e2e8f0' }}; background: {{ $isChecked ? 'rgba('.implode(',',sscanf(ltrim($method['icon_color'],'#'),'%02x%02x%02x')).',0.06)' : '#fff' }}; transition: all .15s;">
+                                       style="cursor:grab; border: 1.5px solid {{ $isChecked ? $method['icon_color'] : '#e2e8f0' }}; background: {{ $isChecked ? 'rgba('.implode(',',sscanf(ltrim($method['icon_color'],'#'),'%02x%02x%02x')).',0.06)' : '#fff' }}; transition: all .15s;">
+                                    <div class="drag-handle-method text-muted" style="cursor: grab;">
+                                        <i class="fas fa-grip-vertical"></i>
+                                    </div>
                                     <input class="form-check-input mt-0 flex-shrink-0 method-checkbox"
                                            type="checkbox"
                                            name="methods[{{ $iso }}][{{ $methodCode }}]"
@@ -200,10 +256,31 @@
 .collapse-icon { transition: transform .2s; }
 .collapsed .collapse-icon { transform: rotate(-90deg); }
 [data-bs-toggle="collapse"].collapsed .collapse-icon { transform: rotate(-90deg); }
+.sortable-ghost { opacity: 0.4; }
+.sortable-drag { cursor: grabbing !important; }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Initialize Sortable for Countries
+    const countriesContainer = document.getElementById('countries-container');
+    if (countriesContainer) {
+        new Sortable(countriesContainer, {
+            handle: '.drag-handle-country',
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+        });
+    }
+
+    // Initialize Sortable for Methods inside each Country
+    document.querySelectorAll('.methods-sortable').forEach(container => {
+        new Sortable(container, {
+            handle: '.drag-handle-method',
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+        });
+    });
+
     const checkboxes = () => document.querySelectorAll('.method-checkbox');
     const totalCheckedEl = document.getElementById('total-checked');
 
@@ -244,16 +321,23 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Tout sélectionner / désélectionner
-    document.getElementById('btn-select-all').addEventListener('click', () => {
-        document.querySelectorAll('.method-item:not(.d-none) .method-checkbox').forEach(cb => {
-            cb.checked = true; cb.dispatchEvent(new Event('change'));
+    const btnSelectAll = document.getElementById('btn-select-all');
+    if (btnSelectAll) {
+        btnSelectAll.addEventListener('click', () => {
+            document.querySelectorAll('.method-item:not(.d-none) .method-checkbox').forEach(cb => {
+                cb.checked = true; cb.dispatchEvent(new Event('change'));
+            });
         });
-    });
-    document.getElementById('btn-clear-all').addEventListener('click', () => {
-        document.querySelectorAll('.method-item:not(.d-none) .method-checkbox').forEach(cb => {
-            cb.checked = false; cb.dispatchEvent(new Event('change'));
+    }
+
+    const btnClearAll = document.getElementById('btn-clear-all');
+    if (btnClearAll) {
+        btnClearAll.addEventListener('click', () => {
+            document.querySelectorAll('.method-item:not(.d-none) .method-checkbox').forEach(cb => {
+                cb.checked = false; cb.dispatchEvent(new Event('change'));
+            });
         });
-    });
+    }
 
     // Sélection par pays
     window.selectCountry = function(iso, state) {

@@ -263,6 +263,7 @@ Route::prefix('settings')->name('settings.')->group(function () {
     Route::get('/general', [SettingsController::class, 'general'])->name('general');
     Route::get('/payment', [SettingsController::class, 'payment'])->name('payment');
     Route::post('/payment', [SettingsController::class, 'updatePayment'])->name('payment.update');
+    Route::post('/payment/country', [SettingsController::class, 'storeCountry'])->name('payment.country.store');
     Route::get('/email', [SettingsController::class, 'email'])->name('email');
     Route::get('/appearance', [SettingsController::class, 'appearance'])->name('appearance');
     Route::get('/languages', [SettingsController::class, 'languages'])->name('languages');
