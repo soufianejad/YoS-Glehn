@@ -48,17 +48,17 @@
 <body>
     <div class="container">
         <div class="header">
-            <h2>KlicVote</h2>
+            <h2>{{ config('app.name') }}</h2>
         </div>
         <div class="content">
-            <p>Bonjour,</p>
-            <p>Vous avez demandé un code de vérification pour votre inscription sur KlicVote. Voici votre code :</p>
+            <p>{{ __('Bonjour,') }}</p>
+            <p>{{ __('Vous avez demandé un code de vérification pour votre inscription sur :app_name. Voici votre code :', ['app_name' => config('app.name')]) }}</p>
             <div class="code">{{ $code }}</div>
-            <p>Ce code est valide pour les 10 prochaines minutes.</p>
-            <p>Si vous n'avez pas demandé ce code, vous pouvez ignorer cet email.</p>
+            <p>{{ __('Ce code est valide pour les 10 prochaines minutes.') }}</p>
+            <p>{{ __('Si vous n\'avez pas demandé ce code, vous pouvez ignorer cet email.') }}</p>
         </div>
         <div class="footer">
-            <p>&copy; {{ date('Y') }} KlicVote. Tous droits réservés.</p>
+            <p>&copy; {{ date('Y') }} {{ config('app.name') }}. {{ __('Tous droits réservés.') }}</p>
         </div>
     </div>
 </body>

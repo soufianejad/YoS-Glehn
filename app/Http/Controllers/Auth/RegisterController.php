@@ -37,11 +37,11 @@ class RegisterController extends Controller
         ]);
 
         if (session('verified_email') !== $request->email) {
-            return back()->withErrors(['email' => 'L\'adresse email n\'a pas été vérifiée ou a été modifiée après vérification.'])->withInput();
+            return back()->withErrors(['email' => __('L\'adresse email n\'a pas été vérifiée ou a été modifiée après vérification.')])->withInput();
         }
 
         if (session('verified_phone') !== $request->phone) {
-            return back()->withErrors(['phone' => 'Le numéro de téléphone n\'a pas été vérifié ou a été modifié après vérification.'])->withInput();
+            return back()->withErrors(['phone' => __('Le numéro de téléphone n\'a pas été vérifié ou a été modifié après vérification.')])->withInput();
         }
 
         $user = User::create([
@@ -80,13 +80,13 @@ class RegisterController extends Controller
 
             try {
                 Mail::to($request->email)->send(new VerificationCodeMail($code));
-                return response()->json(['success' => true, 'message' => 'Code envoyé par email avec succès.']);
+                return response()->json(['success' => true, 'message' => __('Code envoyé par email avec succès.')]);
             } catch (\Exception $e) {
                 Log::error("RegisterController: Erreur d'envoi email de vérification", [
                     'email' => $request->email,
                     'error' => $e->getMessage()
                 ]);
-                return response()->json(['success' => false, 'message' => 'Erreur lors de l\'envoi de l\'email.'], 500);
+                return response()->json(['success' => false, 'message' => __('Erreur lors de l\'envoi de l\'email.')], 500);
             }
         } else if ($type === 'phone') {
             $request->validate(['phone' => ['required', 'string']]);
@@ -96,7 +96,7 @@ class RegisterController extends Controller
                 "verification_target_phone" => $request->phone
             ]);
 
-            $messageBody = "Votre code de vérification pour KlicVote est : " . $code;
+            $messageBody = __("Votre code de vérification pour :app_name est : ", ['app_name' => config('app.name')]) . $code;
 
             $apiToken = env('WAAPI_API_TOKEN');
             if ($apiToken) {
@@ -141,17 +141,17 @@ class RegisterController extends Controller
                 }
 
                 if ($sent) {
-                    return response()->json(['success' => true, 'message' => 'Code envoyé sur WhatsApp avec succès.']);
+                    return response()->json(['success' => true, 'message' => __('Code envoyé sur WhatsApp avec succès.')]);
                 } else {
-                    return response()->json(['success' => false, 'message' => 'Impossible d\'envoyer le message WhatsApp.'], 500);
+                    return response()->json(['success' => false, 'message' => __('Impossible d\'envoyer le message WhatsApp.')], 500);
                 }
             } else {
                 Log::error("RegisterController: Token WAAPI_API_TOKEN manquant");
-                return response()->json(['success' => false, 'message' => 'Service WhatsApp non configuré.'], 500);
+                return response()->json(['success' => false, 'message' => __('Service WhatsApp non configuré.')], 500);
             }
         }
 
-        return response()->json(['success' => false, 'message' => 'Type invalide.'], 400);
+        return response()->json(['success' => false, 'message' => __('Type invalide.')], 400);
     }
 
     public function verifyCode(Request $request)
@@ -167,17 +167,17 @@ class RegisterController extends Controller
         $target = session("verification_target_{$type}");
 
         if (!$sessionCode || !$expiresAt || now()->greaterThan($expiresAt)) {
-            return response()->json(['success' => false, 'message' => 'Le code de vérification a expiré ou est invalide.'], 400);
+            return response()->json(['success' => false, 'message' => __('Le code de vérification a expiré ou est invalide.')], 400);
         }
 
         if ($request->code !== $sessionCode) {
-            return response()->json(['success' => false, 'message' => 'Code de vérification incorrect.'], 400);
+            return response()->json(['success' => false, 'message' => __('Code de vérification incorrect.')], 400);
         }
 
         session(["verified_{$type}" => $target]);
         session()->forget(["verification_code_{$type}", "verification_code_expires_at_{$type}", "verification_target_{$type}"]);
 
-        return response()->json(['success' => true, 'message' => 'Vérification réussie.']);
+        return response()->json(['success' => true, 'message' => __('Vérification réussie.')]);
     }
 
     public function showAdultInvitation(string $token)
