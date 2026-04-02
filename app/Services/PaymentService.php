@@ -175,13 +175,18 @@ class PaymentService
         $enabledMethods = $dbSettings ? json_decode($dbSettings->value, true) : null;
 
         $availableMethods = [];
-        foreach ($this->supportedMethods as $code => $details) {
-            if ($enabledMethods) {
-                if (isset($enabledMethods[$countryCode][$code]) && $enabledMethods[$countryCode][$code] === 'on') {
-                    $availableMethods[] = $this->fmt($code, $details);
+
+        if ($enabledMethods && isset($enabledMethods[$countryCode])) {
+            // Iterate over the stored order for the specific country
+            foreach ($enabledMethods[$countryCode] as $code => $status) {
+                if ($status === 'on' && isset($this->supportedMethods[$code])) {
+                    $availableMethods[] = $this->fmt($code, $this->supportedMethods[$code]);
                 }
-            } else {
-                if (in_array($countryCode, $details['countries'])) {
+            }
+        } else {
+            // Fallback if no settings are saved
+            foreach ($this->supportedMethods as $code => $details) {
+                if (isset($details['countries']) && in_array($countryCode, $details['countries'])) {
                     $availableMethods[] = $this->fmt($code, $details);
                 }
             }
