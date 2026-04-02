@@ -64,19 +64,26 @@ class SettingsController extends Controller
         $methods = $request->input('methods', []);
         $methodsOrder = $request->input('methods_order', []);
 
+        // Include ALL countries that exist, even if they have no methods sent in the request (empty array)
+        // so that they don't fall back to default methods in PaymentService.
+        $allCountriesIso = \App\Models\Country::pluck('iso')->toArray();
+
         // Sort the checked methods array according to the order submitted
         $orderedMethods = [];
-        foreach ($methods as $iso => $countryMethods) {
-            if (isset($methodsOrder[$iso])) {
-                $orderedMethods[$iso] = [];
+
+        foreach ($allCountriesIso as $iso) {
+            $orderedMethods[$iso] = []; // Initialize empty for the country
+
+            if (isset($methods[$iso]) && isset($methodsOrder[$iso])) {
+                $countryMethods = $methods[$iso];
                 // Add methods in the order they appear in methods_order
                 foreach ($methodsOrder[$iso] as $methodCode) {
                     if (isset($countryMethods[$methodCode])) {
                         $orderedMethods[$iso][$methodCode] = $countryMethods[$methodCode];
                     }
                 }
-            } else {
-                $orderedMethods[$iso] = $countryMethods;
+            } elseif (isset($methods[$iso])) {
+                 $orderedMethods[$iso] = $methods[$iso];
             }
         }
         

@@ -71,37 +71,47 @@
         </div>
     </div>
 
-    {{-- Filtres --}}
-    <div class="card border-0 shadow-sm mb-4" style="border-radius:12px;">
-        <div class="card-body py-3">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label class="form-label small fw-semibold text-muted mb-1">🔍 Rechercher un pays</label>
-                    <input type="text" id="filter-country" class="form-control form-control-sm" placeholder="Ex : Côte d'Ivoire, Bénin...">
+    {{-- Banque de Méthodes --}}
+    <div class="card border-primary shadow-sm mb-4 bg-white" style="border-radius:12px; border-width: 2px;">
+        <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+            <h5 class="fw-bold text-primary mb-1"><i class="fas fa-university me-2"></i> Banque de Méthodes</h5>
+            <p class="text-muted small mb-0">Glissez une méthode de paiement depuis cette zone vers un pays ci-dessous. Vous pouvez réutiliser les méthodes autant de fois que nécessaire.</p>
+        </div>
+        <div class="card-body">
+            <div class="row g-2 methods-bank" id="global-methods-list" style="min-height: 80px;">
+                @foreach($allMethods as $methodCode => $method)
+                @php
+                    $providerColors = [
+                        'touchpay'    => '#10b981',
+                        'paiementpro' => '#f59e0b',
+                        'pawapay'     => '#6366f1',
+                        'paystack'    => '#3b82f6',
+                        'wave'        => '#009FE3',
+                    ];
+                    $provColor = $providerColors[$method['provider']] ?? '#94a3b8';
+                @endphp
+                <div class="col-6 col-md-4 col-lg-2 method-item global-method"
+                     data-provider="{{ $method['provider'] }}"
+                     data-group="{{ $method['group'] }}"
+                     data-method-code="{{ $methodCode }}">
+                    <div class="method-card d-flex align-items-center gap-2 p-2 rounded-3 w-100"
+                           style="cursor:grab; border: 1.5px dashed #cbd5e1; background: #f8fafc; transition: all .15s;">
+                        <div class="drag-handle-method text-muted" style="cursor: grab;">
+                            <i class="fas fa-grip-vertical"></i>
+                        </div>
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="fw-semibold text-truncate" style="font-size:.78rem;color:{{ $method['icon_color'] }};">
+                                {{ $method['name'] }}
+                            </div>
+                            <div class="d-flex align-items-center gap-1 mt-0" style="font-size:.65rem;color:#94a3b8;">
+                                <span class="rounded-pill px-1" style="background:{{ $provColor }}20;color:{{ $provColor }};font-weight:600;">
+                                    {{ $method['provider'] }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label small fw-semibold text-muted mb-1">🏦 Prestataire</label>
-                    <select id="filter-provider" class="form-select form-select-sm">
-                        <option value="">Tous les prestataires</option>
-                        @foreach($providers as $prov)
-                            <option value="{{ $prov }}">{{ ucfirst($prov) }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small fw-semibold text-muted mb-1">📱 Type</label>
-                    <select id="filter-group" class="form-select form-select-sm">
-                        <option value="">Tous les types</option>
-                        @foreach($groups as $g)
-                            <option value="{{ $g }}">{{ $g }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <button type="button" class="btn btn-sm btn-light w-100" id="btn-reset-filters">
-                        <i class="fas fa-undo me-1"></i> Réinitialiser
-                    </button>
-                </div>
+                @endforeach
             </div>
         </div>
     </div>
@@ -110,7 +120,7 @@
     <form action="{{ route('admin.settings.payment.update') }}" method="POST" id="payment-form">
         @csrf
 
-        <div id="countries-container">
+        <div id="countries-container" class="row">
             @foreach($countries as $iso => $country)
             @php
                 // Toutes les méthodes sont désormais disponibles
@@ -128,17 +138,16 @@
                 });
             @endphp
 
-            <div class="card border-0 shadow-sm mb-3 country-card"
-                 style="border-radius:12px; overflow:hidden;"
+            <div class="col-md-6 mb-4">
+            <div class="card border shadow-sm country-card h-100"
+                 style="border-radius:12px; overflow:hidden; border-color:#e2e8f0;"
                  data-country-name="{{ strtolower($country['name']) }}"
                  data-country-iso="{{ $iso }}">
                 <input type="hidden" name="countries_order[]" value="{{ $iso }}">
 
                 {{-- Header pays --}}
-                <div class="card-header bg-white border-0 py-3 px-4 d-flex align-items-center justify-content-between"
-                     style="border-bottom: 2px solid #f1f5f9; cursor:pointer;"
-                     data-bs-toggle="collapse"
-                     data-bs-target="#country-{{ $iso }}">
+                <div class="card-header bg-light border-0 py-3 px-4 d-flex align-items-center justify-content-between"
+                     style="border-bottom: 2px solid #f1f5f9;">
 
                     <div class="d-flex align-items-center gap-3">
                         <div class="drag-handle-country text-muted me-2" style="cursor: grab;">
@@ -152,76 +161,66 @@
                             <div class="fw-semibold" style="color:#1e293b;">{{ $country['name'] }}</div>
                             <div class="text-muted" style="font-size:.75rem;">
                                 {{ $country['currency'] }} &bull;
-                                <span class="active-count text-success fw-semibold" id="count-{{ $iso }}">0</span> activé(s) / {{ $countryMethods->count() }}
+                                <span class="active-count text-success fw-semibold" id="count-{{ $iso }}">0</span> activé(s)
                             </div>
                         </div>
                     </div>
 
-                    <div class="d-flex align-items-center gap-3">
-                        <button type="button" class="btn btn-xs btn-outline-success btn-select-country px-2 py-1"
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-clear-country px-2 py-1"
                                 style="font-size:.72rem;" data-iso="{{ $iso }}"
-                                onclick="event.stopPropagation(); selectCountry('{{ $iso }}', true)">
-                            ✓ Tout
+                                onclick="clearCountry('{{ $iso }}')">
+                            <i class="fas fa-trash"></i> Vider
                         </button>
-                        <button type="button" class="btn btn-xs btn-outline-danger btn-clear-country px-2 py-1"
-                                style="font-size:.72rem;" data-iso="{{ $iso }}"
-                                onclick="event.stopPropagation(); selectCountry('{{ $iso }}', false)">
-                            ✕ Rien
-                        </button>
-                        <i class="fas fa-chevron-down text-muted collapse-icon" style="font-size:.8rem;transition:.2s;"></i>
                     </div>
-                </div>
 
                 {{-- Méthodes --}}
-                <div class="collapse show" id="country-{{ $iso }}">
-                    <div class="card-body px-4 py-3">
-                        <div class="row g-2 methods-sortable" data-iso="{{ $iso }}">
-                            @foreach($countryMethods as $methodCode => $method)
-                            @php
-                                $isChecked = isset($payment_methods[$iso][$methodCode]) && $payment_methods[$iso][$methodCode] === 'on';
-                                $providerColors = [
-                                    'touchpay'    => '#10b981',
-                                    'paiementpro' => '#f59e0b',
-                                    'pawapay'     => '#6366f1',
-                                    'paystack'    => '#3b82f6',
-                                    'wave'        => '#009FE3',
-                                ];
-                                $provColor = $providerColors[$method['provider']] ?? '#94a3b8';
-                            @endphp
-                            <div class="col-6 col-md-4 col-lg-3 method-item"
-                                 data-provider="{{ $method['provider'] }}"
-                                 data-group="{{ $method['group'] }}">
-                                <input type="hidden" name="methods_order[{{ $iso }}][]" value="{{ $methodCode }}">
-                                <label class="method-card d-flex align-items-center gap-2 p-2 rounded-3 w-100 {{ $isChecked ? 'active' : '' }}"
-                                       for="check_{{ $iso }}_{{ $methodCode }}"
-                                       style="cursor:grab; border: 1.5px solid {{ $isChecked ? $method['icon_color'] : '#e2e8f0' }}; background: {{ $isChecked ? 'rgba('.implode(',',sscanf(ltrim($method['icon_color'],'#'),'%02x%02x%02x')).',0.06)' : '#fff' }}; transition: all .15s;">
-                                    <div class="drag-handle-method text-muted" style="cursor: grab;">
-                                        <i class="fas fa-grip-vertical"></i>
+                <div class="card-body px-3 py-3" style="background:#f8fafc; min-height:120px;">
+                    <div class="row g-2 methods-sortable" data-iso="{{ $iso }}" style="min-height:100%;">
+                        @foreach($countryMethods as $methodCode => $method)
+                        @php
+                            // Ne montrer que les méthodes qui étaient effectivement activées
+                            $isChecked = isset($payment_methods[$iso][$methodCode]) && $payment_methods[$iso][$methodCode] === 'on';
+                            if (!$isChecked) continue;
+
+                            $providerColors = [
+                                'touchpay'    => '#10b981',
+                                'paiementpro' => '#f59e0b',
+                                'pawapay'     => '#6366f1',
+                                'paystack'    => '#3b82f6',
+                                'wave'        => '#009FE3',
+                            ];
+                            $provColor = $providerColors[$method['provider']] ?? '#94a3b8';
+                        @endphp
+                        <div class="col-12 col-md-6 col-lg-4 method-item"
+                             data-provider="{{ $method['provider'] }}"
+                             data-group="{{ $method['group'] }}"
+                             data-method-code="{{ $methodCode }}">
+                            <input type="hidden" name="methods_order[{{ $iso }}][]" value="{{ $methodCode }}">
+                            <input type="hidden" name="methods[{{ $iso }}][{{ $methodCode }}]" value="on">
+                            <div class="method-card d-flex align-items-center gap-2 p-2 rounded-3 w-100"
+                                   style="cursor:grab; border: 1.5px solid {{ $method['icon_color'] }}; background: #fff; transition: all .15s;">
+                                <div class="drag-handle-method text-muted" style="cursor: grab;">
+                                    <i class="fas fa-grip-vertical"></i>
+                                </div>
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <div class="fw-semibold text-truncate" style="font-size:.78rem;color:{{ $method['icon_color'] }};">
+                                        {{ $method['name'] }}
                                     </div>
-                                    <input class="form-check-input mt-0 flex-shrink-0 method-checkbox"
-                                           type="checkbox"
-                                           name="methods[{{ $iso }}][{{ $methodCode }}]"
-                                           id="check_{{ $iso }}_{{ $methodCode }}"
-                                           data-iso="{{ $iso }}"
-                                           {{ $isChecked ? 'checked' : '' }}
-                                           style="width:16px;height:16px;accent-color:{{ $method['icon_color'] }};">
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <div class="fw-semibold text-truncate" style="font-size:.78rem;color:{{ $method['icon_color'] }};">
-                                            {{ $method['name'] }}
-                                        </div>
-                                        <div class="d-flex align-items-center gap-1 mt-0" style="font-size:.65rem;color:#94a3b8;">
-                                            <span class="rounded-pill px-1" style="background:{{ $provColor }}20;color:{{ $provColor }};font-weight:600;">
-                                                {{ $method['provider'] }}
-                                            </span>
-                                            <span class="text-muted">{{ $methodCode }}</span>
-                                        </div>
+                                    <div class="d-flex align-items-center gap-1 mt-0" style="font-size:.65rem;color:#94a3b8;">
+                                        <span class="rounded-pill px-1" style="background:{{ $provColor }}20;color:{{ $provColor }};font-weight:600;">
+                                            {{ $method['provider'] }}
+                                        </span>
                                     </div>
-                                </label>
+                                </div>
+                                <button type="button" class="btn btn-sm text-danger border-0 p-1 remove-method" onclick="this.closest('.method-item').remove(); updateTotalCount(); updateCountryCount('{{ $iso }}');">
+                                    <i class="fas fa-times"></i>
+                                </button>
                             </div>
-                            @endforeach
                         </div>
+                        @endforeach
                     </div>
                 </div>
+            </div>
             </div>
             @endforeach
         </div>
@@ -272,26 +271,97 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Initialize Sortable for the Global Bank
+    const globalBank = document.getElementById('global-methods-list');
+    if (globalBank) {
+        new Sortable(globalBank, {
+            group: {
+                name: 'shared-methods',
+                pull: 'clone', // Clone the element when dragging out
+                put: false     // Do not allow dragging elements back into the bank
+            },
+            animation: 150,
+            sort: false, // Prevent sorting within the bank
+            ghostClass: 'sortable-ghost',
+        });
+    }
+
     // Initialize Sortable for Methods inside each Country
     document.querySelectorAll('.methods-sortable').forEach(container => {
         new Sortable(container, {
+            group: 'shared-methods',
             handle: '.drag-handle-method',
             animation: 150,
             ghostClass: 'sortable-ghost',
+            onAdd: function (evt) {
+                const itemEl = evt.item; // The cloned item element
+                const iso = container.dataset.iso;
+                const methodCode = itemEl.dataset.methodCode;
+
+                // Check for duplicates
+                const existingItems = container.querySelectorAll(`[data-method-code="${methodCode}"]`);
+                if (existingItems.length > 1) {
+                    itemEl.remove(); // Remove duplicate
+                    alert('Cette méthode est déjà activée pour ce pays.');
+                    return;
+                }
+
+                // Update classes for layout
+                itemEl.className = 'col-12 col-md-6 col-lg-4 method-item';
+
+                // Ensure solid border and correct background after drop
+                const card = itemEl.querySelector('.method-card');
+                if(card) {
+                    card.style.borderStyle = 'solid';
+                }
+
+                // Remove old hidden inputs if this item was dragged from another country
+                const oldInputs = itemEl.querySelectorAll('input[type="hidden"]');
+                oldInputs.forEach(input => input.remove());
+
+                // Add hidden inputs for ordering and state for the NEW country
+                const inputsHtml = `
+                    <input type="hidden" name="methods_order[${iso}][]" value="${methodCode}">
+                    <input type="hidden" name="methods[${iso}][${methodCode}]" value="on">
+                `;
+                itemEl.insertAdjacentHTML('afterbegin', inputsHtml);
+
+                // Add delete button
+                if (!itemEl.querySelector('.remove-method')) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.type = 'button';
+                    deleteBtn.className = 'btn btn-sm text-danger border-0 p-1 remove-method';
+                    deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+                    deleteBtn.onclick = function() {
+                        itemEl.remove();
+                        updateTotalCount();
+                        updateCountryCount(iso);
+                    };
+                    if(card) {
+                        card.appendChild(deleteBtn);
+                    } else {
+                        itemEl.appendChild(deleteBtn);
+                    }
+                }
+
+                updateTotalCount();
+                updateCountryCount(iso);
+            }
         });
     });
 
-    const checkboxes = () => document.querySelectorAll('.method-checkbox');
     const totalCheckedEl = document.getElementById('total-checked');
 
     // Compteur total
     function updateTotalCount() {
-        totalCheckedEl.textContent = document.querySelectorAll('.method-checkbox:checked').length;
+        if (totalCheckedEl) {
+            totalCheckedEl.textContent = document.querySelectorAll('#countries-container .method-item').length;
+        }
     }
 
     // Compteur par pays
-    function updateCountryCount(iso) {
-        const checked = document.querySelectorAll(`.method-checkbox[data-iso="${iso}"]:checked`).length;
+    window.updateCountryCount = function(iso) {
+        const checked = document.querySelectorAll(`.methods-sortable[data-iso="${iso}"] .method-item`).length;
         const el = document.getElementById('count-' + iso);
         if (el) el.textContent = checked;
     }
@@ -303,47 +373,16 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     updateTotalCount();
 
-    // Style dynamique sur checkbox change
-    document.querySelectorAll('.method-checkbox').forEach(cb => {
-        cb.addEventListener('change', function () {
-            const label = this.closest('label');
-            const color = this.style.accentColor;
-            if (this.checked) {
-                label.style.borderColor = color;
-                label.style.background = 'rgba(0,0,0,0.03)';
-            } else {
-                label.style.borderColor = '#e2e8f0';
-                label.style.background = '#fff';
+    // Vider un pays
+    window.clearCountry = function(iso) {
+        if(confirm('Voulez-vous vraiment retirer toutes les méthodes de ce pays ?')) {
+            const container = document.querySelector(`.methods-sortable[data-iso="${iso}"]`);
+            if (container) {
+                container.innerHTML = '';
+                updateCountryCount(iso);
+                updateTotalCount();
             }
-            updateCountryCount(this.dataset.iso);
-            updateTotalCount();
-        });
-    });
-
-    // Tout sélectionner / désélectionner
-    const btnSelectAll = document.getElementById('btn-select-all');
-    if (btnSelectAll) {
-        btnSelectAll.addEventListener('click', () => {
-            document.querySelectorAll('.method-item:not(.d-none) .method-checkbox').forEach(cb => {
-                cb.checked = true; cb.dispatchEvent(new Event('change'));
-            });
-        });
-    }
-
-    const btnClearAll = document.getElementById('btn-clear-all');
-    if (btnClearAll) {
-        btnClearAll.addEventListener('click', () => {
-            document.querySelectorAll('.method-item:not(.d-none) .method-checkbox').forEach(cb => {
-                cb.checked = false; cb.dispatchEvent(new Event('change'));
-            });
-        });
-    }
-
-    // Sélection par pays
-    window.selectCountry = function(iso, state) {
-        document.querySelectorAll(`.method-checkbox[data-iso="${iso}"]`).forEach(cb => {
-            cb.checked = state; cb.dispatchEvent(new Event('change'));
-        });
+        }
     };
 
     // ── Filtres ──────────────────────────────────────────────────────────────

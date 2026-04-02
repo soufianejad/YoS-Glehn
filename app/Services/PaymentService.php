@@ -176,7 +176,9 @@ class PaymentService
 
         $availableMethods = [];
 
-        if ($enabledMethods && isset($enabledMethods[$countryCode])) {
+        // If enabledMethods explicitly has the key $countryCode, it means the admin saved the config
+        // even if the array is empty (meaning 0 payment methods allowed for that country).
+        if ($enabledMethods !== null && array_key_exists($countryCode, $enabledMethods)) {
             // Iterate over the stored order for the specific country
             foreach ($enabledMethods[$countryCode] as $code => $status) {
                 if ($status === 'on' && isset($this->supportedMethods[$code])) {
@@ -184,7 +186,7 @@ class PaymentService
                 }
             }
         } else {
-            // Fallback if no settings are saved
+            // Fallback if no settings are saved globally or for this specific country
             foreach ($this->supportedMethods as $code => $details) {
                 if (isset($details['countries']) && in_array($countryCode, $details['countries'])) {
                     $availableMethods[] = $this->fmt($code, $details);
