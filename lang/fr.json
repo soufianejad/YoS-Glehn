@@ -2122,5 +2122,6 @@
     "Votre code de vérification pour :app_name est : ": "Votre code de vérification pour :app_name est : ",
     "Vous avez demandé un code de vérification pour votre inscription sur :app_name. Voici votre code :": "Vous avez demandé un code de vérification pour votre inscription sur :app_name. Voici votre code :",
     "Ce code est valide pour les 10 prochaines minutes.": "Ce code est valide pour les 10 prochaines minutes.",
-    "Si vous n'avez pas demandé ce code, vous pouvez ignorer cet email.": "Si vous n'avez pas demandé ce code, vous pouvez ignorer cet email."
+    "Si vous n'avez pas demandé ce code, vous pouvez ignorer cet email.": "Si vous n'avez pas demandé ce code, vous pouvez ignorer cet email.",
+    "Votre code de vérification pour :app_name": "Votre code de vérification pour :app_name"
 }

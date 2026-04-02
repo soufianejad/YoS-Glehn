@@ -29,7 +29,7 @@ class VerificationCodeMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Votre code de vérification KlicVote',
+            subject: __('Votre code de vérification pour :app_name', ['app_name' => config('app.name')]),
         );
     }
 
