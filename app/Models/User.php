@@ -23,6 +23,7 @@ class User extends Authenticatable
         'last_name',
         'email',
         'phone',
+        'date_of_birth',
         'password',
         'role',
         'avatar',
@@ -60,6 +61,7 @@ class User extends Authenticatable
         'is_verified' => 'boolean',
         'can_receive_messages' => 'boolean',
         'notification_preferences' => 'array',
+        'date_of_birth' => 'date',
     ];
 
     // Accesseurs

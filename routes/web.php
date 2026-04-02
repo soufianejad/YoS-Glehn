@@ -90,6 +90,10 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register']);
 
+    // AJAX Verification Routes
+    Route::post('/register/send-verification', [RegisterController::class, 'sendVerificationCode'])->name('register.send_verification');
+    Route::post('/register/verify-code', [RegisterController::class, 'verifyCode'])->name('register.verify_code');
+
     // Student Registration with Access Code
     Route::get('/student-registration', [App\Http\Controllers\StudentRegistrationController::class, 'create'])->name('student.register');
     Route::post('/student-registration', [App\Http\Controllers\StudentRegistrationController::class, 'store']);
