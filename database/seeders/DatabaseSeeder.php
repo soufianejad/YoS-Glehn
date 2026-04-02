@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             // Core data without dependencies
             SettingSeeder::class,
+            CountrySeeder::class,
             SubscriptionPlanSeeder::class,
             CategorySeeder::class,
             BadgeSeeder::class,
