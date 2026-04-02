@@ -67,6 +67,7 @@ class PaymentService
             'MA' => ['currency' => 'MAD', 'code' => '212', 'iso' => 'MA', 'name' => 'Maroc'],
             'FR' => ['currency' => 'EUR', 'code' => '33',  'iso' => 'FR', 'name' => 'France'],
             'MZ' => ['currency' => 'MZN', 'code' => '258', 'iso' => 'MZ', 'name' => 'Mozambique'],
+            'OT' => ['currency' => 'XOF', 'code' => '',    'iso' => 'OT', 'name' => 'Autres pays'],
         ];
 
         $all = array_keys($this->countryConfigs);
@@ -148,7 +149,13 @@ class PaymentService
 
     public function getAvailablePaymentMethods(string $phone = null, string $countryIso = null): array
     {
-        $countryCode    = strtoupper($countryIso ?? ($phone ? $this->detectCountryFromPhone($phone) : 'CI'));
+        $countryCode = strtoupper($countryIso ?? ($phone ? $this->detectCountryFromPhone($phone) : 'CI'));
+
+        // Si le pays n'est pas dans notre liste configurée, on bascule sur "Autres pays" (OT)
+        if (!isset($this->countryConfigs[$countryCode])) {
+            $countryCode = 'OT';
+        }
+
         $dbSettings     = Setting::where('key', 'payment_methods')->first();
         $enabledMethods = $dbSettings ? json_decode($dbSettings->value, true) : null;
 
