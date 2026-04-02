@@ -64,27 +64,60 @@
                             </div>
                         </div>
 
+                        <!-- Email Section -->
                         <div class="row mb-3">
                             <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Adresse E-mail') }}</label>
 
                             <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email">
-
+                                <div class="input-group">
+                                    <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email">
+                                    <button class="btn btn-outline-secondary" type="button" id="btn-send-email-code">
+                                        <span class="spinner-border spinner-border-sm d-none" id="send-email-spinner" role="status" aria-hidden="true"></span>
+                                        <span id="send-email-text">{{ __('Vérifier') }}</span>
+                                    </button>
+                                </div>
                                 @error('email')
-                                    <span class="invalid-feedback" role="alert">
+                                    <span class="invalid-feedback d-block" role="alert">
                                         <strong>{{ $message }}</strong>
                                     </span>
                                 @enderror
                             </div>
                         </div>
 
+                        <div class="row mb-3 d-none" id="email-verification-box">
+                            <div class="col-md-6 offset-md-4">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="email_verification_code" placeholder="Code reçu par email">
+                                    <button class="btn btn-outline-success" type="button" id="btn-verify-email-code">
+                                        <span class="spinner-border spinner-border-sm d-none" id="verify-email-spinner" role="status" aria-hidden="true"></span>
+                                        <span id="verify-email-text">{{ __('Valider') }}</span>
+                                    </button>
+                                </div>
+                                <input type="hidden" name="is_verified_email" id="is_verified_email" value="">
+                                @error('is_verified_email')
+                                    <span class="invalid-feedback d-block" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Phone Section -->
                         <div class="row mb-3">
                             <label for="phone" class="col-md-4 col-form-label text-md-end">{{ __('Numéro de téléphone') }}</label>
 
                             <div class="col-md-6">
-                                <input type="tel" id="phone_display" class="form-control" value="{{ old('phone') }}" required>
-                                <input type="hidden" name="phone" id="phone_hidden" value="{{ old('phone') }}">
-                                <input type="hidden" name="country_iso" id="country_iso">
+                                <div class="d-flex">
+                                    <div class="flex-grow-1">
+                                        <input type="tel" id="phone_display" class="form-control" value="{{ old('phone') }}" required>
+                                        <input type="hidden" name="phone" id="phone_hidden" value="{{ old('phone') }}">
+                                        <input type="hidden" name="country_iso" id="country_iso">
+                                    </div>
+                                    <button class="btn btn-outline-secondary ms-2" type="button" id="btn-send-phone-code">
+                                        <span class="spinner-border spinner-border-sm d-none" id="send-phone-spinner" role="status" aria-hidden="true"></span>
+                                        <span id="send-phone-text">{{ __('Vérifier') }}</span>
+                                    </button>
+                                </div>
                                 @error('phone')
                                     <span class="invalid-feedback d-block" role="alert">
                                         <strong>{{ $message }}</strong>
@@ -93,29 +126,17 @@
                             </div>
                         </div>
 
-                        <!-- Verification Section -->
-                        <div class="row mb-3">
+                        <div class="row mb-3 d-none" id="phone-verification-box">
                             <div class="col-md-6 offset-md-4">
-                                <button type="button" id="btn-send-code" class="btn btn-secondary w-100">
-                                    <span class="spinner-border spinner-border-sm d-none" id="send-code-spinner" role="status" aria-hidden="true"></span>
-                                    <span id="send-code-text">{{ __('Envoyer le code de vérification') }}</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3 d-none" id="verification-box">
-                            <label for="verification_code" class="col-md-4 col-form-label text-md-end">{{ __('Code de vérification') }}</label>
-                            <div class="col-md-6">
                                 <div class="input-group">
-                                    <input type="text" class="form-control" id="verification_code" placeholder="Entrez le code reçu">
-                                    <button class="btn btn-outline-success" type="button" id="btn-verify-code">
-                                        <span class="spinner-border spinner-border-sm d-none" id="verify-code-spinner" role="status" aria-hidden="true"></span>
-                                        <span id="verify-code-text">{{ __('Vérifier') }}</span>
+                                    <input type="text" class="form-control" id="phone_verification_code" placeholder="Code reçu par WhatsApp">
+                                    <button class="btn btn-outline-success" type="button" id="btn-verify-phone-code">
+                                        <span class="spinner-border spinner-border-sm d-none" id="verify-phone-spinner" role="status" aria-hidden="true"></span>
+                                        <span id="verify-phone-text">{{ __('Valider') }}</span>
                                     </button>
                                 </div>
-                                <div id="verification-feedback" class="mt-2"></div>
-                                <input type="hidden" name="is_verified_email" id="is_verified_email" value="">
-                                @error('is_verified_email')
+                                <input type="hidden" name="is_verified_phone" id="is_verified_phone" value="">
+                                @error('is_verified_phone')
                                     <span class="invalid-feedback d-block" role="alert">
                                         <strong>{{ $message }}</strong>
                                     </span>
@@ -288,98 +309,167 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // 4. AJAX Verification
-    const btnSendCode = document.getElementById('btn-send-code');
-    const btnVerifyCode = document.getElementById('btn-verify-code');
+    // 4. AJAX Verification (Email)
+    const btnSendEmailCode = document.getElementById('btn-send-email-code');
+    const btnVerifyEmailCode = document.getElementById('btn-verify-email-code');
     const emailInput = document.getElementById('email');
-    const isVerifiedInput = document.getElementById('is_verified_email');
+    const isVerifiedEmailInput = document.getElementById('is_verified_email');
+
+    // AJAX Verification (Phone)
+    const btnSendPhoneCode = document.getElementById('btn-send-phone-code');
+    const btnVerifyPhoneCode = document.getElementById('btn-verify-phone-code');
+    const isVerifiedPhoneInput = document.getElementById('is_verified_phone');
+
     const submitBtn = document.getElementById('submit-btn');
 
-    btnSendCode.addEventListener('click', function() {
+    function checkSubmitStatus() {
+        if (isVerifiedEmailInput.value === "1" && isVerifiedPhoneInput.value === "1") {
+            submitBtn.disabled = false;
+        }
+    }
+
+    // --- EMAIL ---
+    btnSendEmailCode.addEventListener('click', function() {
         const email = emailInput.value;
-        const phone = phoneHiddenInput.value;
-
-        if (!email || !phone) {
-            toastr.error('Veuillez renseigner votre email et votre numéro de téléphone.');
+        if (!email) {
+            toastr.error('Veuillez renseigner votre email.');
             return;
         }
 
-        if (!iti.isValidNumber()) {
-            toastr.error('Le numéro de téléphone est invalide.');
-            return;
-        }
-
-        document.getElementById('send-code-spinner').classList.remove('d-none');
-        btnSendCode.disabled = true;
+        document.getElementById('send-email-spinner').classList.remove('d-none');
+        btnSendEmailCode.disabled = true;
 
         fetch('{{ route('register.send_verification') }}', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ email: email, phone: phone })
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ type: 'email', email: email })
         })
         .then(res => res.json())
         .then(data => {
-            document.getElementById('send-code-spinner').classList.add('d-none');
-            btnSendCode.disabled = false;
+            document.getElementById('send-email-spinner').classList.add('d-none');
+            btnSendEmailCode.disabled = false;
 
             if (data.success) {
                 toastr.success(data.message);
-                document.getElementById('verification-box').classList.remove('d-none');
-                btnSendCode.classList.add('d-none');
+                document.getElementById('email-verification-box').classList.remove('d-none');
+                btnSendEmailCode.classList.add('d-none');
+                emailInput.readOnly = true;
             } else {
                 toastr.error(data.message || 'Une erreur est survenue.');
             }
         })
         .catch(err => {
-            document.getElementById('send-code-spinner').classList.add('d-none');
-            btnSendCode.disabled = false;
+            document.getElementById('send-email-spinner').classList.add('d-none');
+            btnSendEmailCode.disabled = false;
             toastr.error('Erreur de connexion.');
         });
     });
 
-    btnVerifyCode.addEventListener('click', function() {
-        const code = document.getElementById('verification_code').value;
-
+    btnVerifyEmailCode.addEventListener('click', function() {
+        const code = document.getElementById('email_verification_code').value;
         if (!code) {
-            toastr.error('Veuillez entrer le code reçu.');
+            toastr.error('Veuillez entrer le code reçu par email.');
             return;
         }
 
-        document.getElementById('verify-code-spinner').classList.remove('d-none');
-        btnVerifyCode.disabled = true;
+        document.getElementById('verify-email-spinner').classList.remove('d-none');
+        btnVerifyEmailCode.disabled = true;
 
         fetch('{{ route('register.verify_code') }}', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ code: code })
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ type: 'email', code: code })
         })
         .then(res => res.json())
         .then(data => {
-            document.getElementById('verify-code-spinner').classList.add('d-none');
-            btnVerifyCode.disabled = false;
+            document.getElementById('verify-email-spinner').classList.add('d-none');
 
             if (data.success) {
                 toastr.success(data.message);
-                isVerifiedInput.value = "1";
-                submitBtn.disabled = false;
-                document.getElementById('verification-box').classList.add('d-none');
-
-                // Lock inputs
-                emailInput.readOnly = true;
-                phoneInput.readOnly = true;
+                isVerifiedEmailInput.value = "1";
+                document.getElementById('email-verification-box').classList.add('d-none');
+                checkSubmitStatus();
             } else {
+                btnVerifyEmailCode.disabled = false;
                 toastr.error(data.message || 'Code incorrect.');
             }
         })
         .catch(err => {
-            document.getElementById('verify-code-spinner').classList.add('d-none');
-            btnVerifyCode.disabled = false;
+            document.getElementById('verify-email-spinner').classList.add('d-none');
+            btnVerifyEmailCode.disabled = false;
+            toastr.error('Erreur de connexion.');
+        });
+    });
+
+    // --- PHONE ---
+    btnSendPhoneCode.addEventListener('click', function() {
+        const phone = phoneHiddenInput.value;
+        if (!phone || !iti.isValidNumber()) {
+            toastr.error('Veuillez renseigner un numéro de téléphone valide.');
+            return;
+        }
+
+        document.getElementById('send-phone-spinner').classList.remove('d-none');
+        btnSendPhoneCode.disabled = true;
+
+        fetch('{{ route('register.send_verification') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ type: 'phone', phone: phone })
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('send-phone-spinner').classList.add('d-none');
+            btnSendPhoneCode.disabled = false;
+
+            if (data.success) {
+                toastr.success(data.message);
+                document.getElementById('phone-verification-box').classList.remove('d-none');
+                btnSendPhoneCode.classList.add('d-none');
+                phoneInput.readOnly = true;
+            } else {
+                toastr.error(data.message || 'Une erreur est survenue.');
+            }
+        })
+        .catch(err => {
+            document.getElementById('send-phone-spinner').classList.add('d-none');
+            btnSendPhoneCode.disabled = false;
+            toastr.error('Erreur de connexion.');
+        });
+    });
+
+    btnVerifyPhoneCode.addEventListener('click', function() {
+        const code = document.getElementById('phone_verification_code').value;
+        if (!code) {
+            toastr.error('Veuillez entrer le code reçu par WhatsApp.');
+            return;
+        }
+
+        document.getElementById('verify-phone-spinner').classList.remove('d-none');
+        btnVerifyPhoneCode.disabled = true;
+
+        fetch('{{ route('register.verify_code') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ type: 'phone', code: code })
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('verify-phone-spinner').classList.add('d-none');
+
+            if (data.success) {
+                toastr.success(data.message);
+                isVerifiedPhoneInput.value = "1";
+                document.getElementById('phone-verification-box').classList.add('d-none');
+                checkSubmitStatus();
+            } else {
+                btnVerifyPhoneCode.disabled = false;
+                toastr.error(data.message || 'Code incorrect.');
+            }
+        })
+        .catch(err => {
+            document.getElementById('verify-phone-spinner').classList.add('d-none');
+            btnVerifyPhoneCode.disabled = false;
             toastr.error('Erreur de connexion.');
         });
     });
