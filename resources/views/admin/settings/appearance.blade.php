@@ -12,7 +12,7 @@
 
         <div class="mb-3">
             <label for="theme" class="form-label">{{ __('Theme') }}</label>
-            <input type="text" class="form-control @error('theme') is-invalid @enderror" id="theme" name="theme" value="{{ old('theme', $settings['theme']) }}">
+            <input type="text" class="form-control @error('theme') is-invalid @enderror" id="theme" name="theme" value="{{ old('theme', $settings['theme'] ?? '') }}">
             @error('theme')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -20,7 +20,7 @@
 
         <div class="mb-3">
             <label for="logo" class="form-label">{{ __('Logo') }}</label>
-            @if($settings['logo'])
+            @if(!empty($settings['logo']))
                 <img src="{{ asset('storage/' . $settings['logo']) }}" alt="{{ __('Current Logo') }}" class="img-thumbnail mb-2" width="150">
             @endif
             <input type="file" class="form-control @error('logo') is-invalid @enderror" id="logo" name="logo">
@@ -31,7 +31,7 @@
 
         <div class="mb-3">
             <label for="favicon" class="form-label">{{ __('Favicon') }}</label>
-            @if($settings['favicon'])
+            @if(!empty($settings['favicon']))
                 <img src="{{ asset('storage/' . $settings['favicon']) }}" alt="{{ __('Current Favicon') }}" class="img-thumbnail mb-2" width="50">
             @endif
             <input type="file" class="form-control @error('favicon') is-invalid @enderror" id="favicon" name="favicon">
