@@ -169,7 +169,7 @@
         </nav>
 
         <!-- Content -->
-        <div id="content">
+        <div id="content" class="d-flex flex-column min-vh-100">
             @if(session()->has('impersonating'))
                 <div class="alert alert-warning mb-0 text-center">
                     You are currently impersonating a user. 
@@ -249,7 +249,7 @@
                 </div>
             </nav>
 
-            <main class="p-4">
+            <main class="p-4 flex-grow-1">
                 @if (session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
