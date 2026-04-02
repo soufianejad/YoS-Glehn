@@ -3,7 +3,9 @@
 @section('title', __('Paiement') . ' — ' . (isset($book) ? $book->title : $plan->name))
 
 @push('styles')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"/>
 <style>
+    .iti { width: 100%; }
     :root {
         --primary-color: #0d6efd;
         --bg-light: #f8fafc;
@@ -278,29 +280,14 @@
                     <input type="hidden" name="network" id="selected-network">
 
                     <div class="row mb-4">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <label class="form-label">{{ __('Votre numéro de téléphone') }}</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-phone-alt text-muted"></i></span>
-                                <input type="tel" name="phone" id="phone" class="form-control border-start-0" 
-                                       placeholder="Ex: 0707070707" value="{{ auth()->user()->phone ?? '' }}" required>
+                            <div>
+                                <input type="tel" name="phone_display" id="phone" class="form-control"
+                                       value="{{ auth()->user()->phone ?? '' }}" required>
+                                <input type="hidden" name="phone" id="phone_hidden">
+                                <input type="hidden" name="country_iso" id="country_iso">
                             </div>
-                        </div>
-                        <div class="col-md-6 mt-3 mt-md-0">
-                            <label class="form-label">{{ __('Pays de paiement') }}</label>
-                            <select class="form-select bg-light" id="country-select">
-                                @php
-                                    $countriesList = [
-                                        'CI' => "🇨🇮 Côte d'Ivoire", 'SN' => '🇸🇳 Sénégal', 'BJ' => '🇧🇯 Bénin',
-                                        'BF' => '🇧🇫 Burkina Faso', 'ML' => '🇲🇱 Mali', 'NE' => '🇳🇪 Niger',
-                                        'TG' => '🇹🇬 Togo', 'CM' => '🇨🇲 Cameroun', 'FR' => '🇫🇷 France / Europe',
-                                        'CD' => '🇨🇩 RD Congo', 'NG' => '🇳🇬 Nigéria', 'GH' => '🇬🇭 Ghana'
-                                    ];
-                                @endphp
-                                @foreach($countriesList as $iso => $label)
-                                    <option value="{{ $iso }}" {{ $iso === 'CI' ? 'selected' : '' }}>{{ $label }}</option>
-                                @endforeach
-                            </select>
                         </div>
                     </div>
 
@@ -350,6 +337,7 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     let currentMethods = @json($methods['methods'] ?? []);
@@ -357,9 +345,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const loadingEl = document.getElementById('networks-loading');
     const emptyEl = document.getElementById('networks-empty');
     const networkInput = document.getElementById('selected-network');
-    const countrySelect = document.getElementById('country-select');
+    const phoneInput = document.querySelector("#phone");
+    const phoneHiddenInput = document.querySelector("#phone_hidden");
+    const countryIsoInput = document.querySelector("#country_iso");
     const otpBox = document.getElementById('otp-container');
     const submitBtn = document.getElementById('submit-btn');
+
+    const iti = window.intlTelInput(phoneInput, {
+        initialCountry: "auto",
+        geoIpLookup: function(callback) {
+            fetch("https://ipinfo.io/json")
+                .then(resp => resp.json())
+                .then(data => callback(data.country))
+                .catch(() => callback("ci"));
+        },
+        utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+        preferredCountries: ['ci', 'sn', 'bj', 'bf', 'ml', 'ne', 'tg', 'cm', 'fr', 'cd', 'ng', 'gh']
+    });
 
     function renderNetworks(methods) {
         loadingEl.classList.add('d-none');
@@ -411,7 +413,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    countrySelect.addEventListener('change', (e) => fetchNetworks(e.target.value));
+    phoneInput.addEventListener("countrychange", function() {
+        const countryData = iti.getSelectedCountryData();
+        const iso2 = (countryData.iso2 || 'ci').toUpperCase();
+        countryIsoInput.value = iso2;
+        fetchNetworks(iso2);
+    });
 
     document.getElementById('payment-form').addEventListener('submit', function (e) {
         if (!networkInput.value) {
@@ -419,11 +426,29 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('network-error').classList.remove('d-none');
             return;
         }
+        // Update hidden inputs with full phone number and country
+        if (iti.isValidNumber()) {
+            phoneHiddenInput.value = iti.getNumber();
+        } else {
+            phoneHiddenInput.value = phoneInput.value;
+        }
+
         submitBtn.disabled = true;
         document.getElementById('btn-spinner').classList.remove('d-none');
         document.querySelector('.btn-text').classList.add('d-none');
     });
 
+    // Ensure country input is set initially
+    phoneInput.addEventListener("iti:initialised", function() {
+        const countryData = iti.getSelectedCountryData();
+        const iso2 = (countryData.iso2 || 'ci').toUpperCase();
+        countryIsoInput.value = iso2;
+        // On load, we use the initial networks injected via Blade.
+        // We could also fetch them based on detected IP:
+        fetchNetworks(iso2);
+    });
+
+    // Fallback if not initialized fast enough
     renderNetworks(currentMethods);
 });
 </script>
