@@ -140,14 +140,14 @@
 
             <div class="col-md-6 mb-4">
             <div class="card border shadow-sm country-card h-100"
-                 style="border-radius:12px; overflow:hidden; border-color:#e2e8f0;"
+                 style="border-radius:12px; border-color:#e2e8f0;"
                  data-country-name="{{ strtolower($country['name']) }}"
                  data-country-iso="{{ $iso }}">
                 <input type="hidden" name="countries_order[]" value="{{ $iso }}">
 
                 {{-- Header pays --}}
                 <div class="card-header bg-light border-0 py-3 px-4 d-flex align-items-center justify-content-between"
-                     style="border-bottom: 2px solid #f1f5f9;">
+                     style="border-bottom: 2px solid #f1f5f9; border-radius:12px 12px 0 0;">
 
                     <div class="d-flex align-items-center gap-3">
                         <div class="drag-handle-country text-muted me-2" style="cursor: grab;">
@@ -171,7 +171,7 @@
                             <button type="button" class="btn btn-sm btn-outline-primary px-2 py-1 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="font-size:.72rem;">
                                 <i class="fas fa-plus"></i> Ajouter
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size:.8rem; max-height:300px; overflow-y:auto;">
+                            <ul class="dropdown-menu dropdown-menu-end shadow" style="font-size:.8rem; max-height:300px; overflow-y:auto; z-index:1050;">
                                 @foreach($allMethods as $mc => $m)
                                     <li>
                                         <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onclick="event.preventDefault(); addMethodToCountry('{{ $iso }}', '{{ $mc }}')">
@@ -191,7 +191,7 @@
                 </div>
 
                 {{-- Méthodes --}}
-                <div class="card-body px-3 py-3" style="background:#f8fafc; min-height:120px;">
+                <div class="card-body px-3 py-3" style="background:#f8fafc; min-height:120px; border-radius:0 0 12px 12px;">
                     <div class="row g-2 methods-sortable" data-iso="{{ $iso }}" style="min-height:100%;">
                         @foreach($countryMethods as $methodCode => $method)
                         @php
