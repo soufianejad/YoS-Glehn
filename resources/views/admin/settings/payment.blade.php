@@ -166,12 +166,29 @@
                         </div>
                     </div>
 
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-sm btn-outline-primary px-2 py-1 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="font-size:.72rem;">
+                                <i class="fas fa-plus"></i> Ajouter
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size:.8rem; max-height:300px; overflow-y:auto;">
+                                @foreach($allMethods as $mc => $m)
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onclick="event.preventDefault(); addMethodToCountry('{{ $iso }}', '{{ $mc }}')">
+                                            <div style="width:12px;height:12px;background:{{ $m['icon_color'] }};border-radius:50%;"></div>
+                                            {{ $m['name'] }} <small class="text-muted ms-auto">{{ $m['provider'] }}</small>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
                         <button type="button" class="btn btn-sm btn-outline-danger btn-clear-country px-2 py-1"
                                 style="font-size:.72rem;" data-iso="{{ $iso }}"
                                 onclick="clearCountry('{{ $iso }}')">
                             <i class="fas fa-trash"></i> Vider
                         </button>
                     </div>
+                </div>
 
                 {{-- Méthodes --}}
                 <div class="card-body px-3 py-3" style="background:#f8fafc; min-height:120px;">
@@ -383,6 +400,62 @@ document.addEventListener('DOMContentLoaded', function () {
                 updateTotalCount();
             }
         }
+    };
+
+    // Ajouter manuellement une méthode via dropdown
+    window.addMethodToCountry = function(iso, methodCode) {
+        const container = document.querySelector(`.methods-sortable[data-iso="${iso}"]`);
+
+        // Vérifier si la méthode n'est pas déjà ajoutée
+        const existingItems = container.querySelectorAll(`[data-method-code="${methodCode}"]`);
+        if (existingItems.length > 0) {
+            alert('Cette méthode est déjà activée pour ce pays.');
+            return;
+        }
+
+        // Trouver le clone source dans la banque de méthodes
+        const sourceItem = document.querySelector(`#global-methods-list [data-method-code="${methodCode}"]`);
+        if (!sourceItem) return;
+
+        // Cloner et adapter
+        const itemEl = sourceItem.cloneNode(true);
+        itemEl.className = 'col-12 col-md-6 col-lg-4 method-item';
+
+        const card = itemEl.querySelector('.method-card');
+        if (card) card.style.borderStyle = 'solid';
+
+        // Supprimer d'éventuels anciens inputs (si clone d'ailleurs)
+        const oldInputs = itemEl.querySelectorAll('input[type="hidden"]');
+        oldInputs.forEach(input => input.remove());
+
+        // Ajouter les bons inputs
+        const inputsHtml = `
+            <input type="hidden" name="methods_order[${iso}][]" value="${methodCode}">
+            <input type="hidden" name="methods[${iso}][${methodCode}]" value="on">
+        `;
+        itemEl.insertAdjacentHTML('afterbegin', inputsHtml);
+
+        // Ajouter bouton delete
+        if (!itemEl.querySelector('.remove-method')) {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'btn btn-sm text-danger border-0 p-1 remove-method';
+            deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+            deleteBtn.onclick = function() {
+                itemEl.remove();
+                updateTotalCount();
+                updateCountryCount(iso);
+            };
+            if(card) card.appendChild(deleteBtn);
+            else itemEl.appendChild(deleteBtn);
+        }
+
+        // Ajouter dans le container
+        container.appendChild(itemEl);
+
+        // Mettre à jour les compteurs
+        updateTotalCount();
+        updateCountryCount(iso);
     };
 
     // ── Filtres ──────────────────────────────────────────────────────────────
