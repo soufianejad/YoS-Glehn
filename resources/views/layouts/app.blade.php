@@ -38,30 +38,71 @@
             z-index: 1050;
         }
 
-        /* ── Mobile collapse ── */
+        /* ── Mobile collapse & Notifications ── */
         @media (max-width: 767.98px) {
-            /* Collapse dans le flux, pas en absolute */
             .navbar-collapse {
-                border-top: 1px solid rgba(0,0,0,.08);
-                padding: .25rem 0 .5rem;
+                background-color: #ffffff;
+                border-radius: 12px;
+                padding: 1rem;
+                margin-top: 0.5rem;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+                border: 1px solid rgba(0,0,0,0.05);
             }
-            /* Liens empilés verticalement */
             #navbarSupportedContent .navbar-nav {
                 flex-direction: column !important;
                 width: 100%;
+                gap: 0.25rem;
             }
             #navbarSupportedContent .nav-link {
-                padding: .5rem 1rem;
+                padding: 0.75rem 1rem;
+                border-radius: 8px;
+                transition: all 0.2s ease;
+                font-weight: 500;
             }
-            /* Dropdowns inline sur mobile */
+            #navbarSupportedContent .nav-link:hover,
+            #navbarSupportedContent .nav-link:focus,
+            #navbarSupportedContent .nav-link.active {
+                background-color: #f0f2f5;
+                color: #0d6efd !important;
+            }
             #navbarSupportedContent .dropdown-menu {
                 position: static !important;
                 box-shadow: none !important;
                 border: none !important;
-                background: #f8f9fa;
+                background: transparent;
                 padding-left: 1rem;
+                margin-top: 0;
             }
-            /* Avatar sur mobile : afficher le nom */
+            #navbarSupportedContent .dropdown-item {
+                padding: 0.6rem 1rem;
+                border-radius: 6px;
+                margin-bottom: 0.2rem;
+                font-weight: 500;
+            }
+            #navbarSupportedContent .dropdown-item:hover {
+                background-color: #e9ecef;
+            }
+            .mobile-notification-dropdown {
+                position: absolute !important;
+                right: -45px !important; /* Center it nicely */
+                left: auto !important;
+                width: 320px !important;
+                max-width: 90vw !important;
+                border-radius: 16px !important;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+                margin-top: 12px !important;
+                border: 1px solid rgba(0,0,0,0.08) !important;
+            }
+            .navbar-toggler {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0.4rem;
+                border-radius: 8px;
+                transition: background-color 0.2s;
+            }
+            .navbar-toggler:focus, .navbar-toggler:active {
+                background-color: #f0f2f5;
+            }
             #navbarSupportedContent .d-none.d-lg-inline {
                 display: inline !important;
             }
@@ -82,19 +123,23 @@
 
                 <!-- Cloche mobile (visible uniquement sur mobile, hors collapse) -->
                 @auth
-                <div class="d-flex d-md-none align-items-center me-2">
+                <div class="d-flex d-md-none align-items-center me-2 position-relative">
                     <div class="dropdown">
-                        <a class="nav-link position-relative p-2"
+                        <a class="nav-link position-relative p-2 rounded-circle"
+                           style="background: #f8f9fa;"
                            href="#" role="button"
                            data-bs-toggle="dropdown"
                            aria-haspopup="true" aria-expanded="false">
-                            <i class="bi bi-bell fs-5"></i>
+                            <i class="bi bi-bell fs-5 text-dark"></i>
                             <span class="badge bg-danger d-none unread-notifications-count"
-                                  style="position:absolute;top:0;right:0;padding:3px 6px;border-radius:50%;font-size:.6rem;">0</span>
+                                  style="position:absolute;top:-2px;right:-2px;padding:4px 6px;border-radius:50%;font-size:.65rem; border: 2px solid #fff;">0</span>
                         </a>
-                        <div class="dropdown-menu dropdown-menu-end shadow-sm border-0"
-                             style="width:280px;max-height:400px;overflow-y:auto;">
-                            <h6 class="dropdown-header">{{ __('Notifications') }}</h6>
+                        <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 mobile-notification-dropdown"
+                             style="width:320px;max-height:400px;overflow-y:auto;">
+                            <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+                                <h6 class="mb-0 fw-bold">{{ __('Notifications') }}</h6>
+                                <span class="badge bg-primary rounded-pill unread-notifications-count d-none">0</span>
+                            </div>
                             <div class="notifications-list-container"></div>
                         </div>
                     </div>
