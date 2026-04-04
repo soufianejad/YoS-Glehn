@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'school' => \App\Http\Middleware\CheckRole::class.':school',
             'student' => \App\Http\Middleware\CheckRole::class.':student',
             'teacher' => \App\Http\Middleware\CheckRole::class.':teacher',
+            'parent' => \App\Http\Middleware\CheckRole::class.':parent',
             'consumer' => \App\Http\Middleware\EnsureUserIsConsumer::class.':consumer',
             'reader' => \App\Http\Middleware\CheckRole::class.':reader,author,student,school',
             'adult_access' => \App\Http\Middleware\AdultAccessMiddleware::class,

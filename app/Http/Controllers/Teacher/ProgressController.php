@@ -21,7 +21,7 @@ class ProgressController extends Controller
     {
         $teacher = Auth::user();
         // Since we allow teachers to view classes from their school, we fetch classes belonging to their school
-        $classes = $teacher->school->classes()->withCount('students')->get();
+        $classes = ($teacher->school ? $teacher->school->classes() : \App\Models\Classe::where("teacher_id", $teacher->id))->withCount('students')->get();
 
         return view('teacher.progress.list-classes', compact('classes'));
     }
