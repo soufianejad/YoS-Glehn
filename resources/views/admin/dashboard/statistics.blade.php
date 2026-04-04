@@ -209,6 +209,32 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+
+    const subscriptionsCtx = document.getElementById('subscriptionsChart');
+    if (subscriptionsCtx) {
+        new Chart(subscriptionsCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: @json(__('Nouveaux abonnements')),
+                    data: @json($subscriptionSeries),
+                    backgroundColor: 'rgba(13, 202, 240, 0.35)',
+                    borderColor: 'rgba(13, 202, 240, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }],
+            },
+            options: {
+                ...commonOptions,
+                scales: {
+                    x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } },
+                    y: { beginAtZero: true, ticks: { precision: 0 } },
+                },
+            },
+        });
+    }
+
     const revenueCtx = document.getElementById('revenueChart');
     if (revenueCtx) {
         new Chart(revenueCtx, {

@@ -244,9 +244,18 @@ class DashboardController extends Controller
             ->get()
             ->keyBy('month');
 
+        $subscriptionsByMonthKey = Subscription::query()
+            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as cnt')
+            ->where('created_at', '>=', $periodStart)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
+
         $chartLabels = collect();
         $userSeries = collect();
         $bookSeries = collect();
+        $subscriptionSeries = collect();
         $revenueSeries = collect();
 
         for ($i = $months - 1; $i >= 0; $i--) {
@@ -256,6 +265,7 @@ class DashboardController extends Controller
 
             $userSeries->push((int) (optional($usersByMonthKey->get($key))->cnt ?? 0));
             $bookSeries->push((int) (optional($booksByMonthKey->get($key))->cnt ?? 0));
+            $subscriptionSeries->push((int) (optional($subscriptionsByMonthKey->get($key))->cnt ?? 0));
             $revenueSeries->push((float) (optional($revenueByMonthKey->get($key))->total_amount ?? 0));
         }
 
