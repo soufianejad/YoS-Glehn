@@ -175,6 +175,9 @@
             <li style="display:block" class="nav-item {{ request()->routeIs('admin.settings.languages') ? 'active' : '' }}">
                 <a class="nav-link " href="{{ route('admin.settings.languages') }}"><i class="fas fa-language"></i> {{ __('Langues') }}</a>
             </li>
+            <li style="display:block" class="nav-item {{ request()->routeIs('admin.settings.currencies') ? 'active' : '' }}">
+                <a class="nav-link " href="{{ route('admin.settings.currencies') }}"><i class="fas fa-money-bill"></i> {{ __('Devises') }}</a>
+            </li>
             <li style="display:block" class="nav-item {{ request()->routeIs('admin.jobs.index') ? 'active' : '' }}">
                 <a class="nav-link " href="{{ route('admin.jobs.index') }}"><i class="fas fa-cogs"></i> {{ __('Tâches (Jobs)') }}</a>
             </li>

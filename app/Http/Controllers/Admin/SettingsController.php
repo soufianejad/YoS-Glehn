@@ -160,6 +160,54 @@ class SettingsController extends Controller
         return back()->with('success', __('Languages updated successfully.'));
     }
 
+
+    public function currencies()
+    {
+        $currenciesSetting = Setting::where('key', 'platform.available_currencies')->first();
+        $currencies = $currenciesSetting ? json_decode($currenciesSetting->value, true) : [];
+
+        return view('admin.settings.currencies', compact('currencies'));
+    }
+
+    public function updateCurrencies(Request $request)
+    {
+        $currenciesSetting = Setting::firstOrNew(['key' => 'platform.available_currencies']);
+        $currencies = $currenciesSetting->value ? json_decode($currenciesSetting->value, true) : [];
+
+        if ($request->has('add_currency')) {
+            $request->validate([
+                'currency_code' => 'required|string',
+                'currency_name' => 'required|string',
+                'exchange_rate' => 'required|numeric',
+            ]);
+
+            // check if currency already exists
+            foreach ($currencies as $currency) {
+                if ($currency['code'] === strtoupper($request->currency_code)) {
+                    return back()->with('error', __('Devise déjà existante.'));
+                }
+            }
+
+            $currencies[] = [
+                'code' => strtoupper($request->currency_code),
+                'name' => $request->currency_name,
+                'exchange_rate' => $request->exchange_rate
+            ];
+        }
+
+        if ($request->has('remove_currency')) {
+            $currencies = array_filter($currencies, function ($currency) use ($request) {
+                return $currency['code'] !== $request->currency_code;
+            });
+        }
+
+        $currenciesSetting->value = json_encode(array_values($currencies));
+        $currenciesSetting->type = 'json';
+        $currenciesSetting->group = 'platform';
+        $currenciesSetting->save();
+
+        return back()->with('success', __('Devises mises à jour avec succès.'));
+    }
     public function clearCache()
     {
         Artisan::call('cache:clear');

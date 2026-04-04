@@ -142,6 +142,22 @@
                     <!-- DROITE : langue, cloche desktop, avatar -->
                     <ul class="navbar-nav ms-auto align-items-md-center">
 
+
+                        <!-- Devise -->
+                        @if(!empty($availableCurrencies) && count($availableCurrencies) > 0)
+                        <li class="nav-item dropdown me-md-2">
+                            <a id="navbarDropdownCurrency" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                               aria-haspopup="true" aria-expanded="false">
+                                <i class="bi bi-currency-exchange"></i> {{ session('currency', 'XOF') }}
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownCurrency">
+                                @foreach($availableCurrencies as $currency)
+                                <a class="dropdown-item @if(session('currency', 'XOF') == $currency['code']) active @endif"
+                                   href="{{ route('change.currency', $currency['code']) }}">{{ $currency['code'] }}</a>
+                                @endforeach
+                            </div>
+                        </li>
+                        @endif
                         <!-- Langue -->
                         <li class="nav-item dropdown me-md-2">
                             <a id="navbarDropdownLang" class="nav-link dropdown-toggle"
@@ -220,6 +236,24 @@
             <div class="container text-center">
                 <p class="mb-2 text-muted small">&copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. {{ __('All rights reserved.') }}</p>
                 <div class="dropup d-inline-block">
+                </div>
+                @if(!empty($availableCurrencies) && count($availableCurrencies) > 0)
+                <div class="dropup d-inline-block ms-2">
+                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                            type="button"
+                            id="dropdownCurrencyFooter"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <i class="bi bi-currency-exchange me-1"></i> {{ session('currency', 'XOF') }}
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownCurrencyFooter">
+                        @foreach($availableCurrencies as $currency)
+                        <li><a class="dropdown-item @if(session('currency', 'XOF') == $currency['code']) active @endif" href="{{ route('change.currency', $currency['code']) }}">{{ $currency['code'] }}</a></li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+                <div class="dropup d-inline-block ms-2">
                     <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
                             type="button"
                             id="dropdownLanguageFooter"
