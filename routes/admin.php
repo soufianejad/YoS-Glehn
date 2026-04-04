@@ -268,6 +268,8 @@ Route::prefix('settings')->name('settings.')->group(function () {
     Route::get('/appearance', [SettingsController::class, 'appearance'])->name('appearance');
     Route::get('/languages', [SettingsController::class, 'languages'])->name('languages');
     Route::post('/languages', [SettingsController::class, 'updateLanguages'])->name('languages.update');
+    Route::get('/currencies', [SettingsController::class, 'currencies'])->name('currencies');
+    Route::post('/currencies', [SettingsController::class, 'updateCurrencies'])->name('currencies.update');
     Route::post('/cache/clear', [SettingsController::class, 'clearCache'])->name('clear-cache');
     Route::post('/maintenance', [SettingsController::class, 'toggleMaintenance'])->name('toggle-maintenance');
 });

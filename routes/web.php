@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\ChangeLanguageController;
+use App\Http\Controllers\ChangeCurrencyController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\Public\BookController;
 use App\Http\Controllers\Public\ContactController;
@@ -58,6 +59,7 @@ Route::get('/clear-all-cache', function () {
 });
 // Language Switcher
 Route::get('lang/{locale}', [ChangeLanguageController::class, 'changeLocale'])->name('change.language');
+Route::get('currency/{currency}', [ChangeCurrencyController::class, 'changeCurrency'])->name('change.currency');
 
 // Page d'accueil publique
 Route::get('/', [HomeController::class, 'index'])->name('home');
