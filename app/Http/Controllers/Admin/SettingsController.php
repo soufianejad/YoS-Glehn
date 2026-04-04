@@ -9,6 +9,24 @@ use Illuminate\Support\Facades\Artisan;
 
 class SettingsController extends Controller
 {
+    public function update(Request $request)
+    {
+        $data = $request->except(['_token', '_method']);
+
+        foreach ($data as $key => $value) {
+            $setting = Setting::firstOrNew(['key' => $key]);
+            // Extract the group from the first part of the key if possible, e.g., platform.show_prices -> platform
+            $parts = explode('.', $key);
+            $group = count($parts) > 1 ? $parts[0] : 'general';
+
+            $setting->group = $group;
+            $setting->value = $value;
+            $setting->save();
+        }
+
+        return back()->with('success', __('Paramètres mis à jour avec succès.'));
+    }
+
     public function index()
     {
         // For now, redirect to general settings

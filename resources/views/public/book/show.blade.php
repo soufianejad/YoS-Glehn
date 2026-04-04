@@ -27,6 +27,7 @@
                                 <i class="bi bi-check-circle"></i> {{ __('Vous avez accès à ce livre') }}
                             </div>
                         @else
+                            @if(\App\Models\Setting::where('key', 'platform.show_prices')->value('value') ?? '1' == '1')
                             <div class="mb-3">
                                 <h5>{{ __('Prix') }}</h5>
                                 @if($book->hasPdf())
@@ -40,6 +41,7 @@
                                     </p>
                                 @endif
                             </div>
+                            @endif
                         @endif
                     @endauth
 

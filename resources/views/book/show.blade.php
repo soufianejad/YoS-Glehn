@@ -213,7 +213,7 @@
                                 @else
                                     <div class="border rounded-3 p-4 text-center bg-light">
                                         <h5 class="mb-2">{{ __('Acheter le PDF') }}</h5>
-                                        <p class="fs-4 fw-bold text-primary mb-3">{{ formatPrice($finalPdfPrice) }}</p>
+                                        @if(\App\Models\Setting::where('key', 'platform.show_prices')->value('value') ?? '1' == '1') <p class="fs-4 fw-bold text-primary mb-3">{{ formatPrice($finalPdfPrice) }}</p> @endif
                                         <a href="{{ route('purchase.checkout', $book) }}?type=pdf" class="btn btn-primary btn-lg w-100 hover-shadow mb-2">
                                             <i class="fas fa-shopping-cart me-2"></i> {{ __('Acheter le PDF') }}
                                         </a>
@@ -258,7 +258,7 @@
                                     </a>
                                 @else
                                     <div class="text-center p-3 border rounded-3 bg-light">
-                                        <p class="fs-5 fw-bold text-success mb-3">{{ formatPrice($book->audio_price) }}</p>
+                                        @if(\App\Models\Setting::where('key', 'platform.show_prices')->value('value') ?? '1' == '1') <p class="fs-5 fw-bold text-success mb-3">{{ formatPrice($book->audio_price) }}</p> @endif
                                         <a href="{{ route('purchase.checkout', $book) }}?type=audio" class="btn btn-outline-success w-100 hover-shadow">
                                             <i class="fas fa-shopping-cart me-2"></i> {{ __("Acheter l'audio") }}
                                         </a>
@@ -460,6 +460,21 @@
                                 @endfor
                                 <span class="text-muted small">({{ $relatedBook->reviews->count() }})</span>
                             </div>
+
+                            <!-- Prices -->
+                            @php
+                                $showPrices = \App\Models\Setting::where('key', 'platform.show_prices')->value('value') ?? '1';
+                            @endphp
+                            @if($showPrices == '1')
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                @if($relatedBook->hasPdf())
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-file-pdf text-danger"></i> {{ $relatedBook->pdf_price > 0 ? formatPrice($relatedBook->pdf_price) : __("Gratuit") }}</span>
+                                @endif
+                                @if($relatedBook->hasAudio())
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-headphones text-primary"></i> {{ $relatedBook->audio_price > 0 ? formatPrice($relatedBook->audio_price) : __("Gratuit") }}</span>
+                                @endif
+                            </div>
+                            @endif
                             <a href="{{ route('book.show', $relatedBook->slug) }}" class="btn btn-primary mt-auto">{{ __('Voir Détails') }}</a>
                         </div>
                     </div>

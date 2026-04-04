@@ -40,6 +40,18 @@
             @enderror
         </div>
 
+        <div class="mb-3">
+            <label for="platform.show_prices" class="form-label">{{ __('Afficher les prix') }}</label>
+            <select class="form-select @error('platform.show_prices') is-invalid @enderror" id="platform.show_prices" name="platform.show_prices">
+                <option value="1" {{ old('platform.show_prices', $settings['platform.show_prices'] ?? '1') == '1' ? 'selected' : '' }}>{{ __('Oui') }}</option>
+                <option value="0" {{ old('platform.show_prices', $settings['platform.show_prices'] ?? '1') == '0' ? 'selected' : '' }}>{{ __('Non') }}</option>
+            </select>
+            <div class="form-text">{{ __('Activer ou désactiver l\'affichage des prix des livres sur les cartes.') }}</div>
+            @error('platform.show_prices')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
         <button type="submit" class="btn btn-primary">{{ __('Update Settings') }}</button>
     </form>
 </div>
