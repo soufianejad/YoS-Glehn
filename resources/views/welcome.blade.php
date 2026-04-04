@@ -113,6 +113,15 @@
                                 <span class="text-muted small">({{ $book->reviews_count }})</span>
                             </div>
                             <p class="card-text small">{{ Str::limit($book->description, 100) }}</p>
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                @if($book->hasPdf())
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-file-pdf text-danger"></i> {{ $book->pdf_price > 0 ? formatPrice($book->pdf_price) : __("Gratuit") }}</span>
+                                @endif
+                                @if($book->hasAudio())
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-headphones text-primary"></i> {{ $book->audio_price > 0 ? formatPrice($book->audio_price) : __("Gratuit") }}</span>
+                                @endif
+                            </div>
                             <a href="{{ route('book.show', $book->slug) }}" class="btn btn-primary mt-auto">{{ __('Voir Détails') }}</a>
                         </div>
                     </div>

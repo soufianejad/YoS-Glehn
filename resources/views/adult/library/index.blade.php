@@ -83,6 +83,16 @@
                                 <p class="small mb-2"><a href="{{ route('public.author.show', $book->author) }}" class="text-decoration-none text-muted" style="position: relative; z-index: 2;">{{ $book->author->name }}</a></p>
                             @endif
 
+
+                            <!-- Prices -->
+                            <div class="d-flex justify-content-between align-items-center mb-3 mt-auto" style="position: relative; z-index: 2;">
+                                @if($book->hasPdf())
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-file-pdf text-danger"></i> {{ $book->pdf_price > 0 ? formatPrice($book->pdf_price) : __("Gratuit") }}</span>
+                                @endif
+                                @if($book->hasAudio())
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-headphones text-primary"></i> {{ $book->audio_price > 0 ? formatPrice($book->audio_price) : __("Gratuit") }}</span>
+                                @endif
+                            </div>
                             @php
                                 $progress = $book->readingProgress->first();
                             @endphp

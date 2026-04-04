@@ -67,6 +67,16 @@
             @empty
                 <div class="col-12">
                     <p class="text-center text-muted">{{ $author->name }} {{__('n\'a pas encore publié de livres.')}}</p>
+
+                            <!-- Prices -->
+                            <div class="d-flex justify-content-between align-items-center mb-3 mt-auto" style="position: relative; z-index: 2;">
+                                @if($book->hasPdf())
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-file-pdf text-danger"></i> {{ $book->pdf_price > 0 ? formatPrice($book->pdf_price) : __("Gratuit") }}</span>
+                                @endif
+                                @if($book->hasAudio())
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-headphones text-primary"></i> {{ $book->audio_price > 0 ? formatPrice($book->audio_price) : __("Gratuit") }}</span>
+                                @endif
+                            </div>
                 </div>
             @endforelse
         </div>
