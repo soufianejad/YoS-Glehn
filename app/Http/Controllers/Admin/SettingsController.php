@@ -14,12 +14,26 @@ class SettingsController extends Controller
         $data = $request->except(['_token', '_method']);
 
         foreach ($data as $key => $value) {
-            $setting = Setting::firstOrNew(['key' => $key]);
-            // Extract the group from the first part of the key if possible, e.g., platform.show_prices -> platform
-            $parts = explode('.', $key);
-            $group = count($parts) > 1 ? $parts[0] : 'general';
+            // Revert PHP converting dot to underscore for known keys
+            if ($key === 'platform_show_prices') {
+                $key = 'platform.show_prices';
+            }
 
-            $setting->group = $group;
+            if ($request->hasFile($key)) {
+                $value = $request->file($key)->store('settings', 'public');
+            }
+
+            $setting = Setting::firstOrNew(['key' => $key]);
+
+            // Extract the group from the first part of the key if possible
+            $parts = explode('.', $key);
+            $group = count($parts) > 1 ? $parts[0] : 'appearance'; // default to appearance since it's mainly used there
+
+            // Only update group if it's a new setting, to avoid overwriting existing groups
+            if (!$setting->exists) {
+                $setting->group = $group;
+            }
+
             $setting->value = $value;
             $setting->save();
         }
@@ -130,7 +144,7 @@ class SettingsController extends Controller
 
     public function appearance()
     {
-        $settings = Setting::where('group', 'appearance')->pluck('value', 'key');
+        $settings = Setting::whereIn('group', ['appearance', 'platform'])->pluck('value', 'key');
 
         return view('admin.settings.appearance', compact('settings'));
     }
