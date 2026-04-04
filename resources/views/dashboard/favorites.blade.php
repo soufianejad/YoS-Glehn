@@ -17,7 +17,17 @@
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title"><a href="{{ route('book.show', $book->slug) }}" class="text-decoration-none text-dark">{{ $book->title }}</a></h5>
                             <p class="card-text text-muted">by {{ $book->author->name }}</p>
-                            <div class="mt-auto">
+
+                        <!-- Prices -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            @if($book->hasPdf())
+                                <span class="badge bg-light text-dark border"><i class="bi bi-file-pdf text-danger"></i> {{ $book->pdf_price > 0 ? formatPrice($book->pdf_price) : __("Gratuit") }}</span>
+                            @endif
+                            @if($book->hasAudio())
+                                <span class="badge bg-light text-dark border"><i class="bi bi-headphones text-primary"></i> {{ $book->audio_price > 0 ? formatPrice($book->audio_price) : __("Gratuit") }}</span>
+                            @endif
+                        </div>
+                        <div class="mt-auto">
                                 <form action="{{ route('favorites.toggle', $book) }}" method="POST" class="favorite-form">
                                     @csrf
                                     <button type="submit" class="btn btn-outline-danger btn-sm w-100">

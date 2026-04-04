@@ -180,6 +180,16 @@
                             <i class="bi bi-book ms-2"></i> {{ number_format($book->reads_count) }} lectures
                         </div>
 
+
+                        <!-- Prices -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            @if($book->hasPdf())
+                                <span class="badge bg-light text-dark border"><i class="bi bi-file-pdf text-danger"></i> {{ $book->pdf_price > 0 ? formatPrice($book->pdf_price) : __("Gratuit") }}</span>
+                            @endif
+                            @if($book->hasAudio())
+                                <span class="badge bg-light text-dark border"><i class="bi bi-headphones text-primary"></i> {{ $book->audio_price > 0 ? formatPrice($book->audio_price) : __("Gratuit") }}</span>
+                            @endif
+                        </div>
                         <!-- Price or Action Button -->
                         <div class="mt-auto">
                             @auth
