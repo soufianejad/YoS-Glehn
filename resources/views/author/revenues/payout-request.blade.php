@@ -19,7 +19,7 @@
 
                     <div class="mb-4 p-3 bg-light rounded">
                         <h5 class="text-primary">{{ __('Solde disponible pour le versement') }}</h5>
-                        <p class="display-4 fw-bold">{{ number_format($availableBalance, 0, ',', ' ') }} FCFA</p>
+                        <p class="display-4 fw-bold">{{ formatPrice($availableBalance) }}</p>
                         <small class="text-muted">{{ __("Ce montant correspond à vos revenus approuvés qui n'ont pas encore été versés.") }}</small>
                     </div>
 
@@ -29,19 +29,19 @@
                             <p>{{ __("Vous avez déjà une demande de versement en attente de traitement par l'administration.") }}</p>
                             <hr>
                             <p class="mb-0">
-                                <strong>{{ __('Montant :') }}</strong> {{ number_format($pendingPayout->amount, 0, ',', ' ') }} FCFA<br>
+                                <strong>{{ __('Montant :') }}</strong> {{ formatPrice($pendingPayout->amount) }}<br>
                                 <strong>{{ __('Date de la demande :') }}</strong> {{ $pendingPayout->created_at->format('d/m/Y') }}
                             </p>
                         </div>
                     @elseif($availableBalance < $minimumPayout)
                         <div class="alert alert-warning">
                             <h5 class="alert-heading">{{ __('Solde insuffisant') }}</h5>
-                            <p>{{ __('Le montant minimum pour demander un versement est de') }} <strong>{{ number_format($minimumPayout, 0, ',', ' ') }} FCFA</strong>{{ __('. Continuez à promouvoir vos œuvres !') }}</p>
+                            <p>{{ __('Le montant minimum pour demander un versement est de') }} <strong>{{ formatPrice($minimumPayout) }}</strong>{{ __('. Continuez à promouvoir vos œuvres !') }}</p>
                         </div>
                     @else
                         <form action="{{ route('author.revenues.payout.submit') }}" method="POST">
                             @csrf
-                            <p>{{ __('Veuillez choisir votre méthode de paiement et fournir les détails nécessaires pour le versement de votre solde de') }} <strong>{{ number_format($availableBalance, 0, ',', ' ') }} FCFA</strong>.</p>
+                            <p>{{ __('Veuillez choisir votre méthode de paiement et fournir les détails nécessaires pour le versement de votre solde de') }} <strong>{{ formatPrice($availableBalance) }}</strong>.</p>
 
                             <div class="mb-3">
                                 <label for="payment_method" class="form-label">{{ __('Méthode de paiement') }}</label>

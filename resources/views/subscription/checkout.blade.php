@@ -233,14 +233,14 @@
 
                 <div class="d-flex justify-content-between mb-4">
                     <span class="text-muted small">{{ __('Taxes incluses') }}</span>
-                    <span class="fw-bold small">0 XOF</span>
+                    <span class="fw-bold small">{{ formatPrice(0) }}</span>
                 </div>
 
                 <hr>
 
                 <div class="d-flex justify-content-between align-items-center mt-2">
                     <span class="h5 mb-0 fw-bold text-muted">{{ __('Total') }}</span>
-                    <span class="h3 mb-0 fw-bold">{{ number_format($price, 0, ',', ' ') }} <small>XOF</small></span>
+                    <span class="h3 mb-0 fw-bold">{{ formatPrice($price) }}</span>
                 </div>
 
                 <div class="mt-4 p-3 rounded bg-white bg-opacity-10 small">
@@ -321,7 +321,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-pay w-100 text-white" id="submit-btn">
-                        <span class="btn-text">{{ __('Confirmer et Payer') }} · {{ number_format($price, 0, ',', ' ') }} XOF</span>
+                        <span class="btn-text">{{ __('Confirmer et Payer') }} · {{ formatPrice($price) }}</span>
                         <span class="spinner-border spinner-border-sm d-none" id="btn-spinner"></span>
                     </button>
 

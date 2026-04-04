@@ -29,7 +29,7 @@
                                 <form action="{{ route('adult.purchase.pdf', $book) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="btn btn-lg btn-success">
-                                        <i class="fas fa-shopping-cart me-2"></i> Acheter PDF ({{ number_format($book->pdf_price, 2) }} €)
+                                        <i class="fas fa-shopping-cart me-2"></i> Acheter PDF ({{ formatPrice($book->pdf_price) }})
                                     </button>
                                 </form>
                             @endif
@@ -44,7 +44,7 @@
                                 <form action="{{ route('adult.purchase.audio', $book) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="btn btn-lg btn-secondary">
-                                        <i class="fas fa-shopping-cart me-2"></i> Acheter Audio ({{ number_format($book->audio_price, 2) }} €)
+                                        <i class="fas fa-shopping-cart me-2"></i> Acheter Audio ({{ formatPrice($book->audio_price) }})
                                     </button>
                                 </form>
                             @endif

@@ -32,9 +32,9 @@
                 <tr>
                     <td>{{ $revenue->id }}</td>
                     <td>{{ $revenue->book->title ?? 'N/A' }}</td>
-                    <td>${{ $revenue->total_amount }}</td>
-                    <td>${{ $revenue->author_amount }}</td>
-                    <td>${{ $revenue->platform_amount }}</td>
+                    <td>{{ formatPrice($revenue->total_amount) }}</td>
+                    <td>{{ formatPrice($revenue->author_amount) }}</td>
+                    <td>{{ formatPrice($revenue->platform_amount) }}</td>
                     <td>{{ $revenue->revenue_type }}</td>
                     <td>{{ $revenue->status }}</td>
                     <td>{{ $revenue->paid_at ? $revenue->paid_at->format('Y-m-d H:i') : 'N/A' }}</td>

@@ -26,7 +26,7 @@
                     <td>{{ $plan->id }}</td>
                     <td>{{ $plan->name }}</td>
                     <td>{{ $plan->type }}</td>
-                    <td>${{ $plan->price }}</td>
+                    <td>{{ formatPrice($plan->price) }}</td>
                     <td>{{ $plan->duration_days }}</td>
                     <td>{{ $plan->is_active ? 'Yes' : 'No' }}</td>
                     <td>

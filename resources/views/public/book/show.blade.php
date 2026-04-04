@@ -31,12 +31,12 @@
                                 <h5>{{ __('Prix') }}</h5>
                                 @if($book->hasPdf())
                                     <p class="mb-1">
-                                        <strong>{{ __('PDF :') }}</strong> {{ number_format($book->pdf_price, 0, ',', ' ') }} FCFA
+                                        <strong>{{ __('PDF :') }}</strong> {{ formatPrice($book->pdf_price) }}
                                     </p>
                                 @endif
                                 @if($book->hasAudio())
                                     <p class="mb-0">
-                                        <strong>{{ __('Audio :') }}</strong> {{ number_format($book->audio_price, 0, ',', ' ') }} FCFA
+                                        <strong>{{ __('Audio :') }}</strong> {{ formatPrice($book->audio_price) }}
                                     </p>
                                 @endif
                             </div>
@@ -70,7 +70,7 @@
                                     <form action="{{ route('purchase.pdf', $book) }}" method="POST">
                                         @csrf
                                         <button type="submit" class="btn btn-primary w-100">
-                                            <i class="bi bi-cart"></i> Acheter PDF ({{ number_format($book->pdf_price, 0, ',', ' ') }} FCFA)
+                                            <i class="bi bi-cart"></i> Acheter PDF ({{ formatPrice($book->pdf_price) }})
                                         </button>
                                     </form>
                                 @endif
@@ -78,7 +78,7 @@
                                     <form action="{{ route('purchase.audio', $book) }}" method="POST">
                                         @csrf
                                         <button type="submit" class="btn btn-success w-100">
-                                            <i class="bi bi-cart"></i> Acheter Audio ({{ number_format($book->audio_price, 0, ',', ' ') }} FCFA)
+                                            <i class="bi bi-cart"></i> Acheter Audio ({{ formatPrice($book->audio_price) }})
                                         </button>
                                     </form>
                                 @endif

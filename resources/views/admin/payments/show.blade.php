@@ -15,7 +15,7 @@
             <p><strong>{{ __('Payment Type:') }}</strong> {{ $payment->payment_type }}</p>
             <p><strong>{{ __('Book:') }}</strong> {{ $payment->book->title ?? __('N/A') }}</p>
             <p><strong>{{ __('Subscription Plan:') }}</strong> {{ $payment->subscription->subscriptionPlan->name ?? __('N/A') }}</p>
-            <p><strong>{{ __('Amount:') }}</strong> ${{ $payment->amount }} {{ $payment->currency }}</p>
+            <p><strong>{{ __('Amount:') }}</strong> {{ $payment->amount }} {{ $payment->currency }}</p>
             <p><strong>{{ __('Payment Method:') }}</strong> {{ $payment->payment_method }}</p>
             <p><strong>{{ __('Payment Provider:') }}</strong> {{ $payment->payment_provider }}</p>
             <p><strong>{{ __('Status:') }}</strong> {{ $payment->status }}</p>
