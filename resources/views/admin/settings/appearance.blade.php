@@ -8,7 +8,7 @@
 
     <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">
         @csrf
-        @method('PUT')
+
 
         <div class="mb-3">
             <label for="theme" class="form-label">{{ __('Theme') }}</label>
