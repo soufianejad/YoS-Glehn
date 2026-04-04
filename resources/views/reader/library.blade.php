@@ -84,7 +84,12 @@
                                 @endif
 
 
-                                <!-- Prices -->
+
+                            @php
+                                $showPrices = \App\Models\Setting::where('key', 'platform.show_prices')->value('value') ?? '1';
+                            @endphp
+                            @if($showPrices == '1')
+                            <!-- Prices -->
                                 <div class="d-flex justify-content-between align-items-center mb-3 mt-auto" style="position: relative; z-index: 2;">
                                     @if($purchase->book->hasPdf())
                                         <span class="badge bg-light text-dark border"><i class="bi bi-file-pdf text-danger"></i> {{ $purchase->book->pdf_price > 0 ? formatPrice($purchase->book->pdf_price) : __("Gratuit") }}</span>
@@ -93,6 +98,7 @@
                                         <span class="badge bg-light text-dark border"><i class="bi bi-headphones text-primary"></i> {{ $purchase->book->audio_price > 0 ? formatPrice($purchase->book->audio_price) : __("Gratuit") }}</span>
                                     @endif
                                 </div>
+                            @endif
                                 @php
                                     $progress = $purchase->book->readingProgress->where('user_id', auth()->id())->first();
                                 @endphp

@@ -181,7 +181,12 @@
                         </div>
 
 
-                        <!-- Prices -->
+
+                            @php
+                                $showPrices = \App\Models\Setting::where('key', 'platform.show_prices')->value('value') ?? '1';
+                            @endphp
+                            @if($showPrices == '1')
+                            <!-- Prices -->
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             @if($book->hasPdf())
                                 <span class="badge bg-light text-dark border"><i class="bi bi-file-pdf text-danger"></i> {{ $book->pdf_price > 0 ? formatPrice($book->pdf_price) : __("Gratuit") }}</span>
@@ -190,6 +195,7 @@
                                 <span class="badge bg-light text-dark border"><i class="bi bi-headphones text-primary"></i> {{ $book->audio_price > 0 ? formatPrice($book->audio_price) : __("Gratuit") }}</span>
                             @endif
                         </div>
+                            @endif
                         <!-- Price or Action Button -->
                         <div class="mt-auto">
                             @auth
