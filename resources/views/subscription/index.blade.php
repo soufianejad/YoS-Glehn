@@ -176,7 +176,7 @@
                             </div>
                             <div class="col-6 col-md-3">
                                 <div class="opacity-75 small mb-1">{{ __('Prix') }}</div>
-                                <div class="fw-bold h5 text-white mb-0">{{ number_format($subscription->subscriptionPlan->price, 0) }} XOF</div>
+                                <div class="fw-bold h5 text-white mb-0">{{ formatPrice($subscription->subscriptionPlan->price) }}</div>
                             </div>
                             <div class="col-6 col-md-3">
                                 <div class="opacity-75 small mb-1">{{ __('Statut') }}</div>
@@ -288,7 +288,7 @@
                                     <tr>
                                         <td>
                                             <div class="fw-bold text-dark">{{ $sub->subscriptionPlan->name }}</div>
-                                            <div class="small text-muted">{{ $sub->created_at->format('d M Y') }} • {{ number_format($sub->subscriptionPlan->price, 0) }} XOF</div>
+                                            <div class="small text-muted">{{ $sub->created_at->format('d M Y') }} • {{ formatPrice($sub->subscriptionPlan->price) }}</div>
                                         </td>
                                         <td class="text-end">
                                             @php
@@ -350,7 +350,7 @@
                                 </span>
                                 <h4 class="fw-bold text-dark mb-3">{{ $plan->name }}</h4>
                                 <div class="price-tag">
-                                    {{ number_format($plan->price, 0) }}<span class="h6 fw-normal text-muted ms-1">XOF</span>
+                                    {{ formatPrice($plan->price) }}
                                 </div>
                                 <div class="price-period">{{ $plan->duration_days }} {{ __('jours') }}</div>
                             </div>

@@ -201,8 +201,8 @@
                                         <div class="border rounded-3 p-3 text-center mt-3 bg-light">
                                             <p class="mb-2 fw-medium">{{ __('Téléchargement réduit pour abonnés') }}</p>
                                             <p class="fs-5 mb-3">
-                                                <del class="text-muted me-2">{{ number_format($book->pdf_price, 0) }} XOF</del>
-                                                <span class="fw-bold text-success fs-4">{{ number_format($finalPdfPrice, 0) }} XOF</span>
+                                                <del class="text-muted me-2">{{ formatPrice($book->pdf_price) }}</del>
+                                                <span class="fw-bold text-success fs-4">{{ formatPrice($finalPdfPrice) }}</span>
                                             </p>
                                             <a href="{{ route('purchase.checkout', $book) }}?type=pdf" class="btn btn-primary btn-lg w-100 hover-shadow mb-2">
                                                 <i class="fas fa-shopping-cart me-2"></i> {{ __('Acheter le PDF') }}
@@ -213,7 +213,7 @@
                                 @else
                                     <div class="border rounded-3 p-4 text-center bg-light">
                                         <h5 class="mb-2">{{ __('Acheter le PDF') }}</h5>
-                                        <p class="fs-4 fw-bold text-primary mb-3">{{ number_format($finalPdfPrice, 0) }} XOF</p>
+                                        <p class="fs-4 fw-bold text-primary mb-3">{{ formatPrice($finalPdfPrice) }}</p>
                                         <a href="{{ route('purchase.checkout', $book) }}?type=pdf" class="btn btn-primary btn-lg w-100 hover-shadow mb-2">
                                             <i class="fas fa-shopping-cart me-2"></i> {{ __('Acheter le PDF') }}
                                         </a>
@@ -258,7 +258,7 @@
                                     </a>
                                 @else
                                     <div class="text-center p-3 border rounded-3 bg-light">
-                                        <p class="fs-5 fw-bold text-success mb-3">{{ number_format($book->audio_price, 0) }} XOF</p>
+                                        <p class="fs-5 fw-bold text-success mb-3">{{ formatPrice($book->audio_price) }}</p>
                                         <a href="{{ route('purchase.checkout', $book) }}?type=audio" class="btn btn-outline-success w-100 hover-shadow">
                                             <i class="fas fa-shopping-cart me-2"></i> {{ __("Acheter l'audio") }}
                                         </a>

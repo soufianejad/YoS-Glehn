@@ -38,7 +38,7 @@
                 <div class="col-md-6 mb-4">
                     <div class="card border-left-primary shadow h-100 py-2"><div class="card-body">
                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">{{ __('Total Dépensé') }}</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($stats['total_spent'], 2) }} €</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ formatPrice($stats['total_spent']) }}</div>
                     </div></div>
                 </div>
                 <div class="col-md-6 mb-4">
@@ -99,7 +99,7 @@
                                                 {{ $payment->payment_type }}
                                             @endif
                                         </td>
-                                        <td class="text-end">{{ number_format($payment->amount, 2) }} €</td>
+                                        <td class="text-end">{{ formatPrice($payment->amount) }}</td>
                                         <td class="text-center"><span class="badge bg-{{ \App\Helpers\StatusHelper::paymentStatusColor($payment->status) }}">{{ ucfirst($payment->status) }}</span></td>
                                     </tr>
                                 @empty

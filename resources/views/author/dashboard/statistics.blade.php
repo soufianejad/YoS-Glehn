@@ -48,7 +48,7 @@
             <div class="card h-100 border-start-primary shadow-sm">
                 <div class="card-body">
                     <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">{{ __('Revenus Totaux') }}</div>
-                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($globalStats['total_revenue'], 2) }} €</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ formatPrice($globalStats['total_revenue']) }}</div>
                 </div>
             </div>
         </div>

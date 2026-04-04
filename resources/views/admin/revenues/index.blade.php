@@ -11,7 +11,7 @@
             <div class="card h-100 border-left-primary shadow py-2">
                 <div class="card-body">
                     <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">{{ __('Revenus (Total)') }}</div>
-                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($stats['total'], 2) }} €</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ formatPrice($stats['total']) }}</div>
                 </div>
             </div>
         </div>
@@ -19,7 +19,7 @@
             <div class="card h-100 border-left-success shadow py-2">
                 <div class="card-body">
                     <div class="text-xs font-weight-bold text-success text-uppercase mb-1">{{ __('Revenus (Mois Actuel)') }}</div>
-                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($stats['total_current_month'], 2) }} €</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ formatPrice($stats['total_current_month']) }}</div>
                 </div>
             </div>
         </div>
@@ -35,7 +35,7 @@
             <div class="card h-100 border-left-info shadow py-2">
                 <div class="card-body">
                     <div class="text-xs font-weight-bold text-info text-uppercase mb-1">{{ __('Paiements Effectués') }}</div>
-                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($stats['total_payouts'], 2) }} €</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ formatPrice($stats['total_payouts']) }}</div>
                 </div>
             </div>
         </div>
@@ -83,9 +83,9 @@
                                 <td>{{ $revenue->created_at->format('d/m/Y') }}</td>
                                 <td>{{ $revenue->author->name ?? 'N/A' }}</td>
                                 <td>{{ $revenue->book->title ?? 'N/A' }}</td>
-                                <td class="text-end">{{ number_format($revenue->total_amount, 2) }} €</td>
-                                <td class="text-end">{{ number_format($revenue->author_amount, 2) }} €</td>
-                                <td class="text-end">{{ number_format($revenue->platform_amount, 2) }} €</td>
+                                <td class="text-end">{{ formatPrice($revenue->total_amount) }}</td>
+                                <td class="text-end">{{ formatPrice($revenue->author_amount) }}</td>
+                                <td class="text-end">{{ formatPrice($revenue->platform_amount) }}</td>
                                 <td class="text-center">{{ $revenue->revenue_type }}</td>
                                 <td class="text-center">
                                     <span class="badge bg-{{ \App\Helpers\StatusHelper::revenueStatusColor($revenue->status) }}">{{ ucfirst($revenue->status) }}</span>

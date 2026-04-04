@@ -29,8 +29,8 @@
                     <p><strong>{{ __('Language:') }}</strong> {{ $book->language ?? __('N/A') }}</p>
                     <p><strong>{{ __('Space:') }}</strong> {{ $book->space }}</p>
                     <p><strong>{{ __('Content Type:') }}</strong> {{ $book->content_type }}</p>
-                    <p><strong>{{ __('PDF Price:') }}</strong> ${{ $book->pdf_price ?? '0.00' }}</p>
-                    <p><strong>{{ __('Audio Price:') }}</strong> ${{ $book->audio_price ?? '0.00' }}</p>
+                    <p><strong>{{ __('PDF Price:') }}</strong> {{ formatPrice($book->pdf_price ?? 0) }}</p>
+                    <p><strong>{{ __('Audio Price:') }}</strong> {{ formatPrice($book->audio_price ?? 0) }}</p>
                     <p><strong>{{ __('Status:') }}</strong> {{ $book->status }}</p>
                     <p><strong>{{ __('Created At:') }}</strong> {{ $book->created_at->format('M d, Y H:i') }}</p>
                     <p><strong>{{ __('Last Updated:') }}</strong> {{ $book->updated_at->format('M d, Y H:i') }}</p>

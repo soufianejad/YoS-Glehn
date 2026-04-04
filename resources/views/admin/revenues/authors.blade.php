@@ -22,7 +22,7 @@
                     <td>{{ $author->id }}</td>
                     <td>{{ $author->name }}</td>
                     <td>{{ $author->email }}</td>
-                    <td>${{ number_format($author->revenues_sum_author_amount ?? 0, 2) }}</td>
+                    <td>{{ formatPrice($author->revenues_sum_author_amount ?? 0) }}</td>
                     <td>
                         <a href="{{ route('admin.revenues.author-detail', $author) }}" class="btn btn-sm btn-info">{{ __('View Details') }}</a>
                         <a href="{{ route('admin.revenues.payouts.create', $author) }}" class="btn btn-sm btn-success">{{ __('Create Payout') }}</a>

@@ -11,7 +11,7 @@
             <div class="card h-100 border-left-primary shadow py-2">
                 <div class="card-body">
                     <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">{{ __('Montant Total (Complété)') }}</div>
-                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($stats['total_amount'], 2) }} €</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ formatPrice($stats['total_amount']) }}</div>
                 </div>
             </div>
         </div>
@@ -27,7 +27,7 @@
             <div class="card h-100 border-left-info shadow py-2">
                 <div class="card-body">
                     <div class="text-xs font-weight-bold text-info text-uppercase mb-1">{{ __("Montant Aujourd'hui") }}</div>
-                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($stats['today_amount'], 2) }} €</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ formatPrice($stats['today_amount']) }}</div>
                 </div>
             </div>
         </div>

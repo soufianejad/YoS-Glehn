@@ -52,7 +52,7 @@
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card h-100 border-left-primary shadow py-2">
                 <div class="card-body"><div class="text-xs font-weight-bold text-primary text-uppercase mb-1">{{ __('Revenus') }}</div>
-                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($stats['revenue'], 2) }} €</div></div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ formatPrice($stats['revenue']) }}</div></div>
             </div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
