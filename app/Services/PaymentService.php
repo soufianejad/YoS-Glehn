@@ -801,6 +801,25 @@ class PaymentService
     private function handleError(string $msg, bool $json, string $errorLink)
     {
         Log::warning("PaymentService error: {$msg}");
+
+        try {
+            $ns = app(\App\Services\NotificationService::class);
+            $admins = \App\Models\User::where('role', 'admin')->get();
+
+            foreach ($admins as $admin) {
+                $ns->sendNotification(
+                    $admin,
+                    __('Erreur de Paiement'),
+                    __("Une erreur est survenue lors d'un paiement : :msg", ['msg' => $msg]),
+                    route('admin.payments.index'),
+                    'danger',
+                    true
+                );
+            }
+        } catch (\Exception $e) {
+            Log::error("Failed to notify admins about payment error: " . $e->getMessage());
+        }
+
         return $json ? ['success'=>false,'error'=>$msg] : Redirect::to($errorLink)->with('danger',$msg);
     }
 }
