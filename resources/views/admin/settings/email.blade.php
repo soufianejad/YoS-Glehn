@@ -8,7 +8,7 @@
 
     <form action="{{ route('admin.settings.update') }}" method="POST">
         @csrf
-        @method('PUT')
+
 
         <div class="mb-3">
             <label for="mail_mailer" class="form-label">{{ __('Mail Mailer') }}</label>
