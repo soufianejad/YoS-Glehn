@@ -84,7 +84,10 @@ class DashboardController extends Controller
     public function favorites()
     {
         // Placeholder for adult favorites
-        return view('adult.dashboard.favorites');
+        $user = auth()->user();
+        $adultBookIds = Book::where("space", "adult")->pluck("id");
+        $favorites = $user->favorites()->whereIn("book_id", $adultBookIds)->with("book")->paginate(12);
+        return view("adult.dashboard.favorites", compact("favorites"));
     }
 
     public function quizzes()

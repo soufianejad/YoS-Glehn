@@ -32,7 +32,7 @@ class DashboardController extends Controller
 
         // Chart Data: Student Growth last 6 months
         $studentsByMonth = $school->students()
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count")
+            ->selectRaw(config('database.default') === 'sqlite' ? "strftime('" . '%Y-%m' . "', created_at) as month, COUNT(*) as count" : "DATE_FORMAT(created_at, '" . '%Y-%m' . "') as month, COUNT(*) as count")
             ->where('created_at', '>=', now()->subMonths(6))
             ->groupBy('month')
             ->orderBy('month', 'asc')
@@ -88,14 +88,14 @@ class DashboardController extends Controller
         }
 
         $studentsByMonth = $school->students()
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count")
+            ->selectRaw(config('database.default') === 'sqlite' ? "strftime('" . '%Y-%m' . "', created_at) as month, COUNT(*) as count" : "DATE_FORMAT(created_at, '" . '%Y-%m' . "') as month, COUNT(*) as count")
             ->where('role', 'student')
             ->groupBy('month')
             ->orderBy('month')
             ->get();
 
         $bookAssignmentsByMonth = $school->bookAssignments()
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count")
+            ->selectRaw(config('database.default') === 'sqlite' ? "strftime('" . '%Y-%m' . "', created_at) as month, COUNT(*) as count" : "DATE_FORMAT(created_at, '" . '%Y-%m' . "') as month, COUNT(*) as count")
             ->groupBy('month')
             ->orderBy('month')
             ->get();

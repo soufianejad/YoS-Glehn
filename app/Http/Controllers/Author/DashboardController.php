@@ -41,7 +41,7 @@ class DashboardController extends Controller
 
         // Revenue Chart Data (last 6 months)
         $revenueByMonth = $author->revenues()
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, sum(author_amount) as total")
+            ->selectRaw(config('database.default') === 'sqlite' ? "strftime('" . '%Y-%m' . "', created_at) as month, sum(author_amount) as total" : "DATE_FORMAT(created_at, '" . '%Y-%m' . "') as month, sum(author_amount) as total")
             ->where('created_at', '>=', now()->subMonths(6))
             ->groupBy('month')
             ->orderBy('month', 'asc')
@@ -98,14 +98,14 @@ class DashboardController extends Controller
         
         // 3. Data for Charts
         $revenueByMonth = $author->revenues()
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, sum(author_amount) as total")
+            ->selectRaw(config('database.default') === 'sqlite' ? "strftime('" . '%Y-%m' . "', created_at) as month, sum(author_amount) as total" : "DATE_FORMAT(created_at, '" . '%Y-%m' . "') as month, sum(author_amount) as total")
             ->where('created_at', '>=', now()->subMonths(6))
             ->groupBy('month')
             ->orderBy('month', 'asc')
             ->get()->pluck('total', 'month');
 
         $salesByMonth = Purchase::whereIn('book_id', $authorBookIds)
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, count(*) as total")
+            ->selectRaw(config('database.default') === 'sqlite' ? "strftime('" . '%Y-%m' . "', created_at) as month, count(*) as total" : "DATE_FORMAT(created_at, '" . '%Y-%m' . "') as month, count(*) as total")
             ->where('created_at', '>=', now()->subMonths(6))
             ->groupBy('month')
             ->orderBy('month', 'asc')

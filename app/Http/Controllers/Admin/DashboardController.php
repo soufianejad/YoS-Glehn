@@ -105,7 +105,7 @@ class DashboardController extends Controller
 
         // --- Chart Data (Last 12 months) — date de validation = paid_at ---
         $revenueByMonth = (clone $this->approvedPaymentsQuery())
-            ->selectRaw("DATE_FORMAT(paid_at, '%Y-%m') as month, sum(amount) as total")
+            ->selectRaw(config('database.default') === 'sqlite' ? "strftime('" . '%Y-%m' . "', paid_at) as month, sum(amount) as total" : "DATE_FORMAT(paid_at, '" . '%Y-%m' . "') as month, sum(amount) as total")
             ->where('paid_at', '>=', now()->subYear())
             ->groupBy('month')
             ->orderBy('month', 'asc')
@@ -123,7 +123,7 @@ class DashboardController extends Controller
         $revenueChart = ['labels' => $revenueChartLabels, 'data' => $revenueChartData];
 
         // Users Chart
-        $usersByMonth = User::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count")
+        $usersByMonth = User::selectRaw(config('database.default') === 'sqlite' ? "strftime('" . '%Y-%m' . "', created_at) as month, COUNT(*) as count" : "DATE_FORMAT(created_at, '" . '%Y-%m' . "') as month, COUNT(*) as count")
             ->where('created_at', '>=', now()->subYear())
             ->groupBy('month')
             ->orderBy('month', 'asc')
@@ -221,7 +221,7 @@ class DashboardController extends Controller
         $periodStart = now()->subMonths($months - 1)->startOfMonth();
 
         $usersByMonthKey = User::query()
-            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as cnt')
+            ->selectRaw(config('database.default') === 'sqlite' ? "strftime('" . "%Y-%m" . "', created_at) as month, COUNT(*) as cnt" : "DATE_FORMAT(created_at, '" . "%Y-%m" . "') as month, COUNT(*) as cnt")
             ->where('created_at', '>=', $periodStart)
             ->groupBy('month')
             ->orderBy('month')
@@ -229,7 +229,7 @@ class DashboardController extends Controller
             ->keyBy('month');
 
         $booksByMonthKey = Book::query()
-            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as cnt')
+            ->selectRaw(config('database.default') === 'sqlite' ? "strftime('" . "%Y-%m" . "', created_at) as month, COUNT(*) as cnt" : "DATE_FORMAT(created_at, '" . "%Y-%m" . "') as month, COUNT(*) as cnt")
             ->where('created_at', '>=', $periodStart)
             ->groupBy('month')
             ->orderBy('month')
@@ -237,7 +237,7 @@ class DashboardController extends Controller
             ->keyBy('month');
 
         $revenueByMonthKey = (clone $this->approvedPaymentsQuery())
-            ->selectRaw('DATE_FORMAT(paid_at, "%Y-%m") as month, SUM(amount) as total_amount')
+            ->selectRaw(config('database.default') === 'sqlite' ? "strftime('" . "%Y-%m" . "', paid_at) as month, SUM(amount) as total_amount" : "DATE_FORMAT(paid_at, '" . "%Y-%m" . "') as month, SUM(amount) as total_amount")
             ->where('paid_at', '>=', $periodStart)
             ->groupBy('month')
             ->orderBy('month')
@@ -245,7 +245,7 @@ class DashboardController extends Controller
             ->keyBy('month');
 
         $subscriptionsByMonthKey = Subscription::query()
-            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as cnt')
+            ->selectRaw(config('database.default') === 'sqlite' ? "strftime('" . "%Y-%m" . "', created_at) as month, COUNT(*) as cnt" : "DATE_FORMAT(created_at, '" . "%Y-%m" . "') as month, COUNT(*) as cnt")
             ->where('created_at', '>=', $periodStart)
             ->groupBy('month')
             ->orderBy('month')

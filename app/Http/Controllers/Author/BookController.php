@@ -325,7 +325,7 @@ class BookController extends Controller
 
         // 2. Data for Charts (Sales over last 6 months)
         $salesByMonth = $book->purchases()
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, count(*) as total")
+            ->selectRaw(config('database.default') === 'sqlite' ? "strftime('" . '%Y-%m' . "', created_at) as month, count(*) as total" : "DATE_FORMAT(created_at, '" . '%Y-%m' . "') as month, count(*) as total")
             ->where('created_at', '>=', now()->subMonths(6))
             ->groupBy('month')
             ->orderBy('month', 'asc')
