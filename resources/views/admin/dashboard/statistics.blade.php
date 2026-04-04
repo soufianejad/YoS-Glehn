@@ -282,20 +282,3 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endpush
-             ...commonOptions,
-                scales: {
-                    x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } },
-                    y: { beginAtZero: true, ticks: { precision: 0 } },
-                },
-            },
-        });
-    }
-});
-</script>
-@endpush
-},
-        });
-    }
-});
-</script>
-@endpush
