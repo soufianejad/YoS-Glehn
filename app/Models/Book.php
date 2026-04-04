@@ -260,6 +260,22 @@ class Book extends Model
     /**
      * Get the full URL for the book's cover image.
      */
+    /**
+     * Vérifie si le livre possède un format PDF
+     */
+    public function hasPdf(): bool
+    {
+        return !empty($this->pdf_file);
+    }
+
+    /**
+     * Vérifie si le livre possède un format Audio
+     */
+    public function hasAudio(): bool
+    {
+        return !empty($this->audio_file);
+    }
+
     public function getCoverImageUrlAttribute(): string
     {
         return $this->cover_image
