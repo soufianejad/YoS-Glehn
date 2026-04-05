@@ -199,37 +199,65 @@
 
         /* ── MOBILE overlay ── */
         @media (max-width: 767.98px) {
-            /* Panneau plein-écran glissant depuis le haut */
+            /* Drawer depuis la droite */
             .navbar-collapse {
                 position: fixed !important;
-                top: var(--nav-height) !important;
-                left: 0 !important;
+                top: 0 !important;
                 right: 0 !important;
-                width: 100vw !important;
-                bottom: 0;
+                left: auto !important;
+                width: 78vw !important;
+                max-width: 300px !important;
+                height: 100dvh !important;
                 background: var(--nav-bg);
-                z-index: 1040;
+                z-index: 1050;
                 overflow-y: auto;
                 overflow-x: hidden;
-                padding: 1rem 1.25rem 2rem;
-                transform: translateY(-110%);
-                opacity: 0;
+                padding: 1.25rem 1.25rem 2.5rem;
+                transform: translateX(105%);
+                opacity: 1;
                 pointer-events: none;
-                transition: transform .28s cubic-bezier(.4,0,.2,1), opacity .22s ease;
-                border-top: 1px solid var(--nav-separator);
-                /* Annule tout décalage Bootstrap collapse */
+                transition: transform .3s cubic-bezier(.4,0,.2,1);
+                border-left: 1px solid var(--nav-separator);
+                box-shadow: -8px 0 32px rgba(0,0,0,.10);
                 margin: 0 !important;
                 display: block !important;
             }
 
             .navbar-collapse.show {
-                transform: translateY(0) !important;
-                opacity: 1;
+                transform: translateX(0) !important;
                 pointer-events: auto;
             }
 
-            /* Sections dans le menu mobile */
-            .mobile-section {
+            /* Header du drawer */
+            .drawer-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding-bottom: 1rem;
+                margin-bottom: .25rem;
+                border-bottom: 1px solid var(--nav-separator);
+            }
+
+            .drawer-close {
+                width: 34px;
+                height: 34px;
+                border: none;
+                background: var(--nav-hover-bg);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.1rem;
+                color: var(--nav-muted);
+                cursor: pointer;
+                transition: background var(--transition), color var(--transition);
+                flex-shrink: 0;
+            }
+
+            .drawer-close:hover {
+                background: #e9ecef;
+                color: var(--nav-text);
+            }
                 margin-bottom: 1.5rem;
             }
 
@@ -403,6 +431,16 @@
 
                 <!-- Collapse -->
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+                    {{-- ── Header drawer ── --}}
+                    <div class="drawer-header">
+                        <a href="{{ url('/') }}" class="d-flex align-items-center text-decoration-none gap-2">
+                            <img src="{{ asset('images/logo.jpg') }}" alt="Logo" height="28">
+                        </a>
+                        <button class="drawer-close" id="drawer-close-btn" aria-label="Fermer">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
 
                     {{-- ── MENU MOBILE uniquement ── --}}
                     <div class="d-md-none">
@@ -650,39 +688,44 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     <script>
-        // ── Backdrop mobile ──
+        // ── Drawer mobile ──
         const toggler = document.querySelector('.navbar-toggler');
         const backdrop = document.getElementById('nav-backdrop');
         const navCollapse = document.getElementById('navbarSupportedContent');
-        const navbar = document.querySelector('.navbar');
+        const closeBtn = document.getElementById('drawer-close-btn');
 
-        function updatePanelTop() {
-            if (navbar && navCollapse) {
-                const h = navbar.getBoundingClientRect().height;
-                navCollapse.style.top = h + 'px';
-                document.documentElement.style.setProperty('--nav-height', h + 'px');
-            }
+        function openDrawer() {
+            navCollapse.classList.add('show');
+            backdrop.classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
 
-        updatePanelTop();
-        window.addEventListener('resize', updatePanelTop);
+        function closeDrawer() {
+            navCollapse.classList.remove('show');
+            backdrop.classList.remove('active');
+            document.body.style.overflow = '';
+        }
 
-        if (toggler && backdrop && navCollapse) {
-            toggler.addEventListener('click', function() {
-                const isOpen = navCollapse.classList.contains('show');
-                backdrop.classList.toggle('active', !isOpen);
-            });
-
-            backdrop.addEventListener('click', function() {
-                const bsCollapse = bootstrap.Collapse.getOrCreateInstance(navCollapse);
-                bsCollapse.hide();
-                backdrop.classList.remove('active');
-            });
-
-            navCollapse.addEventListener('hidden.bs.collapse', function() {
-                backdrop.classList.remove('active');
+        if (toggler) {
+            toggler.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (navCollapse.classList.contains('show')) {
+                    closeDrawer();
+                } else {
+                    openDrawer();
+                }
             });
         }
+
+        if (backdrop) backdrop.addEventListener('click', closeDrawer);
+        if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+
+        // Fermer sur clic d'un lien (pas les dropdowns)
+        navCollapse && navCollapse.querySelectorAll('.nav-link:not(.dropdown-toggle)').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth < 768) closeDrawer();
+            });
+        });
 
         // ── CSRF ──
         $.ajaxSetup({
