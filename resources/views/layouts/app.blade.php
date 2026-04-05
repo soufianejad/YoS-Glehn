@@ -37,10 +37,12 @@
             border-bottom: 1px solid var(--nav-border);
             box-shadow: var(--nav-shadow);
             padding: 0;
+            overflow: visible;
         }
 
         .navbar .container {
             height: 100%;
+            flex-wrap: nowrap;
         }
 
         /* ── Brand ── */
@@ -143,6 +145,8 @@
             border-radius: 50%;
             transition: background var(--transition);
             position: relative;
+            padding: 0 !important;
+            flex-shrink: 0;
         }
 
         .bell-btn:hover {
@@ -150,8 +154,20 @@
         }
 
         .bell-btn .bi-bell {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             color: var(--nav-text);
+        }
+
+        .bell-btn .badge {
+            position: absolute !important;
+            top: 2px;
+            right: 2px;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 4px;
+            line-height: 16px;
+            font-size: .6rem;
+            border-radius: 8px;
         }
 
         /* Notifications panel */
@@ -184,24 +200,29 @@
         @media (max-width: 767.98px) {
             /* Panneau plein-écran glissant depuis le haut */
             .navbar-collapse {
-                position: fixed;
-                top: var(--nav-height);
-                left: 0;
-                right: 0;
+                position: fixed !important;
+                top: var(--nav-height) !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100vw !important;
                 bottom: 0;
                 background: var(--nav-bg);
                 z-index: 1040;
                 overflow-y: auto;
+                overflow-x: hidden;
                 padding: 1rem 1.25rem 2rem;
-                transform: translateY(-100%);
+                transform: translateY(-110%);
                 opacity: 0;
                 pointer-events: none;
-                transition: transform .25s ease, opacity .2s ease;
+                transition: transform .28s cubic-bezier(.4,0,.2,1), opacity .22s ease;
                 border-top: 1px solid var(--nav-separator);
+                /* Annule tout décalage Bootstrap collapse */
+                margin: 0 !important;
+                display: block !important;
             }
 
             .navbar-collapse.show {
-                transform: translateY(0);
+                transform: translateY(0) !important;
                 opacity: 1;
                 pointer-events: auto;
             }
