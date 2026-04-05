@@ -17,7 +17,7 @@
     <style>
         /* ── Variables ── */
         :root {
-            --nav-height: 60px;
+            --nav-height: 64px;
             --nav-bg: #ffffff;
             --nav-border: rgba(0,0,0,.07);
             --nav-shadow: 0 1px 12px rgba(0,0,0,.06);
@@ -32,17 +32,18 @@
 
         /* ── Navbar base ── */
         .navbar {
-            height: var(--nav-height);
+            min-height: var(--nav-height);
             background: var(--nav-bg) !important;
             border-bottom: 1px solid var(--nav-border);
             box-shadow: var(--nav-shadow);
-            padding: 0;
+            padding: .75rem 0;
             overflow: visible;
         }
 
         .navbar .container {
             height: 100%;
             flex-wrap: nowrap;
+            align-items: center;
         }
 
         /* ── Brand ── */
@@ -653,6 +654,18 @@
         const toggler = document.querySelector('.navbar-toggler');
         const backdrop = document.getElementById('nav-backdrop');
         const navCollapse = document.getElementById('navbarSupportedContent');
+        const navbar = document.querySelector('.navbar');
+
+        function updatePanelTop() {
+            if (navbar && navCollapse) {
+                const h = navbar.getBoundingClientRect().height;
+                navCollapse.style.top = h + 'px';
+                document.documentElement.style.setProperty('--nav-height', h + 'px');
+            }
+        }
+
+        updatePanelTop();
+        window.addEventListener('resize', updatePanelTop);
 
         if (toggler && backdrop && navCollapse) {
             toggler.addEventListener('click', function() {
