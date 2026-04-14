@@ -15,7 +15,7 @@
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
     <style>
-        /* ── Variables ── */
+      /* ── Variables ── */
         :root {
             --nav-height: 64px;
             --nav-bg: #ffffff;
@@ -107,7 +107,8 @@
 
         /* ── Dropdown desktop ── */
         .navbar .dropdown-menu {
-            position: absolute !important;
+            /* Keep original positioning for general dropdowns, but ensure it's not pushing content */
+            position: absolute; /* Changed to absolute for all dropdowns to prevent pushing */
             top: calc(100% + 6px);
             right: 0;
             left: auto;
@@ -134,6 +135,22 @@
         .navbar .dropdown-item.active {
             background: rgba(13,110,253,.08);
             color: var(--nav-active-color);
+        }
+
+        /* Specific fix for currency and language dropdowns on desktop */
+        .navbar-nav.ms-auto .dropdown-menu {
+            /* Override right:0 for these dropdowns if they are part of a left-aligned group */
+            /* If you want them to align to the right edge of their parent .nav-item, keep right:0 */
+            /* If you want them to align to the left edge of their parent .nav-item, use left:0 */
+            right: auto; /* Changed to auto to prevent right alignment by default */
+            left: 0;    /* Aligns dropdown to the left edge of its parent nav-item */
+            min-width: unset; /* Allow menu to size based on content if preferred */
+        }
+        
+        /* If you want dropdowns to align to the right (like user avatar), use this */
+        .navbar-nav.ms-auto .dropdown-menu.dropdown-menu-end {
+            right: 0;
+            left: auto;
         }
 
         /* ── Cloche ── */
