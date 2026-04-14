@@ -597,78 +597,78 @@
 
                     <ul class="navbar-nav ms-auto align-items-md-center d-none d-md-flex">
 
-                        {{-- Devise desktop --}}
-                        @if(!empty($availableCurrencies) && count($availableCurrencies) > 0)
-                        <li class="nav-item dropdown me-1">
-                            <a class="nav-link dropdown-toggle" href="#" role="button"
-                               data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-currency-exchange"></i> {{ session('currency', 'XOF') }}
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-end">
-                                @foreach($availableCurrencies as $currency)
-                                <a class="dropdown-item @if(session('currency', 'XOF') == $currency['code']) active @endif"
-                                   href="{{ route('change.currency', $currency['code']) }}">{{ $currency['code'] }}</a>
-                                @endforeach
-                            </div>
-                        </li>
-                        @endif
+    {{-- Devise desktop --}}
+    @if(!empty($availableCurrencies) && count($availableCurrencies) > 0)
+    <li class="nav-item dropdown me-1">
+        <a class="nav-link dropdown-toggle" href="#" role="button"
+           data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-currency-exchange"></i> {{ session('currency', 'XOF') }}
+        </a>
+        <div class="dropdown-menu dropdown-menu-end"> {{-- ADDED dropdown-menu-end --}}
+            @foreach($availableCurrencies as $currency)
+            <a class="dropdown-item @if(session('currency', 'XOF') == $currency['code']) active @endif"
+               href="{{ route('change.currency', $currency['code']) }}">{{ $currency['code'] }}</a>
+            @endforeach
+        </div>
+    </li>
+    @endif
 
-                        {{-- Langue desktop --}}
-                        <li class="nav-item dropdown me-1">
-                            <a class="nav-link dropdown-toggle" href="#" role="button"
-                               data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-translate"></i> {{ strtoupper(app()->getLocale()) }}
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-end">
-                                <a class="dropdown-item @if(app()->getLocale() == 'en') active @endif"
-                                   href="{{ route('change.language', 'en') }}">{{ __('English') }}</a>
-                                <a class="dropdown-item @if(app()->getLocale() == 'fr') active @endif"
-                                   href="{{ route('change.language', 'fr') }}">{{ __('French') }}</a>
-                            </div>
-                        </li>
+    {{-- Langue desktop --}}
+    <li class="nav-item dropdown me-1">
+        <a class="nav-link dropdown-toggle" href="#" role="button"
+           data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-translate"></i> {{ strtoupper(app()->getLocale()) }}
+        </a>
+        <div class="dropdown-menu dropdown-menu-end"> {{-- ADDED dropdown-menu-end --}}
+            <a class="dropdown-item @if(app()->getLocale() == 'en') active @endif"
+               href="{{ route('change.language', 'en') }}">{{ __('English') }}</a>
+            <a class="dropdown-item @if(app()->getLocale() == 'fr') active @endif"
+               href="{{ route('change.language', 'fr') }}">{{ __('French') }}</a>
+        </div>
+    </li>
 
-                        @guest
-                            @if (Route::has('login'))
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
-                            </li>
-                            @endif
-                            @if (Route::has('register'))
-                            <li class="nav-item">
-                                <a class="btn btn-primary btn-sm ms-2" href="{{ route('register') }}">{{ __('Register') }}</a>
-                            </li>
-                            @endif
-                        @else
-                            {{-- Cloche desktop --}}
-                            <li class="nav-item dropdown me-1">
-                                <a class="bell-btn nav-link" href="#" role="button"
-                                   data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-bell"></i>
-                                    <span class="badge bg-danger d-none unread-notifications-count"
-                                          style="position:absolute;top:2px;right:2px;padding:2px 5px;border-radius:50%;font-size:.6rem;min-width:16px;">0</span>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 notifications-panel">
-                                    <h6 class="dropdown-header bg-light py-2">{{ __('Notifications') }}</h6>
-                                    <div class="notifications-list-container"></div>
-                                    <div class="dropdown-divider mb-0"></div>
-                                    <a class="dropdown-item text-center small py-2" href="#">{{ __('View all notifications') }}</a>
-                                </div>
-                            </li>
+    @guest
+        @if (Route::has('login'))
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
+        </li>
+        @endif
+        @if (Route::has('register'))
+        <li class="nav-item">
+            <a class="btn btn-primary btn-sm ms-2" href="{{ route('register') }}">{{ __('Register') }}</a>
+        </li>
+        @endif
+    @else
+        {{-- Cloche desktop --}}
+        <li class="nav-item dropdown me-1">
+            <a class="bell-btn nav-link" href="#" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-bell"></i>
+                <span class="badge bg-danger d-none unread-notifications-count"
+                      style="position:absolute;top:2px;right:2px;padding:2px 5px;border-radius:50%;font-size:.6rem;min-width:16px;">0</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 notifications-panel">
+                <h6 class="dropdown-header bg-light py-2">{{ __('Notifications') }}</h6>
+                <div class="notifications-list-container"></div>
+                <div class="dropdown-divider mb-0"></div>
+                <a class="dropdown-item text-center small py-2" href="#">{{ __('View all notifications') }}</a>
+            </div>
+        </li>
 
-                            {{-- Avatar --}}
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
-                                   href="#" role="button"
-                                   data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="{{ Auth::user()->avatar_url }}"
-                                         alt="{{ Auth::user()->name }}"
-                                         class="user-avatar">
-                                    <span>{{ Auth::user()->name }}</span>
-                                </a>
-                                @include('partials.user-dropdown')
-                            </li>
-                        @endguest
-                    </ul>
+        {{-- Avatar --}}
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
+               href="#" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="{{ Auth::user()->avatar_url }}"
+                     alt="{{ Auth::user()->name }}"
+                     class="user-avatar">
+                <span>{{ Auth::user()->name }}</span>
+            </a>
+            @include('partials.user-dropdown') {{-- This partial should also have dropdown-menu-end if needed --}}
+        </li>
+    @endguest
+</ul>
 
                 </div>{{-- /navbar-collapse --}}
             </div>
