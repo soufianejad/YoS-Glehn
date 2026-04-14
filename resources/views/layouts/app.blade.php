@@ -596,7 +596,7 @@
                     </ul>
 
                     <ul class="navbar-nav ms-auto align-items-md-center d-none d-md-flex">
-
+d
     {{-- Devise desktop --}}
     @if(!empty($availableCurrencies) && count($availableCurrencies) > 0)
     <li class="nav-item dropdown me-1">
