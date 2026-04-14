@@ -42,7 +42,7 @@
 
         .navbar .container {
             height: 100%;
-            flex-wrap: nowrap;
+        
             align-items: center;
         }
 
@@ -105,21 +105,7 @@
             color: var(--nav-active-color) !important;
         }
 
-        /* ── General Dropdown styling ── */
-        .navbar .dropdown-menu {
-            position: absolute; /* Crucial for overlaying */
-            top: 100%; /* Position right below the toggler */
-            margin-top: 6px; /* Space between toggler and menu */
-            z-index: 1050;
-            border: 1px solid var(--nav-border);
-            box-shadow: 0 8px 24px rgba(0,0,0,.10);
-            border-radius: var(--nav-radius);
-            padding: .5rem;
-            min-width: 160px; /* Adjust as needed */
-            /* Ensure it defaults to right alignment for most dropdowns, or specify left/right per case */
-            right: 0;
-            left: auto;
-        }
+      
 
         /* Fix for specific dropdowns in the ms-auto group */
         .navbar-nav.ms-auto .nav-item.dropdown {
@@ -596,7 +582,7 @@
                     </ul>
 
                     <ul class="navbar-nav ms-auto align-items-md-center d-none d-md-flex">
-d
+
     {{-- Devise desktop --}}
     @if(!empty($availableCurrencies) && count($availableCurrencies) > 0)
     <li class="nav-item dropdown me-1">
