@@ -201,7 +201,7 @@
     display: block;
 }
    .mobile-section-label {
-    text-align: center
+    text-align: center;
                 font-size: .7rem;
                 font-weight: 700;
                 letter-spacing: .08em;
