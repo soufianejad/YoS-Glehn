@@ -200,6 +200,16 @@
 #nav-backdrop.active {
     display: block;
 }
+   .mobile-section-label {
+                font-size: .7rem;
+                font-weight: 700;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+                color: var(--nav-muted);
+                padding: 0 .25rem .5rem;
+                border-bottom: 1px solid var(--nav-separator);
+                margin-bottom: .5rem;
+            }
     </style>
 
     @stack('styles')
