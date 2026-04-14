@@ -433,14 +433,14 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
 
                     {{-- ── Header drawer ── --}}
-                    <div class="drawer-header">
+                    {{-- <div class="drawer-header">
                         <a href="{{ url('/') }}" class="d-flex align-items-center text-decoration-none gap-2">
                             <img src="{{ asset('images/logo.jpg') }}" alt="Logo" height="28">
                         </a>
                         <button class="drawer-close" id="drawer-close-btn" aria-label="Fermer">
                             <i class="bi bi-x-lg"></i>
                         </button>
-                    </div>
+                    </div> --}}
 
                     {{-- ── MENU MOBILE uniquement ── --}}
                     <div class="d-md-none">
