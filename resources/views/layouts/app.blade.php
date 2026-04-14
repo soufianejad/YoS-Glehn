@@ -186,6 +186,56 @@
         padding: .7rem;
         font-size: .95rem;
     }
+
+    .mobile-user-card {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: var(--nav-hover-bg);
+        border-radius: var(--nav-radius);
+        margin-bottom: 1rem;
+        text-decoration: none;
+        color: var(--nav-text);
+    }
+
+    .mobile-user-card img {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 1rem;
+    }
+
+    .mobile-user-card .user-name {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.1rem;
+        color: var(--nav-text);
+    }
+
+    .mobile-user-card .user-email {
+        font-size: 0.8rem;
+        color: var(--nav-muted);
+    }
+
+    .mobile-account-links .dropdown-menu {
+        display: block !important;
+        padding: 0;
+        background: transparent;
+    }
+
+    .mobile-account-links .dropdown-item {
+        padding: .7rem;
+        font-size: .95rem;
+        color: var(--nav-text);
+    }
+
+    .mobile-auth-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
 }
 
 /* ── Backdrop ── */
@@ -200,17 +250,24 @@
 #nav-backdrop.active {
     display: block;
 }
-   .mobile-section-label {
-    text-align: center;
-                font-size: .7rem;
-                font-weight: 700;
-                letter-spacing: .08em;
-                text-transform: uppercase;
-                color: var(--nav-muted);
-                padding: 0 .25rem .5rem;
-                border-bottom: 1px solid var(--nav-separator);
-                margin-bottom: .5rem;
-            }
+    .mobile-section-label {
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: var(--nav-muted);
+        padding: 0 .25rem .5rem;
+        border-bottom: 1px solid var(--nav-separator);
+        margin-bottom: .5rem;
+        text-align: left;
+    }
+    .mobile-account-links a i {
+        margin-right: 10px;
+    }
+    .mobile-account-links .dropdown-item {
+        display: flex;
+        align-items: center;
+    }
     </style>
 
     @stack('styles')
@@ -276,13 +333,13 @@
 
                         @auth
                         {{-- Carte profil --}}
-                        <a class="mobile-user-card" href="#">
+                        <div class="mobile-user-card">
                             <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}">
                             <div>
                                 <div class="user-name">{{ Auth::user()->name }}</div>
-                                <div class="user-role">{{ __('Mon compte') }}</div>
+                                <div class="user-email">{{ Auth::user()->email }}</div>
                             </div>
-                        </a>
+                        </div>
                         @endauth
 
                         {{-- Section Navigation --}}
@@ -356,7 +413,7 @@
 
                         {{-- Section Compte --}}
                         @auth
-                        <div class="mobile-section">
+                        <div class="mobile-section mobile-account-links">
                             <div class="mobile-section-label">{{ __('Compte') }}</div>
                             @include('partials.user-dropdown')
                         </div>

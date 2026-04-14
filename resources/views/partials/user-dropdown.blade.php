@@ -1,6 +1,6 @@
 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-    {{-- User Info Header --}}
-    <div class="px-4 py-3">
+    {{-- User Info Header (Hidden on Mobile since mobile has its own card) --}}
+    <div class="px-4 py-3 d-none d-md-block">
         <div class="d-flex align-items-center">
             <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
             <div>
@@ -9,7 +9,7 @@
             </div>
         </div>
     </div>
-    <div class="dropdown-divider"></div>
+    <div class="dropdown-divider d-none d-md-block"></div>
 
     {{-- Universal Links --}}
     <a class="dropdown-item" href="{{ route('profile') }}">
@@ -86,10 +86,10 @@
 
     {{-- Logout --}}
     <a class="dropdown-item text-danger" href="{{ route('logout') }}"
-       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+       onclick="event.preventDefault(); this.nextElementSibling.submit();">
         <i class="fas fa-sign-out-alt fa-fw me-2"></i> {{ __('Déconnexion') }}
     </a>
-    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+    <form action="{{ route('logout') }}" method="POST" class="d-none">
         @csrf
     </form>
 </div>
