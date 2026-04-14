@@ -37,7 +37,7 @@
             border-bottom: 1px solid var(--nav-border);
             box-shadow: var(--nav-shadow);
             padding: .75rem 0;
-            overflow: visible;
+            overflow: visible; /* Important for dropdowns to be visible */
         }
 
         .navbar .container {
@@ -105,20 +105,43 @@
             color: var(--nav-active-color) !important;
         }
 
-        /* ── Dropdown desktop ── */
+        /* ── General Dropdown styling ── */
         .navbar .dropdown-menu {
-            /* Keep original positioning for general dropdowns, but ensure it's not pushing content */
-            position: absolute; /* Changed to absolute for all dropdowns to prevent pushing */
-            top: calc(100% + 6px);
-            right: 0;
-            left: auto;
+            position: absolute; /* Crucial for overlaying */
+            top: 100%; /* Position right below the toggler */
+            margin-top: 6px; /* Space between toggler and menu */
             z-index: 1050;
             border: 1px solid var(--nav-border);
             box-shadow: 0 8px 24px rgba(0,0,0,.10);
             border-radius: var(--nav-radius);
             padding: .5rem;
-            min-width: 160px;
+            min-width: 160px; /* Adjust as needed */
+            /* Ensure it defaults to right alignment for most dropdowns, or specify left/right per case */
+            right: 0;
+            left: auto;
         }
+
+        /* Fix for specific dropdowns in the ms-auto group */
+        .navbar-nav.ms-auto .nav-item.dropdown {
+            position: relative; /* Make nav-item the positioning context for its dropdown */
+        }
+
+        .navbar-nav.ms-auto .nav-item.dropdown .dropdown-menu {
+            /* Position relative to the parent nav-item, not the entire navbar */
+            left: 0;
+            right: auto; /* Align to the left of the parent nav-item */
+            min-width: fit-content; /* Adjust width to content if needed */
+            /* You might need to adjust top further if there's padding issues */
+            top: calc(100% + 6px); /* Ensure consistent spacing */
+        }
+
+        /* If you want the currency/language dropdowns to align to the right of their toggler */
+        /* You can add dropdown-menu-end to their specific dropdown-menu element */
+        .navbar-nav.ms-auto .nav-item.dropdown .dropdown-menu.dropdown-menu-end {
+            right: 0;
+            left: auto;
+        }
+
 
         .navbar .dropdown-item {
             border-radius: 6px;
@@ -135,22 +158,6 @@
         .navbar .dropdown-item.active {
             background: rgba(13,110,253,.08);
             color: var(--nav-active-color);
-        }
-
-        /* Specific fix for currency and language dropdowns on desktop */
-        .navbar-nav.ms-auto .dropdown-menu {
-            /* Override right:0 for these dropdowns if they are part of a left-aligned group */
-            /* If you want them to align to the right edge of their parent .nav-item, keep right:0 */
-            /* If you want them to align to the left edge of their parent .nav-item, use left:0 */
-            right: auto; /* Changed to auto to prevent right alignment by default */
-            left: 0;    /* Aligns dropdown to the left edge of its parent nav-item */
-            min-width: unset; /* Allow menu to size based on content if preferred */
-        }
-        
-        /* If you want dropdowns to align to the right (like user avatar), use this */
-        .navbar-nav.ms-auto .dropdown-menu.dropdown-menu-end {
-            right: 0;
-            left: auto;
         }
 
         /* ── Cloche ── */
@@ -275,7 +282,9 @@
                 background: #e9ecef;
                 color: var(--nav-text);
             }
-                margin-bottom: 1.5rem;
+                /* This media query section seems to have a stray `margin-bottom: 1.5rem;` here */
+                /* I'm assuming it's part of a previous rule that was cut off. */
+                /* If it's causing issues, it might need to be moved or removed. */
             }
 
             .mobile-section-label {
