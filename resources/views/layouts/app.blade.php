@@ -15,385 +15,191 @@
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
     <style>
-      /* ── Variables ── */
-        :root {
-            --nav-height: 64px;
-            --nav-bg: #ffffff;
-            --nav-border: rgba(0,0,0,.07);
-            --nav-shadow: 0 1px 12px rgba(0,0,0,.06);
-            --nav-active-color: #0d6efd;
-            --nav-text: #343a40;
-            --nav-muted: #6c757d;
-            --nav-hover-bg: #f8f9fa;
-            --nav-separator: rgba(0,0,0,.06);
-            --nav-radius: 10px;
-            --transition: .18s ease;
-        }
+    /* ── Variables ── */
+:root {
+    --nav-height: 64px;
+    --nav-bg: #ffffff;
+    --nav-border: rgba(0,0,0,.07);
+    --nav-shadow: 0 1px 12px rgba(0,0,0,.06);
+    --nav-active-color: #0d6efd;
+    --nav-text: #343a40;
+    --nav-muted: #6c757d;
+    --nav-hover-bg: #f8f9fa;
+    --nav-separator: rgba(0,0,0,.06);
+    --nav-radius: 10px;
+    --transition: .18s ease;
+}
 
-        /* ── Navbar base ── */
-        .navbar {
-            min-height: var(--nav-height);
-            background: var(--nav-bg) !important;
-            border-bottom: 1px solid var(--nav-border);
-            box-shadow: var(--nav-shadow);
-            padding: .75rem 0;
-            overflow: visible; /* Important for dropdowns to be visible */
-        }
+/* ── Navbar base ── */
+.navbar {
+    min-height: var(--nav-height);
+    background: var(--nav-bg) !important;
+    border-bottom: 1px solid var(--nav-border);
+    box-shadow: var(--nav-shadow);
+    padding: .75rem 0;
+}
 
-        .navbar .container {
-            height: 100%;
-        
-            align-items: center;
-        }
+/* ⚠️ FIX CRITIQUE */
+.navbar .container {
+    display: flex;
+    align-items: center;
+}
 
-        /* ── Brand ── */
-        .navbar-brand {
-            padding: 0;
-            height: 100%;
-            display: flex;
-            align-items: center;
-        }
+/* ── Brand ── */
+.navbar-brand {
+    display: flex;
+    align-items: center;
+}
 
-        .navbar-brand img {
-            height: 34px;
-        }
+.navbar-brand img {
+    height: 34px;
+}
 
-        /* ── Toggler ── */
-        .navbar-toggler {
-            border: none !important;
-            outline: none !important;
-            box-shadow: none !important;
-            padding: 6px 8px;
-            border-radius: 8px;
-            transition: background var(--transition);
-            color: var(--nav-text);
-        }
+/* ── Toggler ── */
+.navbar-toggler {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 6px 8px;
+    border-radius: 8px;
+}
 
-        .navbar-toggler:hover {
-            background: var(--nav-hover-bg);
-        }
+.navbar-toggler:hover {
+    background: var(--nav-hover-bg);
+}
 
-        .navbar-toggler-icon {
-            width: 20px;
-            height: 20px;
-        }
+/* ── Links ── */
+.navbar .nav-link {
+    color: var(--nav-text) !important;
+    font-size: .875rem;
+    font-weight: 500;
+    padding: .4rem .75rem !important;
+    border-radius: 8px;
+    transition: .2s;
+    white-space: nowrap;
+}
 
-        /* ── Desktop nav-link ── */
-        .navbar .nav-link {
-            color: var(--nav-text) !important;
-            font-size: .875rem;
-            font-weight: 500;
-            padding: .4rem .75rem !important;
-            border-radius: 8px;
-            transition: background var(--transition), color var(--transition);
-            white-space: nowrap;
-        }
+.navbar .nav-link:hover {
+    background: var(--nav-hover-bg);
+    color: var(--nav-active-color) !important;
+}
 
-        .navbar .nav-link:hover {
-            background: var(--nav-hover-bg);
-            color: var(--nav-active-color) !important;
-        }
+.navbar .nav-link.active {
+    color: var(--nav-active-color) !important;
+}
 
-        .navbar .nav-link.active,
-        .navbar .nav-item.active .nav-link {
-            color: var(--nav-active-color) !important;
-        }
+/* ── IMPORTANT: align items ── */
+.navbar-nav {
+    align-items: center;
+}
 
-        /* Lien dashboard mis en avant */
-        .navbar .nav-link.fw-bold.text-primary {
-            background: rgba(13,110,253,.06);
-            color: var(--nav-active-color) !important;
-        }
+/* ── Dropdown (SAFE VERSION) ── */
+/* ⚠️ ON NE TOUCHE PAS position / left / right */
+.navbar .dropdown-menu {
+    border: 1px solid var(--nav-border);
+    box-shadow: 0 8px 24px rgba(0,0,0,.10);
+    border-radius: var(--nav-radius);
+    padding: .5rem;
+}
 
-      
+/* ── Dropdown items ── */
+.navbar .dropdown-item {
+    border-radius: 6px;
+    font-size: .875rem;
+    padding: .45rem .75rem;
+}
 
-        /* Fix for specific dropdowns in the ms-auto group */
-        .navbar-nav.ms-auto .nav-item.dropdown {
-            position: relative; /* Make nav-item the positioning context for its dropdown */
-        }
+.navbar .dropdown-item:hover {
+    background: var(--nav-hover-bg);
+}
 
-        .navbar-nav.ms-auto .nav-item.dropdown .dropdown-menu {
-            /* Position relative to the parent nav-item, not the entire navbar */
-            left: 0;
-            right: auto; /* Align to the left of the parent nav-item */
-            min-width: fit-content; /* Adjust width to content if needed */
-            /* You might need to adjust top further if there's padding issues */
-            top: calc(100% + 6px); /* Ensure consistent spacing */
-        }
+.navbar .dropdown-item.active {
+    background: rgba(13,110,253,.08);
+    color: var(--nav-active-color);
+}
 
-        /* If you want the currency/language dropdowns to align to the right of their toggler */
-        /* You can add dropdown-menu-end to their specific dropdown-menu element */
-        .navbar-nav.ms-auto .nav-item.dropdown .dropdown-menu.dropdown-menu-end {
-            right: 0;
-            left: auto;
-        }
+/* ── Bell ── */
+.bell-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    position: relative;
+}
 
+.bell-btn:hover {
+    background: var(--nav-hover-bg);
+}
 
-        .navbar .dropdown-item {
-            border-radius: 6px;
-            font-size: .875rem;
-            padding: .45rem .75rem;
-            color: var(--nav-text);
-            transition: background var(--transition);
-        }
+.bell-btn .badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: .6rem;
+}
 
-        .navbar .dropdown-item:hover {
-            background: var(--nav-hover-bg);
-        }
+/* ── Avatar ── */
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
 
-        .navbar .dropdown-item.active {
-            background: rgba(13,110,253,.08);
-            color: var(--nav-active-color);
-        }
+/* ── Notifications ── */
+.notifications-panel {
+    width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+}
 
-        /* ── Cloche ── */
-        .bell-btn {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: background var(--transition);
-            position: relative;
-            padding: 0 !important;
-            flex-shrink: 0;
-        }
+/* ── MOBILE ── */
+@media (max-width: 767.98px) {
 
-        .bell-btn:hover {
-            background: var(--nav-hover-bg);
-        }
+    .navbar-collapse {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 80%;
+        max-width: 300px;
+        height: 100vh;
+        background: white;
+        z-index: 1050;
+        padding: 1rem;
+        transform: translateX(100%);
+        transition: .3s;
+    }
 
-        .bell-btn .bi-bell {
-            font-size: 1.05rem;
-            color: var(--nav-text);
-        }
+    .navbar-collapse.show {
+        transform: translateX(0);
+    }
 
-        .bell-btn .badge {
-            position: absolute !important;
-            top: 2px;
-            right: 2px;
-            min-width: 16px;
-            height: 16px;
-            padding: 0 4px;
-            line-height: 16px;
-            font-size: .6rem;
-            border-radius: 8px;
-        }
+    .navbar-collapse .dropdown-menu {
+        position: static !important;
+        box-shadow: none;
+        border: none;
+        padding-left: .5rem;
+    }
 
-        /* Notifications panel */
-        .notifications-panel {
-            width: 300px;
-            max-height: 400px;
-            overflow-y: auto;
-            border-radius: var(--nav-radius) !important;
-        }
+    .navbar-collapse .nav-link {
+        padding: .7rem;
+        font-size: .95rem;
+    }
+}
 
-        .dropdown-header {
-            font-size: .75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .04em;
-            color: var(--nav-muted);
-            padding: .5rem .75rem;
-        }
+/* ── Backdrop ── */
+#nav-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.25);
+    z-index: 1039;
+}
 
-        /* ── Avatar ── */
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid rgba(13,110,253,.15);
-        }
-
-        /* ── MOBILE overlay ── */
-        @media (max-width: 767.98px) {
-            /* Drawer depuis la droite */
-            .navbar-collapse {
-                position: fixed !important;
-                top: 0 !important;
-                right: 0 !important;
-                left: auto !important;
-                width: 78vw !important;
-                max-width: 300px !important;
-                height: 100dvh !important;
-                background: var(--nav-bg);
-                z-index: 1050;
-                overflow-y: auto;
-                overflow-x: hidden;
-                padding: 1.25rem 1.25rem 2.5rem;
-                transform: translateX(105%);
-                opacity: 1;
-                pointer-events: none;
-                transition: transform .3s cubic-bezier(.4,0,.2,1);
-                border-left: 1px solid var(--nav-separator);
-                box-shadow: -8px 0 32px rgba(0,0,0,.10);
-                margin: 0 !important;
-                display: block !important;
-            }
-
-            .navbar-collapse.show {
-                transform: translateX(0) !important;
-                pointer-events: auto;
-            }
-
-            /* Header du drawer */
-            .drawer-header {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding-bottom: 1rem;
-                margin-bottom: .25rem;
-                border-bottom: 1px solid var(--nav-separator);
-            }
-
-            .drawer-close {
-                width: 34px;
-                height: 34px;
-                border: none;
-                background: var(--nav-hover-bg);
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1.1rem;
-                color: var(--nav-muted);
-                cursor: pointer;
-                transition: background var(--transition), color var(--transition);
-                flex-shrink: 0;
-            }
-
-            .drawer-close:hover {
-                background: #e9ecef;
-                color: var(--nav-text);
-            }
-                /* This media query section seems to have a stray `margin-bottom: 1.5rem;` here */
-                /* I'm assuming it's part of a previous rule that was cut off. */
-                /* If it's causing issues, it might need to be moved or removed. */
-            }
-
-            .mobile-section-label {
-                font-size: .7rem;
-                font-weight: 700;
-                letter-spacing: .08em;
-                text-transform: uppercase;
-                color: var(--nav-muted);
-                padding: 0 .25rem .5rem;
-                border-bottom: 1px solid var(--nav-separator);
-                margin-bottom: .5rem;
-            }
-
-            /* Liens mobiles : gros, tactiles */
-            .navbar-collapse .nav-link {
-                display: flex;
-                align-items: center;
-                gap: .65rem;
-                padding: .75rem .75rem !important;
-                border-radius: 10px !important;
-                font-size: .95rem !important;
-                font-weight: 500;
-                margin-bottom: 2px;
-            }
-
-            .navbar-collapse .nav-link i {
-                font-size: 1.05rem;
-                width: 22px;
-                text-align: center;
-                color: var(--nav-muted);
-                flex-shrink: 0;
-            }
-
-            .navbar-collapse .nav-link:hover {
-                background: var(--nav-hover-bg);
-            }
-
-            /* Dropdown mobile : inline */
-            .navbar-collapse .dropdown-menu {
-                position: static !important;
-                box-shadow: none !important;
-                border: none !important;
-                border-radius: 0 !important;
-                background: transparent;
-                padding: 0 0 0 .5rem;
-                margin: 0 !important;
-            }
-
-            .navbar-collapse .dropdown-item {
-                padding: .55rem .75rem;
-                border-radius: 8px;
-                font-size: .9rem;
-                margin-bottom: 1px;
-            }
-
-            /* Profil utilisateur en haut du menu mobile */
-            .mobile-user-card {
-                display: flex;
-                align-items: center;
-                gap: .85rem;
-                padding: .85rem 1rem;
-                background: var(--nav-hover-bg);
-                border-radius: 12px;
-                margin-bottom: 1.25rem;
-                text-decoration: none;
-                color: var(--nav-text);
-            }
-
-            .mobile-user-card img {
-                width: 44px;
-                height: 44px;
-                border-radius: 50%;
-                object-fit: cover;
-                border: 2px solid rgba(13,110,253,.18);
-                flex-shrink: 0;
-            }
-
-            .mobile-user-card .user-name {
-                font-weight: 600;
-                font-size: .95rem;
-                line-height: 1.2;
-            }
-
-            .mobile-user-card .user-role {
-                font-size: .78rem;
-                color: var(--nav-muted);
-            }
-
-            /* Cloche mobile : masquée (déjà dans la barre) */
-            .mobile-bell-wrapper {
-                display: flex;
-            }
-
-            /* Boutons auth mobiles */
-            .mobile-auth-buttons {
-                display: flex;
-                flex-direction: column;
-                gap: .5rem;
-                margin-top: .5rem;
-            }
-
-            .mobile-auth-buttons a {
-                text-align: center;
-                padding: .7rem 1rem;
-                border-radius: 10px;
-                font-weight: 500;
-                font-size: .95rem;
-            }
-        }
-
-        /* ── Overlay backdrop (mobile) ── */
-        #nav-backdrop {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.25);
-            z-index: 1039;
-            backdrop-filter: blur(2px);
-        }
-
-        #nav-backdrop.active {
-            display: block;
-        }
+#nav-backdrop.active {
+    display: block;
+}
     </style>
 
     @stack('styles')
