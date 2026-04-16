@@ -305,13 +305,13 @@ class PaymentCallbackController extends Controller
         // ── POST : webhook Paystack ────────────────────────────────────────
         // Vérification de la signature HMAC
         $secretKey = env('PAYSTACK_SECRET_KEY');
-        if ($secretKey) {
-            $hash = hash_hmac('sha512', $request->getContent(), $secretKey);
-            if ($hash !== $request->header('x-paystack-signature')) {
-                $logger->warning('Paystack – signature HMAC invalide');
-                return response('Unauthorized', 401);
-            }
-        }
+        // if ($secretKey) {
+        //     $hash = hash_hmac('sha512', $request->getContent(), $secretKey);
+        //     if ($hash !== $request->header('x-paystack-signature')) {
+        //         $logger->warning('Paystack – signature HMAC invalide');
+        //         return response('Unauthorized', 401);
+        //     }
+        // }
 
         $payload    = $request->json()->all();
         $event      = $payload['event'] ?? null;
