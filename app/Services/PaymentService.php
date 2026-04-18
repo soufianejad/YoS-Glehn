@@ -608,10 +608,10 @@ class PaymentService
                 $countryIso   = $this->detectCountryFromPhone($userPhone);
                 $currency     = $this->countryConfigs[$countryIso]['currency'] ?? 'XOF';
 
-                // Si le réseau est Mobile Money (West/Central Africa) mais la monnaie est MAD ou autre non compatible,
-                // forcer la monnaie à XOF pour Paystack
-                $westAfricaNetworks = ['PS_WAVE', 'PS_ORANGE', 'PS_MTN'];
-                if (in_array($network, $westAfricaNetworks) && !in_array($currency, ['XOF', 'XAF', 'GHS', 'NGN'])) {
+                // Si la monnaie (ex: MAD) n'est pas supportée par Paystack,
+                // forcer la monnaie par défaut à XOF pour tous les canaux Paystack
+                $paystackSupportedCurrencies = ['XOF', 'XAF', 'NGN', 'GHS', 'KES', 'ZAR', 'USD'];
+                if (!in_array($currency, $paystackSupportedCurrencies)) {
                     $currency = 'XOF';
                 }
 
