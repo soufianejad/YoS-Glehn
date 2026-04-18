@@ -96,10 +96,10 @@ class RegisterController extends Controller
                 "verification_target_phone" => $request->phone
             ]);
 
-            $messageBody = __("Votre code de vérification pour :app_name est : ", ['app_name' => config('app.name')]) . $code;
+            $apiToken = config('services.whatsapp.token');
+            $phoneNumberId = config('services.whatsapp.phone_number_id');
 
-            $apiToken = env('WAAPI_API_TOKEN');
-            if ($apiToken) {
+            if ($apiToken && $phoneNumberId) {
                 $phoneNumberToSend = preg_replace('/[^0-9]/', '', $request->phone);
                 $targetNumbers = [$phoneNumberToSend];
 
@@ -115,21 +115,39 @@ class RegisterController extends Controller
                 foreach ($targetNumbers as $number) {
                     try {
                         $data = [
-                            'chatId' => $number . '@c.us',
-                            'message' => $messageBody
+                            'messaging_product' => 'whatsapp',
+                            'to' => $number,
+                            'type' => 'template',
+                            'template' => [
+                                'name' => 'otp_verification_code',
+                                'language' => [
+                                    'code' => 'en'
+                                ],
+                                'components' => [
+                                    [
+                                        'type' => 'body',
+                                        'parameters' => [
+                                            [
+                                                'type' => 'text',
+                                                'text' => (string) $code
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
                         ];
-                        $response = $client->request('POST', 'https://waapi.app/api/v1/instances/85626/client/action/send-message', [
+                        $response = $client->request('POST', 'https://graph.facebook.com/v21.0/' . $phoneNumberId . '/messages', [
                             'body' => json_encode($data),
                             'headers' => [
-                                'accept' => 'application/json',
-                                'authorization' => 'Bearer ' . $apiToken,
-                                'content-type' => 'application/json',
+                                'Accept' => 'application/json',
+                                'Authorization' => 'Bearer ' . $apiToken,
+                                'Content-Type' => 'application/json',
                             ],
                             'timeout' => 15,
                         ]);
 
                         $responseBody = json_decode($response->getBody()->getContents(), true);
-                        if (isset($responseBody['data']['status']) && $responseBody['data']['status'] === 'success') {
+                        if (isset($responseBody['messages']) && count($responseBody['messages']) > 0) {
                             $sent = true;
                         }
                     } catch (\Exception $e) {
@@ -146,7 +164,7 @@ class RegisterController extends Controller
                     return response()->json(['success' => false, 'message' => __('Impossible d\'envoyer le message WhatsApp.')], 500);
                 }
             } else {
-                Log::error("RegisterController: Token WAAPI_API_TOKEN manquant");
+                Log::error("RegisterController: Tokens WhatsApp manquants");
                 return response()->json(['success' => false, 'message' => __('Service WhatsApp non configuré.')], 500);
             }
         }
