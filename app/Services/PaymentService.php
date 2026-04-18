@@ -28,7 +28,7 @@ class PaymentService
     ];
 
     // Devises qui nécessitent la multiplication × 100 pour Paystack (en centimes)
-    protected $paystackKoboCurrencies = ['NGN', 'GHS', 'KES', 'ZAR'];
+    protected $paystackKoboCurrencies = ['NGN', 'GHS', 'KES', 'ZAR', 'XOF', 'XAF'];
 
     public function __construct()
     {
@@ -607,6 +607,14 @@ class PaymentService
                 $userPhone    = $payment->user->phone ?? $request->phone ?? '';
                 $countryIso   = $this->detectCountryFromPhone($userPhone);
                 $currency     = $this->countryConfigs[$countryIso]['currency'] ?? 'XOF';
+
+                // Si le réseau est Mobile Money (West/Central Africa) mais la monnaie est MAD ou autre non compatible,
+                // forcer la monnaie à XOF pour Paystack
+                $westAfricaNetworks = ['PS_WAVE', 'PS_ORANGE', 'PS_MTN'];
+                if (in_array($network, $westAfricaNetworks) && !in_array($currency, ['XOF', 'XAF', 'GHS', 'NGN'])) {
+                    $currency = 'XOF';
+                }
+
                 $amountFinal  = in_array($currency, $this->paystackKoboCurrencies) ? $amount * 100 : $amount;
 
                 $channelMap = [
