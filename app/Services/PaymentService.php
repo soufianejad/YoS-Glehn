@@ -337,7 +337,7 @@ class PaymentService
             try {
                 $resp = Http::withToken(env('WAVE_API_KEY'))
                     ->post('https://api.wave.com/v1/checkout/sessions', [
-                        'amount'                 => (string) $amount,
+                        'amount'                 => (string) round($amount),
                         'currency'               => 'XOF',
                         'aggregated_merchant_id' => env('WAVE_AGGREGATED_MERCHANT_ID'),
                         'error_url'              => $errorLink,
