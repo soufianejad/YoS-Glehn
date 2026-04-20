@@ -121,7 +121,7 @@ class RegisterController extends Controller
     'template' => [
         'name' => 'otp_verification_code',
         'language' => [
-            'code' => 'en_US'
+            'code' => 'en'
         ],
         'components' => [
             [
@@ -148,7 +148,7 @@ class RegisterController extends Controller
         ]
     ]
 ];
-                        $response = $client->request('POST', 'https://graph.facebook.com/v21.0/' . $phoneNumberId . '/messages', [
+                        $response = $client->request('POST', 'https://graph.facebook.com/v25.0/' . $phoneNumberId . '/messages', [
                             'body' => json_encode($data),
                             'headers' => [
                                 'Accept' => 'application/json',
