@@ -67,7 +67,8 @@ class RegisterController extends Controller
         ]);
 
         $type = $request->type;
-        $code = Str::random(6);
+        $code = strval(random_int(100000, 999999));
+
         $expiresAt = now()->addMinutes(10);
 
         if ($type === 'email') {
@@ -122,29 +123,29 @@ class RegisterController extends Controller
         'name' => 'otp_verification_code',
         'language' => [
             'code' => 'en'  // ← 'en' et non 'en_US'
-        ],
+        ], 
         'components' => [
+    [
+        'type' => 'body',
+        'parameters' => [
             [
-                'type' => 'body',
-                'parameters' => [
-                    [
-                        'type' => 'text',
-                        'text' => (string) $code
-                    ]
-                ]
-            ],
-            [
-                'type' => 'button',
-                'sub_type' => 'COPY_CODE',  // ← COPY_CODE et non url
-                'index' => '0',
-                'parameters' => [
-                    [
-                        'type' => 'coupon_code',  // ← coupon_code pour COPY_CODE
-                        'coupon_code' => (string) $code
-                    ]
-                ]
+                'type' => 'text',
+                'text' => (string) $code
             ]
         ]
+    ],
+    [
+        'type' => 'button',
+        'sub_type' => 'copy_code',
+        'index' => 0,
+        'parameters' => [
+            [
+                'type' => 'coupon_code',
+                'coupon_code' => (string) $code
+            ]
+        ]
+    ]
+]
     ]
 ];
                         $response = $client->request('POST', 'https://graph.facebook.com/v25.0/' . $phoneNumberId . '/messages', [
