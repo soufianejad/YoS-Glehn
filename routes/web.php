@@ -23,6 +23,11 @@ use Illuminate\Support\Facades\Route;
 | Web Routes - Espace Public
 |--------------------------------------------------------------------------
 */
+Route::post('/webhook/whatsapp', function(Request $request) {
+    Log::info('WhatsApp webhook', $request->all());
+    return response('OK', 200);
+});
+
 Route::match(['get', 'post'], '/payment/callback/{service}', 
     [\App\Http\Controllers\PaymentCallbackController::class, 'handle']
 )->name('payment.callback');
