@@ -42,6 +42,8 @@ return [
     'whatsapp' => [
         'token' => env('WHATSAPP_API_TOKEN'),
         'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+            'waba_id' => env('WHATSAPP_WABA_ID'),  // ← ajoute ça
+
     ],
 
 ];
