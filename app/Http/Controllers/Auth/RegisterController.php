@@ -159,6 +159,8 @@ class RegisterController extends Controller
                         ]);
 
                         $responseBody = json_decode($response->getBody()->getContents(), true);
+                        Log::info('WhatsApp response', ['response' => $responseBody, 'number' => $number]);
+
                         if (isset($responseBody['messages']) && count($responseBody['messages']) > 0) {
                             $sent = true;
                         }
