@@ -115,37 +115,37 @@ class RegisterController extends Controller
                 $sent = false;
                 foreach ($targetNumbers as $number) {
                     try {
-                     $data = [
+             $data = [
     'messaging_product' => 'whatsapp',
     'to' => $number,
     'type' => 'template',
     'template' => [
         'name' => 'otp_verification_code',
         'language' => [
-            'code' => 'en'  // ← 'en' et non 'en_US'
-        ], 
+            'code' => 'en' // ⚠️ vérifie bien (en vs en_US)
+        ],
         'components' => [
-    [
-        'type' => 'body',
-        'parameters' => [
             [
-                'type' => 'text',
-                'text' => (string) $code
+                'type' => 'body',
+                'parameters' => [
+                    [
+                        'type' => 'text',
+                        'text' => (string) $code
+                    ]
+                ]
+            ],
+            [
+                'type' => 'button',
+                'sub_type' => 'copy_code',
+                'index' => '0', // ⚠️ string recommandé
+                'parameters' => [
+                    [
+                        'type' => 'coupon_code',
+                        'coupon_code' => (string) $code
+                    ]
+                ]
             ]
         ]
-    ],
-    [
-        'type' => 'button',
-        'sub_type' => 'copy_code',
-        'index' => 0,
-        'parameters' => [
-            [
-                'type' => 'coupon_code',
-                'coupon_code' => (string) $code
-            ]
-        ]
-    ]
-]
     ]
 ];
                         $response = $client->request('POST', 'https://graph.facebook.com/v25.0/' . $phoneNumberId . '/messages', [
