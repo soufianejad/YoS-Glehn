@@ -67,8 +67,7 @@ class RegisterController extends Controller
         ]);
 
         $type = $request->type;
-        $code = strval(random_int(100000, 999999));
-
+        $code = Str::random(6);
         $expiresAt = now()->addMinutes(10);
 
         if ($type === 'email') {
@@ -115,14 +114,14 @@ class RegisterController extends Controller
                 $sent = false;
                 foreach ($targetNumbers as $number) {
                     try {
-             $data = [
+                       $data = [
     'messaging_product' => 'whatsapp',
     'to' => $number,
     'type' => 'template',
     'template' => [
         'name' => 'otp_verification_code',
         'language' => [
-            'code' => 'en' // ⚠️ vérifie bien (en vs en_US)
+            'code' => 'en'
         ],
         'components' => [
             [
@@ -134,21 +133,22 @@ class RegisterController extends Controller
                     ]
                 ]
             ],
+            // ✅ Add this button component
             [
                 'type' => 'button',
                 'sub_type' => 'copy_code',
-                'index' => '0', // ⚠️ string recommandé
+                'index' => '0',
                 'parameters' => [
                     [
-                        'type' => 'coupon_code',
-                        'coupon_code' => (string) $code
+                        'type' => 'text',
+                        'text' => (string) $code
                     ]
                 ]
             ]
         ]
     ]
 ];
-                        $response = $client->request('POST', 'https://graph.facebook.com/v25.0/' . $phoneNumberId . '/messages', [
+                        $response = $client->request('POST', 'https://graph.facebook.com/v21.0/' . $phoneNumberId . '/messages', [
                             'body' => json_encode($data),
                             'headers' => [
                                 'Accept' => 'application/json',
@@ -159,8 +159,6 @@ class RegisterController extends Controller
                         ]);
 
                         $responseBody = json_decode($response->getBody()->getContents(), true);
-                        Log::info('WhatsApp response', ['response' => $responseBody, 'number' => $number]);
-
                         if (isset($responseBody['messages']) && count($responseBody['messages']) > 0) {
                             $sent = true;
                         }
