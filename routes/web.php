@@ -23,10 +23,20 @@ use Illuminate\Support\Facades\Route;
 | Web Routes - Espace Public
 |--------------------------------------------------------------------------
 */
-Route::post('/webhook/whatsapp', function(Request $request) {
-    Log::info('WhatsApp webhook', $request->all());
-    return response('OK', 200);
+Route::get('/debug-whatsapp-templates', function() {
+    $apiToken = config('services.whatsapp.token');
+    $wabaId = config('services.whatsapp.waba_id'); // ton WhatsApp Business Account ID
+    
+    $client = new \GuzzleHttp\Client();
+    $response = $client->request('GET', "https://graph.facebook.com/v25.0/{$wabaId}/message_templates", [
+        'headers' => [
+            'Authorization' => 'Bearer ' . $apiToken,
+        ]
+    ]);
+    
+    return $response->getBody()->getContents();
 });
+
 
 Route::match(['get', 'post'], '/payment/callback/{service}', 
     [\App\Http\Controllers\PaymentCallbackController::class, 'handle']
