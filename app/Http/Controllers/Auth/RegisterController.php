@@ -112,63 +112,98 @@ class RegisterController extends Controller
 
                 $client = new Client();
                 $sent = false;
-                foreach ($targetNumbers as $number) {
-                    try {
-                       $data = [
-    'messaging_product' => 'whatsapp',
-    'to' => $number,
-    'type' => 'template',
-    'template' => [
-        'name' => 'otp_verification_code',
-        'language' => [
-            'code' => 'en'
-        ],
-        'components' => [
-            [
-                'type' => 'body',
-                'parameters' => [
+              foreach ($targetNumbers as $number) {
+    try {
+        $data = [
+            'messaging_product' => 'whatsapp',
+            'to' => $number,
+            'type' => 'template',
+            'template' => [
+                'name' => 'otp_verification_code',
+                'language' => [
+                    'code' => 'en'
+                ],
+                'components' => [
                     [
-                        'type' => 'text',
-                        'text' => (string) $code
-                    ]
-                ]
-            ],
-            // ✅ Add this button component
-            [
-                'type' => 'button',
-                'sub_type' => 'copy_code',
-                'index' => '0',
-                'parameters' => [
+                        'type' => 'body',
+                        'parameters' => [
+                            [
+                                'type' => 'text',
+                                'text' => (string) $code
+                            ]
+                        ]
+                    ],
                     [
-                        'type' => 'text',
-                        'text' => (string) $code
+                        'type' => 'button',
+                        'sub_type' => 'copy_code',
+                        'index' => '0',
+                        'parameters' => [
+                            [
+                                'type' => 'text',
+                                'text' => (string) $code
+                            ]
+                        ]
                     ]
                 ]
             ]
-        ]
-    ]
-];
-                        $response = $client->request('POST', 'https://graph.facebook.com/v21.0/' . $phoneNumberId . '/messages', [
-                            'body' => json_encode($data),
-                            'headers' => [
-                                'Accept' => 'application/json',
-                                'Authorization' => 'Bearer ' . $apiToken,
-                                'Content-Type' => 'application/json',
-                            ],
-                            'timeout' => 15,
-                        ]);
+        ];
 
-                        $responseBody = json_decode($response->getBody()->getContents(), true);
-                        if (isset($responseBody['messages']) && count($responseBody['messages']) > 0) {
-                            $sent = true;
-                        }
-                    } catch (\Exception $e) {
-                        Log::error("RegisterController: Erreur d'envoi WhatsApp", [
-                            'chat_id' => $number,
-                            'error' => $e->getMessage()
-                        ]);
-                    }
-                }
+        $response = $client->request('POST', 'https://graph.facebook.com/v21.0/' . $phoneNumberId . '/messages', [
+            'body' => json_encode($data),
+            'headers' => [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $apiToken,
+                'Content-Type' => 'application/json',
+            ],
+            'timeout' => 15,
+        ]);
+
+        $responseBody = json_decode($response->getBody()->getContents(), true);
+
+        Log::info("WhatsApp SUCCESS", [
+            'to' => $number,
+            'response' => $responseBody
+        ]);
+
+        if (isset($responseBody['messages']) && count($responseBody['messages']) > 0) {
+            $sent = true;
+        }
+
+    } catch (\GuzzleHttp\Exception\ClientException $e) {
+
+        // 🔥 ERREUR API (400, 401, etc.)
+        $response = $e->getResponse();
+        $body = $response ? $response->getBody()->getContents() : null;
+
+        Log::error("WhatsApp CLIENT ERROR", [
+            'chat_id' => $number,
+            'status' => $response ? $response->getStatusCode() : null,
+            'body' => $body,
+            'message' => $e->getMessage()
+        ]);
+
+    } catch (\GuzzleHttp\Exception\RequestException $e) {
+
+        // 🔥 ERREUR RESEAU
+        $response = $e->getResponse();
+        $body = $response ? $response->getBody()->getContents() : null;
+
+        Log::error("WhatsApp REQUEST ERROR", [
+            'chat_id' => $number,
+            'body' => $body,
+            'message' => $e->getMessage()
+        ]);
+
+    } catch (\Exception $e) {
+
+        // 🔥 AUTRES ERREURS
+        Log::error("WhatsApp GENERAL ERROR", [
+            'chat_id' => $number,
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+    }
+}
 
                 if ($sent) {
                     return response()->json(['success' => true, 'message' => __('Code envoyé sur WhatsApp avec succès.')]);
