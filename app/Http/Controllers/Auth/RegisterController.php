@@ -114,19 +114,40 @@ class RegisterController extends Controller
                 $sent = false;
                 foreach ($targetNumbers as $number) {
                     try {
-         $data = [
+                       $data = [
     'messaging_product' => 'whatsapp',
     'to' => $number,
     'type' => 'template',
     'template' => [
-        'name' => 'hello_world',  // ← change temporairement
+        'name' => 'otp_verification_code',
         'language' => [
-            'code' => 'en_US'     // ← attention: en_US pas en
+            'code' => 'en_US'
         ],
-        // pas de components nécessaires pour hello_world
+        'components' => [
+            [
+                'type' => 'body',
+                'parameters' => [
+                    [
+                        'type' => 'text',
+                        'text' => (string) $code
+                    ]
+                ]
+            ],
+            // ✅ Add this button component
+            [
+                'type' => 'button',
+                'sub_type' => 'url',
+                'index' => '0',
+                'parameters' => [
+                    [
+                        'type' => 'text',
+                        'text' => (string) $code
+                    ]
+                ]
+            ]
+        ]
     ]
 ];
-
                         $response = $client->request('POST', 'https://graph.facebook.com/v21.0/' . $phoneNumberId . '/messages', [
                             'body' => json_encode($data),
                             'headers' => [
