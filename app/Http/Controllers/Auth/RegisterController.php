@@ -114,14 +114,14 @@ class RegisterController extends Controller
                 $sent = false;
                 foreach ($targetNumbers as $number) {
                     try {
-                       $data = [
+                     $data = [
     'messaging_product' => 'whatsapp',
     'to' => $number,
     'type' => 'template',
     'template' => [
         'name' => 'otp_verification_code',
         'language' => [
-            'code' => 'en'
+            'code' => 'en'  // ← 'en' et non 'en_US'
         ],
         'components' => [
             [
@@ -133,15 +133,14 @@ class RegisterController extends Controller
                     ]
                 ]
             ],
-            // ✅ Add this button component
             [
                 'type' => 'button',
-                'sub_type' => 'url',
+                'sub_type' => 'COPY_CODE',  // ← COPY_CODE et non url
                 'index' => '0',
                 'parameters' => [
                     [
-                        'type' => 'text',
-                        'text' => (string) $code
+                        'type' => 'coupon_code',  // ← coupon_code pour COPY_CODE
+                        'coupon_code' => (string) $code
                     ]
                 ]
             ]
