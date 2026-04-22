@@ -119,7 +119,7 @@ class RegisterController extends Controller
             'to' => $number,
             'type' => 'template',
             'template' => [
-                'name' => 'otp_verification_code',
+                'name' => 'otp',
                 'language' => [
                     'code' => 'en'
                 ],
