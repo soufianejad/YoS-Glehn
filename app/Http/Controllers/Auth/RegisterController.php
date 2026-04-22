@@ -121,7 +121,7 @@ class RegisterController extends Controller
             'template' => [
                 'name' => 'otp',
                 'language' => [
-                    'code' => 'en'
+                    'code' => 'en_us'
                 ],
                 'components' => [
                     [
