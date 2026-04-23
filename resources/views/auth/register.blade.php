@@ -8,6 +8,7 @@
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <style>
     .iti { width: 100%; }
+    .input-group > .iti { flex: 1 1 auto; width: 1%; }
     .password-strength-meter {
         height: 5px;
         background-color: #eee;
@@ -108,13 +109,12 @@
                             <label for="phone" class="col-md-4 col-form-label text-md-end">{{ __('Numéro de téléphone') }}</label>
 
                             <div class="col-md-6">
-                                <div class="d-flex">
-                                    <div class="flex-grow-1">
-                                        <input type="tel" id="phone_display" class="form-control" value="{{ old('phone') }}" required>
-                                        <input type="hidden" name="phone" id="phone_hidden" value="{{ old('phone') }}">
-                                        <input type="hidden" name="country_iso" id="country_iso">
-                                    </div>
-                                    <button class="btn btn-outline-secondary ms-2" type="button" id="btn-send-phone-code">
+                                <div class="input-group">
+                                    <input type="tel" id="phone_display" class="form-control" value="{{ old('phone') }}" required>
+                                    <input type="hidden" name="phone" id="phone_hidden" value="{{ old('phone') }}">
+                                    <input type="hidden" name="country_iso" id="country_iso">
+                                    <input type="hidden" name="country_code" id="country_code">
+                                    <button class="btn btn-outline-secondary" type="button" id="btn-send-phone-code">
                                         <span class="spinner-border spinner-border-sm d-none" id="send-phone-spinner" role="status" aria-hidden="true"></span>
                                         <span id="send-phone-text">{{ __('Vérifier') }}</span>
                                     </button>
@@ -229,9 +229,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const phoneInput = document.querySelector("#phone_display");
     const phoneHiddenInput = document.querySelector("#phone_hidden");
     const countryIsoInput = document.querySelector("#country_iso");
+    const countryCodeInput = document.querySelector("#country_code");
 
     const iti = window.intlTelInput(phoneInput, {
         initialCountry: "auto",
+        separateDialCode: true,
         geoIpLookup: function(callback) {
             fetch("https://ipinfo.io/json")
                 .then(resp => resp.json())
@@ -245,6 +247,7 @@ document.addEventListener('DOMContentLoaded', function () {
     phoneInput.addEventListener("countrychange", function() {
         const countryData = iti.getSelectedCountryData();
         countryIsoInput.value = (countryData.iso2 || 'ci').toUpperCase();
+        countryCodeInput.value = countryData.dialCode || '225';
         updateHiddenPhone();
     });
 
@@ -252,10 +255,15 @@ document.addEventListener('DOMContentLoaded', function () {
     phoneInput.addEventListener("blur", updateHiddenPhone);
 
     function updateHiddenPhone() {
+        const countryData = iti.getSelectedCountryData();
+        countryCodeInput.value = countryData.dialCode || '225';
+
         if (iti.isValidNumber()) {
-            phoneHiddenInput.value = iti.getNumber();
+            // Remove the '+' sign if present
+            phoneHiddenInput.value = iti.getNumber().replace('+', '');
         } else {
-            phoneHiddenInput.value = phoneInput.value;
+            // If not valid, still try to append dial code if not already present, but for robust let's just strip '+'
+            phoneHiddenInput.value = phoneInput.value.replace('+', '');
         }
     }
 
@@ -416,7 +424,7 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch('{{ route('register.send_verification') }}', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-            body: JSON.stringify({ type: 'phone', phone: phone })
+            body: JSON.stringify({ type: 'phone', phone: phone, country_code: countryCodeInput.value })
         })
         .then(res => res.json())
         .then(data => {
