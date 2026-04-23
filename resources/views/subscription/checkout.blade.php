@@ -283,8 +283,14 @@
                         <div class="col-md-12">
                             <label class="form-label">{{ __('Votre numéro de téléphone') }}</label>
                             <div>
-                                <input type="tel" name="phone_display" id="phone" class="form-control"
-                                       value="{{ auth()->user()->phone ?? '' }}" required>
+                                @php
+                                    $userPhone = auth()->user()->phone ?? '';
+                                    if ($userPhone && !str_starts_with($userPhone, '+')) {
+                                        $userPhone = '+' . $userPhone;
+                                    }
+                                @endphp
+                                <input type="tel" name="phone_display" id="phone" class="form-control bg-light"
+                                       value="{{ $userPhone }}" readonly required>
                                 <input type="hidden" name="phone" id="phone_hidden">
                                 <input type="hidden" name="country_iso" id="country_iso">
                             </div>
@@ -353,6 +359,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const iti = window.intlTelInput(phoneInput, {
         initialCountry: "auto",
+        allowDropdown: false,
         geoIpLookup: function(callback) {
             fetch("https://ipinfo.io/json")
                 .then(resp => resp.json())
