@@ -5,6 +5,7 @@
 @push('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <style>
     .iti { width: 100%; }
     .password-strength-meter {
