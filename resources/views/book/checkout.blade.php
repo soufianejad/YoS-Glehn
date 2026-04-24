@@ -360,6 +360,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const iti = window.intlTelInput(phoneInput, {
         initialCountry: "auto",
         allowDropdown: false,
+        separateDialCode: true,
         geoIpLookup: function(callback) {
             fetch("https://ipinfo.io/json")
                 .then(resp => resp.json())
