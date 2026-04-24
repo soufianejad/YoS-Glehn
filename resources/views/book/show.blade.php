@@ -466,7 +466,7 @@
                                 $showPrices = \App\Models\Setting::where('key', 'platform.show_prices')->value('value') ?? '1';
                             @endphp
                             @if($showPrices == '1')
-                            <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex flex-wrap gap-2 mb-3">
                                 @if($relatedBook->hasPdf())
                                     <span class="badge bg-light text-dark border"><i class="bi bi-file-pdf text-danger"></i> {{ $relatedBook->pdf_price > 0 ? formatPrice($relatedBook->pdf_price) : __("Gratuit") }}</span>
                                 @endif
