@@ -187,7 +187,7 @@
                             @endphp
                             @if($showPrices == '1')
                             <!-- Prices -->
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex flex-wrap gap-2 mb-3">
                             @if($book->hasPdf())
                                 <span class="badge bg-light text-dark border"><i class="bi bi-file-pdf text-danger"></i> {{ $book->pdf_price > 0 ? formatPrice($book->pdf_price) : __("Gratuit") }}</span>
                             @endif
