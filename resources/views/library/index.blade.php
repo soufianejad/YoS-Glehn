@@ -149,14 +149,20 @@
                             @endphp
                             @if($showPrices == '1')
                             <!-- Prices -->
-                        <div class="d-flex flex-wrap gap-2 mb-3">
-                            @if($book->hasPdf())
-                                <span class="badge bg-light text-dark border"><i class="bi bi-file-pdf text-danger"></i> {{ $book->pdf_price > 0 ? formatPrice($book->pdf_price) : __("Gratuit") }}</span>
-                            @endif
-                            @if($book->hasAudio())
-                                <span class="badge bg-light text-dark border"><i class="bi bi-headphones text-primary"></i> {{ $book->audio_price > 0 ? formatPrice($book->audio_price) : __("Gratuit") }}</span>
-                            @endif
-                        </div>
+                        <div class="d-flex flex-column gap-2 mb-3">
+                                @if($book->hasPdf())
+                                    <div class="d-flex align-items-center justify-content-between px-2 py-1 rounded bg-light border">
+                                        <small class="text-muted"><i class="bi bi-file-pdf text-danger me-1"></i> {{ __('Ebook') }}</small>
+                                        <span class="fw-bold" style="font-size: 0.9rem;">{{ $book->pdf_price > 0 ? formatPrice($book->pdf_price) : __("Gratuit") }}</span>
+                                    </div>
+                                @endif
+                                @if($book->hasAudio())
+                                    <div class="d-flex align-items-center justify-content-between px-2 py-1 rounded bg-light border">
+                                        <small class="text-muted"><i class="bi bi-headphones text-primary me-1"></i> {{ __('Audio') }}</small>
+                                        <span class="fw-bold" style="font-size: 0.9rem;">{{ $book->audio_price > 0 ? formatPrice($book->audio_price) : __("Gratuit") }}</span>
+                                    </div>
+                                @endif
+                            </div>
                             @endif
                         <div class="mt-auto">
                                     <a href="{{ route('book.show', $book->slug) }}" class="btn btn-primary w-100">{{ __('Voir Détails') }}</a>

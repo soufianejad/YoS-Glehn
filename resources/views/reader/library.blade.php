@@ -90,14 +90,20 @@
                             @endphp
                             @if($showPrices == '1')
                             <!-- Prices -->
-                                <div class="d-flex flex-wrap gap-2 mb-3 mt-auto" style="position: relative; z-index: 2;">
-                                    @if($purchase->book->hasPdf())
-                                        <span class="badge bg-light text-dark border"><i class="bi bi-file-pdf text-danger"></i> {{ $purchase->book->pdf_price > 0 ? formatPrice($purchase->book->pdf_price) : __("Gratuit") }}</span>
-                                    @endif
-                                    @if($purchase->book->hasAudio())
-                                        <span class="badge bg-light text-dark border"><i class="bi bi-headphones text-primary"></i> {{ $purchase->book->audio_price > 0 ? formatPrice($purchase->book->audio_price) : __("Gratuit") }}</span>
-                                    @endif
-                                </div>
+                                <div class="d-flex flex-column gap-2 mb-3 mt-auto" style="position: relative; z-index: 2;">
+                                @if($purchase->book->hasPdf())
+                                    <div class="d-flex align-items-center justify-content-between px-2 py-1 rounded bg-light border">
+                                        <small class="text-muted"><i class="bi bi-file-pdf text-danger me-1"></i> {{ __('Ebook') }}</small>
+                                        <span class="fw-bold" style="font-size: 0.9rem;">{{ $purchase->book->pdf_price > 0 ? formatPrice($purchase->book->pdf_price) : __("Gratuit") }}</span>
+                                    </div>
+                                @endif
+                                @if($purchase->book->hasAudio())
+                                    <div class="d-flex align-items-center justify-content-between px-2 py-1 rounded bg-light border">
+                                        <small class="text-muted"><i class="bi bi-headphones text-primary me-1"></i> {{ __('Audio') }}</small>
+                                        <span class="fw-bold" style="font-size: 0.9rem;">{{ $purchase->book->audio_price > 0 ? formatPrice($purchase->book->audio_price) : __("Gratuit") }}</span>
+                                    </div>
+                                @endif
+                            </div>
                             @endif
                                 @php
                                     $progress = $purchase->book->readingProgress->where('user_id', auth()->id())->first();
