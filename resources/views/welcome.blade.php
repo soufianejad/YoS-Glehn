@@ -119,12 +119,18 @@
                                 $showPrices = \App\Models\Setting::where('key', 'platform.show_prices')->value('value') ?? '1';
                             @endphp
                             @if($showPrices == '1')
-                            <div class="d-flex flex-wrap gap-2 mb-3">
+                            <div class="d-flex flex-column gap-2 mb-3">
                                 @if($book->hasPdf())
-                                    <span class="badge bg-light text-dark border"><i class="bi bi-file-pdf text-danger"></i> {{ $book->pdf_price > 0 ? formatPrice($book->pdf_price) : __("Gratuit") }}</span>
+                                    <div class="d-flex align-items-center justify-content-between px-2 py-1 rounded bg-light border">
+                                        <small class="text-muted"><i class="bi bi-file-pdf text-danger me-1"></i> {{ __('Ebook') }}</small>
+                                        <span class="fw-bold" style="font-size: 0.9rem;">{{ $book->pdf_price > 0 ? formatPrice($book->pdf_price) : __("Gratuit") }}</span>
+                                    </div>
                                 @endif
                                 @if($book->hasAudio())
-                                    <span class="badge bg-light text-dark border"><i class="bi bi-headphones text-primary"></i> {{ $book->audio_price > 0 ? formatPrice($book->audio_price) : __("Gratuit") }}</span>
+                                    <div class="d-flex align-items-center justify-content-between px-2 py-1 rounded bg-light border">
+                                        <small class="text-muted"><i class="bi bi-headphones text-primary me-1"></i> {{ __('Audio') }}</small>
+                                        <span class="fw-bold" style="font-size: 0.9rem;">{{ $book->audio_price > 0 ? formatPrice($book->audio_price) : __("Gratuit") }}</span>
+                                    </div>
                                 @endif
                             </div>
                             @endif
