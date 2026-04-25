@@ -35,5 +35,23 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->reportable(function (Throwable $e) {
+            try {
+                $admins = \App\Models\User::where('role', 'admin')->get();
+                $notificationService = app(\App\Services\NotificationService::class);
+
+                foreach ($admins as $admin) {
+                    $notificationService->sendNotification(
+                        $admin,
+                        'System Error Occurred',
+                        'An error occurred: ' . $e->getMessage(),
+                        null,
+                        'error',
+                        true
+                    );
+                }
+            } catch (\Throwable $notificationError) {
+                \Illuminate\Support\Facades\Log::error('Failed to send error notification to admins: ' . $notificationError->getMessage());
+            }
+        });
     })->create();
