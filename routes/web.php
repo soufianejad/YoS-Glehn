@@ -3,6 +3,7 @@
 use App\Http\Controllers\Adult\InvitationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\ChangeLanguageController;
 use App\Http\Controllers\ChangeCurrencyController;
@@ -110,6 +111,13 @@ Route::middleware('guest')->group(function () {
     // AJAX Verification Routes
     Route::post('/register/send-verification', [RegisterController::class, 'sendVerificationCode'])->name('register.send_verification');
     Route::post('/register/verify-code', [RegisterController::class, 'verifyCode'])->name('register.verify_code');
+
+    // Forgot Password
+    Route::get('/password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/password/send-code', [ForgotPasswordController::class, 'sendVerificationCode'])->name('password.send-code');
+    Route::post('/password/verify-code', [ForgotPasswordController::class, 'verifyCode'])->name('password.verify-code');
+    Route::post('/password/update', [ForgotPasswordController::class, 'update'])->name('password.update');
+
 
     // Student Registration with Access Code
     Route::get('/student-registration', [App\Http\Controllers\StudentRegistrationController::class, 'create'])->name('student.register');
