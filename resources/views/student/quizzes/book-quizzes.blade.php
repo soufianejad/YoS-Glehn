@@ -22,7 +22,8 @@
     @if($quizzes->isEmpty())
         <p>{{ __('No quizzes available for this book yet.') }}</p>
     @else
-        <table class="table">
+        <div class="table-responsive">
+<table class="table">
             <thead>
                 <tr>
                     <th>{{ __('Title') }}</th>
@@ -47,6 +48,7 @@
                 @endforeach
             </tbody>
         </table>
+</div>
 
         {{ $quizzes->links('pagination::bootstrap-5') }}
     @endif

@@ -15,7 +15,8 @@
     </div>
 
     <h2>{{ __('All Revenue Entries this Month') }}</h2>
-    <table class="table">
+    <div class="table-responsive">
+<table class="table">
         <thead>
             <tr>
                 <th>{{ __('ID') }}</th>
@@ -47,5 +48,6 @@
             @endforelse
         </tbody>
     </table>
+</div>
 </div>
 @endsection

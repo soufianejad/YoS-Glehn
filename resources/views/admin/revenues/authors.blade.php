@@ -6,7 +6,8 @@
 <div class="container">
     <h1>{{ __('Author Revenues') }}</h1>
 
-    <table class="table">
+    <div class="table-responsive">
+<table class="table">
         <thead>
             <tr>
                 <th>{{ __('ID') }}</th>
@@ -31,6 +32,7 @@
             @endforeach
         </tbody>
     </table>
+</div>
 
     {{ $authors->links('pagination::bootstrap-5') }}
 </div>

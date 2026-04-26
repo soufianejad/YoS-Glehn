@@ -6,7 +6,8 @@
 <div class="container">
     <h1>{{ __('Quiz Results for: ') . $quiz->title }}</h1>
 
-    <table class="table">
+    <div class="table-responsive">
+<table class="table">
         <thead>
             <tr>
                 <th>{{ __('Attempt ID') }}</th>
@@ -35,6 +36,7 @@
             @endforeach
         </tbody>
     </table>
+</div>
 
     {{ $attempts->links('pagination::bootstrap-5') }}
 

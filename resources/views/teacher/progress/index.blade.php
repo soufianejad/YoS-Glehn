@@ -32,7 +32,8 @@
 
                                     <h5 class="mb-3">{{ __('Progression de Lecture') }}</h5>
                                     @if($assignedBooks->isNotEmpty())
-                                        <table class="table table-sm table-striped">
+                                        <div class="table-responsive">
+<table class="table table-sm table-striped">
                                             <thead>
                                                 <tr>
                                                     <th>{{ __('Livre Assigné') }}</th>
@@ -61,6 +62,7 @@
                                                 @endforeach
                                             </tbody>
                                         </table>
+</div>
                                     @else
                                         <p class="text-muted mb-0">{{ __("Aucun livre n'a été assigné à cette classe.") }}</p>
                                     @endif
@@ -69,7 +71,8 @@
 
                                     <h5 class="mb-3">{{ __('Tentatives de Quiz') }}</h5>
                                     @if($studentQuizAttempts && $studentQuizAttempts->count() > 0)
-                                        <table class="table table-sm table-striped">
+                                        <div class="table-responsive">
+<table class="table table-sm table-striped">
                                             <thead>
                                                 <tr>
                                                     <th>{{ __('Quiz') }}</th>
@@ -97,6 +100,7 @@
                                                 @endforeach
                                             </tbody>
                                         </table>
+</div>
                                     @else
                                         <p class="text-muted mb-0">{{ __("Aucun quiz n'a été tenté par cet élève.") }}</p>
                                     @endif

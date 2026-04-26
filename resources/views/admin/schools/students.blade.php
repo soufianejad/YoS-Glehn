@@ -6,7 +6,8 @@
 <div class="container">
     <h1>Students for {{ $school->name }}</h1>
 
-    <table class="table">
+    <div class="table-responsive">
+<table class="table">
         <thead>
             <tr>
                 <th>{{ __('ID') }}</th>
@@ -30,6 +31,7 @@
             @endforeach
         </tbody>
     </table>
+</div>
 
     {{ $students->links('pagination::bootstrap-5') }}
 

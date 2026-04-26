@@ -19,7 +19,8 @@
         </div>
     </div>
 
-    <table class="table">
+    <div class="table-responsive">
+<table class="table">
         <thead>
             <tr>
                 <th>{{ __('Book Title') }}</th>
@@ -43,6 +44,7 @@
             @endforeach
         </tbody>
     </table>
+</div>
 
     {{ $audioProgress->links('pagination::bootstrap-5') }}
 </div>

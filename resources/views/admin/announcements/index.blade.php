@@ -9,7 +9,8 @@
 
     <a href="{{ route('admin.announcements.create') }}" class="btn btn-primary mb-3">{{ __('Ajouter une nouvelle annonce') }}</a>
 
-    <table class="table table-striped">
+    <div class="table-responsive">
+<table class="table table-striped">
         <thead>
             <tr>
                 <th>{{ __('ID') }}</th>
@@ -50,6 +51,7 @@
             @endforelse
         </tbody>
     </table>
+</div>
 
     {{ $announcements->links('pagination::bootstrap-5') }}
 </div>
