@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use GuzzleHttp\Client;
 use App\Mail\VerificationCodeMail;
 
@@ -26,6 +27,24 @@ class ForgotPasswordController extends Controller
         ]);
 
         $type = $request->type;
+        $ipKey = 'reset-send-code-ip:' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($ipKey, 5)) {
+            $seconds = RateLimiter::availableIn($ipKey);
+            return response()->json(['success' => false, 'message' => __('Trop de tentatives. Veuillez patienter :seconds secondes.', ['seconds' => $seconds])], 429);
+        }
+
+        if ($type === 'email') {
+             $targetKey = 'reset-send-code-target:' . $request->email;
+        } else {
+             $targetKey = 'reset-send-code-target:' . $request->phone;
+        }
+
+        if (RateLimiter::tooManyAttempts($targetKey, 3)) {
+            $seconds = RateLimiter::availableIn($targetKey);
+            return response()->json(['success' => false, 'message' => __('Trop de tentatives pour ce contact. Veuillez patienter :seconds secondes.', ['seconds' => $seconds])], 429);
+        }
+
         $code = Str::random(6);
         $expiresAt = now()->addMinutes(10);
 
@@ -43,6 +62,8 @@ class ForgotPasswordController extends Controller
             ]);
 
             try {
+                RateLimiter::hit($ipKey, 300); // 5 minutes
+                RateLimiter::hit($targetKey, 900); // 15 minutes
                 Mail::to($request->email)->send(new VerificationCodeMail($code));
                 return response()->json(['success' => true, 'message' => __('Code envoyé par email avec succès.')]);
             } catch (\Exception $e) {
@@ -64,6 +85,9 @@ class ForgotPasswordController extends Controller
                 "reset_code_expires_at_phone" => $expiresAt,
                 "reset_target_phone" => $request->phone
             ]);
+
+            RateLimiter::hit($ipKey, 300); // 5 minutes
+            RateLimiter::hit($targetKey, 900); // 15 minutes
 
             $apiToken = config('services.whatsapp.token');
             $phoneNumberId = config('services.whatsapp.phone_number_id');
@@ -167,6 +191,13 @@ class ForgotPasswordController extends Controller
         ]);
 
         $type = $request->type;
+        $verifyKey = 'reset-verify-code-ip:' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($verifyKey, 5)) {
+            $seconds = RateLimiter::availableIn($verifyKey);
+            return response()->json(['success' => false, 'message' => __('Trop de tentatives de vérification. Veuillez patienter :seconds secondes.', ['seconds' => $seconds])], 429);
+        }
+
         $sessionCode = session("reset_code_{$type}");
         $expiresAt = session("reset_code_expires_at_{$type}");
         $target = session("reset_target_{$type}");
@@ -176,11 +207,13 @@ class ForgotPasswordController extends Controller
         }
 
         if ($request->code !== $sessionCode) {
+            RateLimiter::hit($verifyKey, 60);
             return response()->json(['success' => false, 'message' => __('Code de vérification incorrect.')], 400);
         }
 
         session(["reset_verified_{$type}" => $target]);
         session()->forget(["reset_code_{$type}", "reset_code_expires_at_{$type}", "reset_target_{$type}"]);
+        RateLimiter::clear($verifyKey);
 
         return response()->json(['success' => true, 'message' => __('Vérification réussie.')]);
     }

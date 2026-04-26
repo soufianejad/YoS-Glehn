@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use GuzzleHttp\Client;
 use App\Mail\VerificationCodeMail;
 
@@ -67,6 +68,25 @@ class RegisterController extends Controller
         ]);
 
         $type = $request->type;
+        $ipKey = 'send-code-ip:' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($ipKey, 5)) {
+            $seconds = RateLimiter::availableIn($ipKey);
+            return response()->json(['success' => false, 'message' => __('Trop de tentatives. Veuillez patienter :seconds secondes.', ['seconds' => $seconds])], 429);
+        }
+
+        if ($type === 'email') {
+             $targetKey = 'send-code-target:' . $request->email;
+        } else {
+             $targetKey = 'send-code-target:' . $request->phone;
+        }
+
+        if (RateLimiter::tooManyAttempts($targetKey, 3)) {
+            $seconds = RateLimiter::availableIn($targetKey);
+            return response()->json(['success' => false, 'message' => __('Trop de tentatives pour ce contact. Veuillez patienter :seconds secondes.', ['seconds' => $seconds])], 429);
+        }
+
+
         $code = Str::random(6);
         $expiresAt = now()->addMinutes(10);
 
@@ -84,6 +104,8 @@ class RegisterController extends Controller
             ]);
 
             try {
+                RateLimiter::hit($ipKey, 300); // 5 minutes
+                RateLimiter::hit($targetKey, 900); // 15 minutes
                 Mail::to($request->email)->send(new VerificationCodeMail($code));
                 return response()->json(['success' => true, 'message' => __('Code envoyé par email avec succès.')]);
             } catch (\Exception $e) {
@@ -100,6 +122,9 @@ class RegisterController extends Controller
                 "verification_code_expires_at_phone" => $expiresAt,
                 "verification_target_phone" => $request->phone
             ]);
+
+            RateLimiter::hit($ipKey, 300); // 5 minutes
+            RateLimiter::hit($targetKey, 900); // 15 minutes
 
             $apiToken = config('services.whatsapp.token');
             $phoneNumberId = config('services.whatsapp.phone_number_id');
@@ -232,6 +257,13 @@ class RegisterController extends Controller
         ]);
 
         $type = $request->type;
+        $verifyKey = 'verify-code-ip:' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($verifyKey, 5)) {
+            $seconds = RateLimiter::availableIn($verifyKey);
+            return response()->json(['success' => false, 'message' => __('Trop de tentatives de vérification. Veuillez patienter :seconds secondes.', ['seconds' => $seconds])], 429);
+        }
+
         $sessionCode = session("verification_code_{$type}");
         $expiresAt = session("verification_code_expires_at_{$type}");
         $target = session("verification_target_{$type}");
@@ -241,11 +273,13 @@ class RegisterController extends Controller
         }
 
         if ($request->code !== $sessionCode) {
+            RateLimiter::hit($verifyKey, 60); // block 1 minute if trying to brute force
             return response()->json(['success' => false, 'message' => __('Code de vérification incorrect.')], 400);
         }
 
         session(["verified_{$type}" => $target]);
         session()->forget(["verification_code_{$type}", "verification_code_expires_at_{$type}", "verification_target_{$type}"]);
+        RateLimiter::clear($verifyKey);
 
         return response()->json(['success' => true, 'message' => __('Vérification réussie.')]);
     }
