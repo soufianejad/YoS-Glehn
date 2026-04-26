@@ -72,6 +72,11 @@ class RegisterController extends Controller
 
         if ($type === 'email') {
             $request->validate(['email' => ['required', 'email']]);
+
+            if (User::where('email', $request->email)->exists()) {
+                return response()->json(['success' => false, 'message' => __('Cet email est déjà utilisé.')], 422);
+            }
+
             session([
                 "verification_code_email" => $code,
                 "verification_code_expires_at_email" => $expiresAt,
