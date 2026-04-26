@@ -20,8 +20,8 @@
                     <p><strong>{{ __('Description:') }}</strong> {{ $book->description }}</p>
                     <p><strong>{{ __('Author:') }}</strong> {{ $book->author->name ?? __('N/A') }}</p>
                     <p><strong>{{ __('Category:') }}</strong> {{ $book->category->name ?? __('N/A') }}</p>
-                    <p><strong>{{ __('PDF File:') }}</strong> @if($book->pdf_file) <a href="{{ asset('storage/' . $book->pdf_file) }}" target="_blank">{{ __('View PDF') }}</a> @else {{ __('N/A') }} @endif</p>
-                    <p><strong>{{ __('Audio File:') }}</strong> @if($book->audio_file) <a href="{{ asset('storage/' . $book->audio_file) }}" target="_blank">{{ __('Listen Audio') }}</a> @else {{ __('N/A') }} @endif</p>
+                    <p><strong>{{ __('PDF File:') }}</strong> @if($book->pdf_file) <a href="{{ route('read.book', $book->slug) }}" target="_blank">{{ __('View PDF') }}</a> @else {{ __('N/A') }} @endif</p>
+                    <p><strong>{{ __('Audio File:') }}</strong> @if($book->audio_file) <a href="{{ route('listen.book', $book->slug) }}" target="_blank">{{ __('Listen Audio') }}</a> @else {{ __('N/A') }} @endif</p>
                     <p><strong>{{ __('PDF Pages:') }}</strong> {{ $book->pdf_pages ?? __('N/A') }}</p>
                     <p><strong>{{ __('Audio Duration:') }}</strong> {{ $book->audio_duration ?? __('N/A') }} {{ __('seconds') }}</p>
                     <p><strong>{{ __('ISBN:') }}</strong> {{ $book->isbn ?? __('N/A') }}</p>
