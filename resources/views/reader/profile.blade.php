@@ -98,7 +98,8 @@
                             $userPreferences = $user->notification_preferences ?? [];
                         @endphp
 
-                        <table class="table table-borderless">
+                        <div class="table-responsive">
+<table class="table table-borderless">
                              @foreach ($notificationTypes as $typeKey => $typeLabel)
                                 <tr>
                                     <td class="align-middle"><strong>{{ $typeLabel }}</strong></td>
@@ -114,6 +115,7 @@
                                 </tr>
                             @endforeach
                         </table>
+</div>
                         <button type="submit" class="btn btn-primary mt-3">{{ __('Mettre à jour les préférences') }}</button>
                     </form>
                 </div>

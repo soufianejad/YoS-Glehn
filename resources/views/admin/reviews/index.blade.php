@@ -15,7 +15,8 @@
             </div>
         </div>
         <div class="card-body">
-            <table class="table table-bordered table-striped">
+            <div class="table-responsive">
+<table class="table table-bordered table-striped">
                 <thead>
                     <tr>
                         <th>{{ __('ID') }}</th>
@@ -63,6 +64,7 @@
                     @endforelse
                 </tbody>
             </table>
+</div>
             {{ $reviews->links('pagination::bootstrap-5') }}
         </div>
     </div>

@@ -6,7 +6,8 @@
 <div class="container">
     <h1>{{ __('Pending Books') }}</h1>
 
-    <table class="table">
+    <div class="table-responsive">
+<table class="table">
         <thead>
             <tr>
                 <th>{{ __('ID') }}</th>
@@ -38,6 +39,7 @@
             @endforeach
         </tbody>
     </table>
+</div>
 
     {{ $books->links('pagination::bootstrap-5') }}
 </div>

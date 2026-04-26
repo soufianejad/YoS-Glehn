@@ -6,7 +6,8 @@
 <div class="container">
     <h1>{{ __('Leaderboard') }}</h1>
 
-    <table class="table">
+    <div class="table-responsive">
+<table class="table">
         <thead>
             <tr>
                 <th>{{ __('Rank') }}</th>
@@ -36,6 +37,7 @@
             @endforeach
         </tbody>
     </table>
+</div>
 
     {{ $leaderboard->links('pagination::bootstrap-5') }}
 </div>

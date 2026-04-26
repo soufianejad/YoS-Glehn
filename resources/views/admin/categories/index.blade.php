@@ -8,7 +8,8 @@
 
     <a href="{{ route('admin.categories.create') }}" class="btn btn-primary mb-3">{{ __('Add New Category') }}</a>
 
-    <table class="table table-hover" id="categories-table">
+    <div class="table-responsive">
+<table class="table table-hover" id="categories-table">
         <thead>
             <tr>
                 <th style="width: 50px;"></th>
@@ -43,6 +44,7 @@
             @endforeach
         </tbody>
     </table>
+</div>
 
     {{ $categories->links('pagination::bootstrap-5') }}
 </div>

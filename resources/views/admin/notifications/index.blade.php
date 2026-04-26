@@ -5,7 +5,8 @@
     <h1>{{ __('Notification History') }}</h1>
 
 
-    <table class="table table-striped">
+    <div class="table-responsive">
+<table class="table table-striped">
         <thead>
             <tr>
                 <th>{{ __('ID') }}</th>
@@ -39,6 +40,7 @@
             @endforelse
         </tbody>
     </table>
+</div>
 
     {{ $notifications->links('pagination::bootstrap-5') }}
 </div>

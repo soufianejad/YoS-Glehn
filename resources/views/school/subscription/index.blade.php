@@ -40,7 +40,8 @@
         </div>
         <div class="card-body">
             @if ($payments->count() > 0)
-                <table class="table table-striped">
+                <div class="table-responsive">
+<table class="table table-striped">
                     <thead>
                         <tr>
                             <th>{{ __('Date') }}</th>
@@ -62,6 +63,7 @@
                         @endforeach
                     </tbody>
                 </table>
+</div>
                 {{ $payments->links() }}
             @else
                 <p>{{ __('No payment history found.') }}</p>

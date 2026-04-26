@@ -22,7 +22,8 @@
     @if($classmates->isEmpty())
         <p>{{ __("You don't have any classmates yet.") }}</p>
     @else
-        <table class="table">
+        <div class="table-responsive">
+<table class="table">
             <thead>
                 <tr>
                     <th>{{ __('Name') }}</th>
@@ -43,6 +44,7 @@
                 @endforeach
             </tbody>
         </table>
+</div>
 
         {{ $classmates->links('pagination::bootstrap-5') }}
     @endif

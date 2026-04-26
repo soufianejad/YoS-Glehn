@@ -22,7 +22,8 @@
                         @csrf
                         @method('PUT')
 
-                        <table class="table table-hover">
+                        <div class="table-responsive">
+<table class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>{{ __('Notification Type') }}</th>
@@ -57,6 +58,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+</div>
 
                         <div class="mt-4 text-end">
                             <button type="submit" class="btn btn-primary">{{ __('Save Preferences') }}</button>

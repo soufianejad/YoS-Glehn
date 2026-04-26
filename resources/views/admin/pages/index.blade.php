@@ -6,7 +6,8 @@
 
     <a href="{{ route('admin.pages.create') }}" class="btn btn-primary mb-3">{{ __('Add New Page') }}</a>
 
-    <table class="table table-striped">
+    <div class="table-responsive">
+<table class="table table-striped">
         <thead>
             <tr>
                 <th>{{ __('ID') }}</th>
@@ -45,6 +46,7 @@
             @endforelse
         </tbody>
     </table>
+</div>
 
     {{ $pages->links('pagination::bootstrap-5') }}
 </div>

@@ -14,7 +14,8 @@
     </div>
 
     <h2>{{ __('All Revenues') }}</h2>
-    <table class="table">
+    <div class="table-responsive">
+<table class="table">
         <thead>
             <tr>
                 <th>{{ __('ID') }}</th>
@@ -42,6 +43,7 @@
             @endforeach
         </tbody>
     </table>
+</div>
 
     {{ $revenues->links('pagination::bootstrap-5') }}
 

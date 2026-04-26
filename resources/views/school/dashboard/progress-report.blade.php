@@ -6,7 +6,8 @@
 <div class="container">
     <h1>{{ __('Student Progress Report - ') }} {{ $school->name }}</h1>
 
-    <table class="table">
+    <div class="table-responsive">
+<table class="table">
         <thead>
             <tr>
                 <th>{{ __('Student Name') }}</th>
@@ -32,6 +33,7 @@
             @endforeach
         </tbody>
     </table>
+</div>
 
     {{ $students->links('pagination::bootstrap-5') }}
 </div>

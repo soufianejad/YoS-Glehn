@@ -8,7 +8,8 @@
 
     <a href="{{ route('admin.subscription-plans.create') }}" class="btn btn-primary mb-3">{{ __('Create New Plan') }}</a>
 
-    <table class="table">
+    <div class="table-responsive">
+<table class="table">
         <thead>
             <tr>
                 <th>{{ __('ID') }}</th>
@@ -52,6 +53,7 @@
             @endforeach
         </tbody>
     </table>
+</div>
 
     {{ $plans->links('pagination::bootstrap-5') }}
 </div>

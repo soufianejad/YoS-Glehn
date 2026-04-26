@@ -6,7 +6,8 @@
 
     <a href="{{ route('admin.tags.create') }}" class="btn btn-primary mb-3">{{ __('Add New Tag') }}</a>
 
-    <table class="table table-striped">
+    <div class="table-responsive">
+<table class="table table-striped">
         <thead>
             <tr>
                 <th>{{ __('ID') }}</th>
@@ -39,6 +40,7 @@
             @endforelse
         </tbody>
     </table>
+</div>
 
     {{ $tags->links('pagination::bootstrap-5') }}
 </div>

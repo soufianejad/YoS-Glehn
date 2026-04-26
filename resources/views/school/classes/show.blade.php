@@ -35,7 +35,8 @@
             <div class="card">
                 <div class="card-body">
                     <h2>{{ __('Students in this Class') }}</h2>
-                    <table class="table">
+                    <div class="table-responsive">
+<table class="table">
                         <thead>
                             <tr>
                                 <th>{{ __('ID') }}</th>
@@ -68,6 +69,7 @@
                             @endforeach
                         </tbody>
                     </table>
+</div>
                 </div>
             </div>
         </div>

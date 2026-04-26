@@ -15,7 +15,8 @@
 
     <div class="card">
         <div class="card-body">
-            <table class="table table-striped">
+            <div class="table-responsive">
+<table class="table table-striped">
                 <thead>
                     <tr>
                         <th scope="col">#</th>
@@ -49,6 +50,7 @@
                     @endforelse
                 </tbody>
             </table>
+</div>
         </div>
     </div>
     <div class="mt-3">
