@@ -93,12 +93,38 @@
                             </div>
                             @endif
                             @php
-                            $progress = $book->readingProgress->first();
+                            $readingProgress = $book->readingProgress->first();
+                            $audioProgress = $book->audioProgress->first();
+
+                            $maxProgress = max(
+                                $readingProgress ? $readingProgress->progress_percentage : 0,
+                                $audioProgress ? $audioProgress->progress_percentage : 0
+                            );
+
+                            $actionUrl = route('read.book', $book);
+                            $actionIcon = 'fas fa-book-open';
+                            $actionText = __('Commencer');
+
+                            if ($maxProgress > 0) {
+                                if ($audioProgress && $audioProgress->progress_percentage == $maxProgress) {
+                                    $actionUrl = route('listen.book', $book);
+                                    $actionIcon = 'fas fa-headphones';
+                                    $actionText = $maxProgress < 100 ? __('Continuer l\'écoute') : __('Réécouter');
+                                } else {
+                                    $actionText = $maxProgress < 100 ? __('Continuer la lecture') : __('Relire');
+                                }
+                            } elseif ($book->hasPdf()) {
+                                $actionText = __('Commencer la lecture');
+                            } elseif ($book->hasAudio()) {
+                                $actionUrl = route('listen.book', $book);
+                                $actionIcon = 'fas fa-headphones';
+                                $actionText = __('Commencer l\'écoute');
+                            }
                         @endphp
                         
-                        @if($progress && $progress->progress_percentage > 0)
-                            <div class="progress" style="height: 5px;" title="{{ round($progress->progress_percentage) }}% terminé">
-                                <div class="progress-bar" role="progressbar" style="width: {{ $progress->progress_percentage }}%;" aria-valuenow="{{ $progress->progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        @if($maxProgress > 0)
+                            <div class="progress" style="height: 5px;" title="{{ round($maxProgress) }}% terminé">
+                                <div class="progress-bar" role="progressbar" style="width: {{ $maxProgress }}%;" aria-valuenow="{{ $maxProgress }}" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
                         @else
                              <div class="star-rating small mb-2">
@@ -110,15 +136,8 @@
                         @endif
 
                         <div class="mt-auto pt-2">
-                            <a href="{{ route('read.book', $book) }}" class="btn btn-primary btn-sm w-100">
-                                <i class="fas fa-book-open me-1"></i> 
-                                @if($progress && $progress->progress_percentage > 0 && $progress->progress_percentage < 100)
-                                    {{ __('Continuer') }}
-                                @elseif($progress && $progress->progress_percentage >= 100)
-                                    {{ __('Relire') }}
-                                @else
-                                    {{ __('Commencer la lecture') }}
-                                @endif
+                            <a href="{{ $actionUrl }}" class="btn btn-primary btn-sm w-100">
+                                <i class="{{ $actionIcon }} me-1"></i> {{ $actionText }}
                             </a>
                         </div>
                     </div>

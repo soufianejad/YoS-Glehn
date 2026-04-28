@@ -27,6 +27,8 @@ class LibraryController extends Controller
 
         $books = Book::with(['author', 'reviews', 'readingProgress' => function ($query) use ($student) {
             $query->where('user_id', $student->id);
+        }, 'audioProgress' => function ($query) use ($student) {
+            $query->where('user_id', $student->id);
         }])->where('space', 'educational')
             ->where('status', 'published');
 
@@ -57,6 +59,8 @@ class LibraryController extends Controller
 
         $books = Book::where('space', 'educational')->where('status', 'published')
             ->with(['readingProgress' => function ($query) use ($student) {
+                $query->where('user_id', $student->id);
+            }, 'audioProgress' => function ($query) use ($student) {
                 $query->where('user_id', $student->id);
             }]);
 
@@ -201,7 +205,13 @@ class LibraryController extends Controller
             abort(404, __('Audio not available for this book.'));
         }
 
-        return view('student.book.listen', compact('book'));
+        $initialPosition = 0;
+        $audioProgress = AudioProgress::where('user_id', auth()->id())->where('book_id', $book->id)->first();
+        if ($audioProgress) {
+            $initialPosition = $audioProgress->current_position;
+        }
+
+        return view('student.book.listen', compact('book', 'initialPosition'));
     }
 
     public function updateReadingProgress(Request $request, Book $book)
@@ -263,7 +273,7 @@ class LibraryController extends Controller
         }
 
         $progress->save();
-        
+
         $this->badgeService->checkAndAwardBadges($user);
         $user->updatePoints();
 
