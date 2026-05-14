@@ -3,6 +3,7 @@
 use App\Http\Controllers\Adult\InvitationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\AuthorRegistrationController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\ChangeLanguageController;
@@ -111,6 +112,11 @@ Route::middleware('guest')->group(function () {
     // AJAX Verification Routes
     Route::post('/register/send-verification', [RegisterController::class, 'sendVerificationCode'])->name('register.send_verification');
     Route::post('/register/verify-code', [RegisterController::class, 'verifyCode'])->name('register.verify_code');
+
+    // Author Registration
+    Route::get('/devenir-auteur', [AuthorRegistrationController::class, 'showJoinUs'])->name('author.join');
+    Route::get('/inscription-auteur', [AuthorRegistrationController::class, 'showRegistrationForm'])->name('author.register');
+    Route::post('/inscription-auteur', [AuthorRegistrationController::class, 'register']);
 
     // Forgot Password
     Route::get('/password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
