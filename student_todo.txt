@@ -1,0 +1,30 @@
+# Student Space - Feature Todo List
+
+This document outlines remaining tasks and potential improvements for the Student dashboard and related functionalities.
+
+## High Priority (Core Functionality & User Experience)
+
+1.  **Feature: Class-Specific Book Assignments (Implemented)**
+    *   **Status:** Implemented in `DashboardController@classes` and `student.school.classes` view.
+    *   **Description:** Students can now see the books assigned to each of their classes directly on the "My Classes" page.
+
+
+3.  **Feature: Advanced AI Recommendations**
+    *   **Problem:** Book recommendations are currently random or based on simple criteria.
+    *   **Tasks:**
+        *   Implement a more sophisticated recommendation engine (e.g., collaborative filtering, content-based filtering) based on student reading history, preferences, and quiz performance.
+        *   Integrate with the `student.library.recommended` route.
+
+## Medium Priority (Engagement & Progress Tracking)
+
+4.  **Feature: Detailed Quiz Results per Class**
+    *   **Problem:** Students can see overall quiz results, but not easily filter or view results specific to a particular class or assigned quizzes.
+    *   **Tasks:**
+        *   Enhance `student.quiz.index` or create a new view to allow filtering quiz attempts by class.
+        *   Display class-specific average scores or performance metrics.
+
+5.  **Feature: Class-Specific Announcements on Dashboard**
+    *   **Problem:** Announcements are available under "My School", but important class-specific announcements might be missed on the main dashboard.
+    *   **Tasks:**
+        *   Display the latest 2-3 class-specific announcements directly on the `student.dashboard.index` page.
+        *   Provide a link to "View All Announcements" in the "My School" section.

@@ -1,0 +1,58 @@
+# Admin Panel - Feature Todo List
+
+This document outlines the missing features in the admin panel and the necessary steps to implement them for full platform management.
+
+## High Priority (Essential for Content Moderation & Management)
+
+1.  **Feature: Review Management**
+    *   **Problem:** Admins cannot moderate user-submitted reviews.
+    *   **Tasks:**
+        *   [x] Create `Admin\ReviewController` with methods for `index`, `show`, `edit`, `update`, `destroy`.
+        *   [x] Add a new route group in `routes/admin.php` for `/reviews`.
+        *   [x] Create views in `resources/views/admin/reviews/` to list, view, and edit reviews.
+        *   [x] Add a "Manage Reviews" link to the admin sidebar menu.
+
+2.  **Feature: Tag Management**
+    *   **Problem:** Tags for books cannot be managed.
+    *   **Tasks:**
+        *   [x] Create `Admin\TagController` with full CRUD (`index`, `create`, `store`, `edit`, `update`, `destroy`).
+        *   [x] Add a new route group in `routes/admin.php` for `/tags`.
+        *   [x] Create views in `resources/views/admin/tags/` for tag management.
+        *   [x] Add a "Manage Tags" link to the admin sidebar menu.
+
+## Medium Priority (Enhances Platform Control)
+
+3.  **Feature: Badge Management**
+    *   **Problem:** Gamification badges cannot be managed.
+    *   **Tasks:**
+        *   [x] Create `Admin\BadgeController` with full CRUD functionality.
+        *   [x] Add a new route group in `routes/admin.php` for `/badges`.
+        *   [x] Create views in `resources/views/admin/badges/` for badge management.
+        *   [x] Add a "Manage Badges" link to the admin sidebar menu.
+
+4.  **Feature: Global Announcement Management**
+    *   **Problem:** No system for creating site-wide announcements.
+    *   **Tasks:**
+        *   [x] Create `Admin\AnnouncementController` with full CRUD functionality.
+        *   [x] Add a new route group in `routes/admin.php` for `/announcements`.
+        *   [x] Create views in `resources/views/admin/announcements/`.
+        *   [x] Add a "Manage Announcements" link to the admin sidebar menu.
+
+## Low Priority / Future Enhancements
+
+5.  **Feature: Static Page CMS**
+    *   **Problem:** Content for pages like "About" and "FAQ" is hardcoded.
+    *   **Tasks:**
+        *   [x] Create a `Page` model and migration (`title`, `slug`, `body`).
+        *   [x] Create `Admin\PageController` to manage `Page` content (CRUD).
+        *   [x] Add a new route group in `routes/admin.php` for `/pages`.
+        *   [x] Create views in `resources/views/admin/pages/`.
+        *   [x] Update `web.php` routes for 'About', 'FAQ', etc., to fetch content from the `pages` table instead of using dedicated controllers.
+
+6.  **Feature: Central Notification Viewer**
+    *   **Problem:** Admins cannot see a history of all system-generated notifications.
+    *   **Tasks:**
+        *   [x] Create `Admin\NotificationController` with an `index` method to show all notifications, paginated.
+        *   [x] Add a route in `routes/admin.php` for `/notifications`.
+        *   [x] Create a view in `resources/views/admin/notifications/` to display the notification log.
+        *   [x] Add a "Notification History" link to the admin sidebar menu.
