@@ -160,6 +160,15 @@
                     </div>
                 @endforeach
             </div>
+            <div class="text-center mt-5">
+                <div class="card bg-primary text-white border-0 shadow py-4 px-5">
+                    <div class="card-body">
+                        <h3 class="fw-bold mb-3">{{ __('Vous êtes un auteur ?') }}</h3>
+                        <p class="lead mb-4">{{ __('Rejoignez notre plateforme et commencez à publier vos ouvrages dès aujourd\'hui.') }}</p>
+                        <a href="{{ route('author.join') }}" class="btn btn-light btn-lg px-5 fw-bold text-primary">{{ __('Devenir Auteur') }}</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
     @endif

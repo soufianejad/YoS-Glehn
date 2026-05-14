@@ -356,6 +356,11 @@
                                         <i class="bi bi-star"></i>{{ __('Abonnements') }}
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('author.join') }}">
+                                        <i class="bi bi-pencil-square"></i>{{ __('Devenir Auteur') }}
+                                    </a>
+                                </li>
                                 @auth
                                 <li class="nav-item">
                                     <a class="nav-link text-primary fw-bold" href="
@@ -437,6 +442,9 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('subscription.plans') }}">{{ __('Abonnements') }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('author.join') }}">{{ __('Devenir Auteur') }}</a>
                         </li>
                         @auth
                         <li class="nav-item">
