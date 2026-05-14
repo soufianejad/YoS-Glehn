@@ -36,11 +36,11 @@ class AuthorRegistrationController extends Controller
         ]);
 
         if (session('verified_email') !== $request->email) {
-            return back()->withErrors(['email' => __('L\'adresse email n\'a pas été vérifiée ou a été modifiée après vérification.')])->withInput();
+            return back()->withErrors(['is_verified_email' => __('L\'adresse email n\'a pas été vérifiée ou a été modifiée après vérification.')])->withInput();
         }
 
         if (session('verified_phone') !== $request->phone) {
-            return back()->withErrors(['phone' => __('Le numéro de téléphone n\'a pas été vérifié ou a été modifié après vérification.')])->withInput();
+            return back()->withErrors(['is_verified_phone' => __('Le numéro de téléphone n\'a pas été vérifié ou a été modifié après vérification.')])->withInput();
         }
 
         $user = User::create([
