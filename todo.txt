@@ -1,0 +1,94 @@
+# TODO List for Reading Platform Project
+
+This document outlines remaining tasks and potential improvements for the Reading Platform, based on the business requirements and current project analysis.
+
+## High Priority (Critical for core functionality / User Experience)
+
+1.  **Refine Book Purchase/Download Logic on `book.show` page:**
+    *   **Problem:** The distinction between "buy for online reading" and "buy for download" is not clear or correctly implemented in the UI.
+    *   **Task:** Re-implement the display logic on `resources/views/book/show.blade.php` to clearly show:
+        *   "Lire le PDF" / "Écouter l'audio" if user has online access (subscription, assignment, or prior online purchase).
+        *   "Acheter le livre" (for online reading) if user does not have online access.
+        *   "Télécharger le PDF" if user has purchased the download.
+        *   "Acheter pour télécharger" (with discount if subscriber) if book is downloadable but not yet purchased for download.
+    *   **Note:** Ensure `purchase_type` ('pdf' vs 'pdf_download') is consistently used in `BookController@purchasePdf` and `BookController@show` for checks.
+
+2.  **Implement Notification System:**
+    *   **Priority:** High
+    *   **Core Tasks:**
+        *   [x] Create/Verify `Notification` model and migration.
+        *   [x] Create a centralized `NotificationService` for DB saving and email dispatch.
+        *   [x] Create a generic `Mailable` class for notifications.
+        *   [x] Create an API endpoint to fetch unread notifications.
+        *   [x] Implement frontend UI (bell icon, dropdown, unread count) in the main layout.
+        *   [x] Implement "mark as read" functionality.
+    *   **Trigger Points - Reader/Student:**
+        *   [x] On successful book purchase (`BookController@purchasePdf`/`purchaseAudio`).
+        *   [x] On new subscription (`SubscriptionController@subscribe`).
+        *   [x] On receiving a new message (`MessagingController@store`).
+        *   [x] On quiz completion with score (`QuizController@submit`).
+        *   [x] On new book assignment by a school.
+        *   [x] On subscription expiration reminder (via a scheduled task).
+    *   **Trigger Points - Author:**
+        *   [x] When an admin approves/publishes a book.
+        *   [x] On receiving a new review for a book (`BookController@storeReview`).
+        *   [x] On the first-ever sale of a book.
+        *   [x] When an admin processes a revenue payout.
+    *   **Trigger Points - School:**
+        *   [x] When a student completes an assigned quiz.
+        *   [ ] On school subscription confirmation.
+
+3.  **Integrate Real Payment Gateways:**
+    *   **Problem:** Payments are currently simulated.
+    *   **Task:** Implement integration with actual payment providers (e.g., Mobile Money: Orange Money, MTN Money, Moov Money, Wave; Card payments: Visa/MasterCard). This involves backend integration and frontend forms.
+
+## Medium Priority (Significant Enhancements)
+
+3.  **AI-Powered Quiz Generation:**
+    *   **Problem:** Quizzes exist, but automatic generation from book content using AI is not implemented.
+    *   **Task:** Research and integrate an AI API (e.g., OpenAI, Gemini) to generate quiz questions based on book text. This would involve sending book content to the AI and processing its response.
+
+4.  **Full PWA & Offline Mode Implementation:**
+    *   **Problem:** PWA configuration exists, but full offline functionality (service worker, caching, temporary downloads for offline reading) is not confirmed or fully implemented.
+    *   **Task:** Develop service worker for PWA caching. Implement logic for temporary offline access to books (reading/listening) without permanent download purchase.
+
+5.  **Student Dashboard - Class-Specific Book Assignments:**
+    *   **Problem:** Students can see their classes, but not the books specifically assigned to each class on the class detail page.
+    *   **Task:** Enhance the student's class view (`resources/views/student/school/classes.blade.php` and potentially a new `show` view for a single class) to list books assigned to that specific class.
+
+6.  **Student Dashboard - Enhanced Teacher Communication:**
+    *   **Problem:** "Contact Teacher" button added, but the messaging interface itself might be basic.
+    *   **Task:** Improve the messaging interface for direct communication between students and teachers, potentially adding real-time features (e.g., WebSockets).
+
+7.  **Student Dashboard - Advanced AI Recommendations:**
+    *   **Problem:** Book recommendations are currently random or based on simple criteria.
+    *   **Task:** Implement a more sophisticated recommendation engine (e.g., collaborative filtering, content-based filtering) based on student reading history, preferences, and quiz performance.
+
+## Low Priority / Future Enhancements
+
+8.  **Comprehensive Gamification System:**
+    *   **Problem:** Basic badges exist, but a full gamification system (points, leaderboards, virtual certificates) could be expanded.
+    *   **Task:** Develop and integrate a more robust points system, leaderboards, and automated certificate generation.
+
+9.  **Enhanced Search and Filtering:**
+    *   **Problem:** Basic search exists.
+    *   **Task:** Add advanced search filters (e.g., by language, publication year, content type, author) to the library. Implement full-text search capabilities if not already present.
+
+10. **Detailed Reporting and Analytics:**
+    *   **Problem:** Basic statistics are available.
+    *   **Task:** Develop more granular reports for admins, authors, and schools on user engagement, reading habits, quiz performance, and revenue.
+
+11. **Espace Adulte - Enhanced Security & Isolation:**
+    *   **Problem:** Ensure the adult space is completely isolated and not discoverable.
+    *   **Task:** Double-check all routes, links, and indexing settings to guarantee the adult content is strictly private and accessible only via invitation.
+
+12. **Dedicated Teacher Role:**
+    *   **Problem:** Authors currently double as teachers.
+    *   **Task:** Consider creating a distinct 'teacher' role with its own dashboard and specific permissions for managing classes and student interactions.
+
+13. **User Profile Management Expansion:**
+    *   **Problem:** Basic profile management.
+    *   **Task:** Add more options for users to manage their personal information, preferences, and privacy settings.
+
+---
+This `todo.txt` provides a clear roadmap for future development.

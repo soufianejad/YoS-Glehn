@@ -1,0 +1,55 @@
+# Reader Space - Feature Todo List
+
+This document outlines missing features in the reader's dashboard and personal space, with the goal of improving user experience and engagement.
+
+## High Priority (Core User Experience)
+
+1.  **Feature: Advanced User Profile Management**
+    *   **Problem:** The current profile page is too basic. Users lack control over their account.
+    *   **Tasks:**
+        *   [x] Create a dedicated form/view for users to securely change their password.
+        *   [x] Create a "Notification Preferences" section where users can toggle different types of notifications (e.g., "New Message", "Quiz Results", "Promotions") on or off for different channels (e.g., Email, On-Site).
+        *   [x] Update the `NotificationService` to check user preferences before sending a notification.
+        *   [x] Add tabs or sections to the user's profile page for "Edit Profile", "Change Password", and "Notification Preferences".
+
+2.  **Feature: Dynamic & Informative Dashboard**
+    *   **Problem:** The reader dashboard is static and not engaging.
+    *   **Tasks:**
+        *   [x] Modify `ReaderController@index` to fetch additional data.
+        *   [x] Display a "Continue Reading" section showing the user's last 3-4 books with their progress bars.
+        *   [x] Add a section for personalized "Book Recommendations". (Logic can be simple at first, e.g., books from the same category as recently read ones).
+        *   [x] Add a small section to show the latest badge earned.
+
+3.  **Feature: Enhanced Personal Library**
+    *   **Problem:** The user's library is a simple list without any organization tools.
+    *   **Tasks:**
+        *   [x] In `ReaderController@library`, implement filtering logic.
+        *   [x] Add frontend controls (dropdowns, checkboxes) to the library view to filter books by:
+            *   Access type (Purchased, Subscription)
+            *   Reading status (Not Started, In Progress, Finished)
+        *   [x] Add a search bar to search only within the user's library.
+
+## Medium Priority (Engagement & Gamification)
+
+4.  **Feature: "My Badges" Gamification Page**
+    *   **Problem:** Users can earn badges but have no way to see their collection or what to aim for.
+    *   **Tasks:**
+        *   [x] Create a new `BadgesController` in the Reader namespace.
+        *   [x] Create a route and view for "My Badges".
+        *   [x] The view should display two sections:
+            *   "Badges Earned": A gallery of badges the user has unlocked.
+            *   "Badges to Unlock": A grayed-out gallery of all available badges, with hints on how to earn them.
+        *   [x] Add a "My Badges" link to the reader's dashboard navigation.
+
+## Low Priority / Future Enhancements
+
+5.  **Feature: Advanced Reading Tools (Annotations & Highlighting)**
+    *   **Problem:** The reading experience is passive, lacking tools for active reading or studying.
+    *   **Tasks:**
+        *   [ ] This is a complex feature requiring significant frontend (JavaScript) and backend work.
+        *   [ ] Create a new `Annotation` model and migration (`user_id`, `book_id`, `highlighted_text`, `note_text`, `page_number`).
+        *   [ ] On the reading page (`book.read`), implement JS to allow text selection.
+        *   [ ] On text selection, show a small pop-up to "Highlight" or "Add Note".
+        *   [ ] Create API endpoints to store and retrieve annotations for a given book and user.
+        *   [ ] Display saved highlights directly on the page, and show note icons that reveal the note on hover/click.
+        *   [ ] Create a "My Notes" section in the user's dashboard to review all their annotations.
