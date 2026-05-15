@@ -1,49 +1,57 @@
-@extends('layouts.public')
+@extends('layouts.app')
 
 @section('title', __('Devenir Auteur') . ' - ' . config('platform.name'))
 
+@push('styles')
+<style>
+    .hero {
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1455390582262-044cdead277a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80') no-repeat center center;
+        background-size: cover;
+        min-height: 40vh;
+        color: white;
+    }
+    .section-card {
+        transition: all 0.3s ease;
+    }
+    .section-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    @media (min-width: 768px) {
+        .border-md-start {
+            border-left: 1px solid #dee2e6!important;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
-<div class="container py-4">
-
-    <!-- Page Header -->
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <h1 class="mb-3"><i class="bi bi-pencil-square text-primary"></i> {{ __('Devenez Auteur et Partagez votre Passion') }}</h1>
-            <p class="lead text-muted">{{ __('Rejoignez notre communauté d\'auteurs talentueux et commencez à publier vos ouvrages dès aujourd\'hui.') }}</p>
-        </div>
-    </div>
-
-    <!-- Hero / CTA Section -->
-    <div class="row mb-5">
-        <div class="col-md-12">
-            <div class="card border-0 shadow-sm overflow-hidden" style="background: linear-gradient(135deg, #0d6efd 0%, #003d99 100%);">
-                <div class="card-body p-5 text-white">
-                    <div class="row align-items-center">
-                        <div class="col-lg-8">
-                            <h2 class="display-5 fw-bold mb-4">{{ __('Prêt à faire entendre votre voix ?') }}</h2>
-                            <p class="lead mb-4 opacity-75">{{ __('Touchez des milliers de lecteurs à travers le monde avec notre plateforme de publication intuitive et performante.') }}</p>
-                            <div class="d-flex gap-3">
-                                <a href="{{ route('author.register') }}" class="btn btn-light btn-lg px-4 fw-bold text-primary">{{ __('Créer mon compte auteur') }}</a>
-                                <a href="#how-it-works" class="btn btn-outline-light btn-lg px-4">{{ __('Comment ça marche ?') }}</a>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 d-none d-lg-block text-center">
-                            <i class="bi bi-book-half" style="font-size: 10rem; opacity: 0.2;"></i>
-                        </div>
-                    </div>
-                </div>
+<div class="container-fluid p-0">
+    <!-- Hero Section -->
+    <section class="hero text-center d-flex align-items-center justify-content-center">
+        <div class="hero-content">
+            <h1 class="display-3 font-weight-bold">{{ __('Devenez Auteur') }}</h1>
+            <p class="lead my-4">{{ __("Partagez votre passion, touchez des milliers de lecteurs et vivez de votre plume.") }}</p>
+            <div>
+                <a href="{{ route('author.register') }}" class="btn btn-primary btn-lg px-4 fw-bold shadow-sm">{{ __('Commencer mon aventure') }}</a>
             </div>
+        </div>
+    </section>
+</div>
+
+<div class="container py-5 bg-light">
+    <!-- Introduction Section -->
+    <div class="row mb-5 text-center bg-white p-4 rounded shadow-sm mx-0">
+        <div class="col-md-10 mx-auto">
+            <h2 class="fw-bold mb-3">{{ __('Rejoignez notre communauté d\'auteurs talentueux') }}</h2>
+            <p class="lead text-muted">{{ __('Nous offrons une plateforme intuitive et performante pour vous aider à publier, promouvoir et vendre vos ouvrages en toute simplicité.') }}</p>
         </div>
     </div>
 
     <!-- Benefits Section -->
     <div class="row mb-5">
-        <div class="col-md-12 mb-4 text-center">
-            <h2 class="fw-bold">{{ __('Pourquoi nous rejoindre ?') }}</h2>
-            <p class="text-muted">{{ __('Découvrez les avantages de publier sur notre plateforme') }}</p>
-        </div>
         <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow-sm border-0 p-4 text-center section-card">
+            <div class="card h-100 shadow-sm border-0 p-4 text-center section-card bg-white">
                 <div class="mb-3">
                     <i class="bi bi-graph-up text-primary fs-1"></i>
                 </div>
@@ -52,7 +60,7 @@
             </div>
         </div>
         <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow-sm border-0 p-4 text-center section-card">
+            <div class="card h-100 shadow-sm border-0 p-4 text-center section-card bg-white">
                 <div class="mb-3">
                     <i class="bi bi-cash-stack text-success fs-1"></i>
                 </div>
@@ -61,7 +69,7 @@
             </div>
         </div>
         <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow-sm border-0 p-4 text-center section-card">
+            <div class="card h-100 shadow-sm border-0 p-4 text-center section-card bg-white">
                 <div class="mb-3">
                     <i class="bi bi-tools text-warning fs-1"></i>
                 </div>
@@ -78,7 +86,7 @@
             <p class="text-muted">{{ __('Trois étapes simples pour commencer votre aventure') }}</p>
         </div>
         <div class="col-md-12">
-            <div class="card shadow-sm border-0 p-4 p-md-5">
+            <div class="card shadow-sm border-0 p-4 p-md-5 bg-white">
                 <div class="row g-4 text-center text-md-start">
                     <div class="col-md-4">
                         <div class="d-flex flex-column flex-md-row align-items-center gap-3">
@@ -113,32 +121,14 @@
     </div>
 
     <!-- Final CTA -->
-    <div class="row">
-        <div class="col-md-12 text-center py-4">
-            <h3 class="fw-bold mb-4">{{ __('Rejoignez des centaines d\'auteurs qui nous font déjà confiance.') }}</h3>
-            <a href="{{ route('author.register') }}" class="btn btn-primary btn-lg px-5 shadow-sm">{{ __('Commencer mon aventure') }}</a>
+    <div class="row mt-5">
+        <div class="col-md-12 text-center py-5 bg-white rounded shadow-sm">
+            <h3 class="fw-bold mb-4">{{ __('Prêt à faire entendre votre voix ?') }}</h3>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ route('author.register') }}" class="btn btn-primary btn-lg px-5 shadow-sm">{{ __('Créer mon compte auteur') }}</a>
+                <a href="#how-it-works" class="btn btn-outline-secondary btn-lg px-5">{{ __('En savoir plus') }}</a>
+            </div>
         </div>
     </div>
-
 </div>
-
 @endsection
-
-@push('styles')
-<style>
-.section-card {
-    transition: all 0.3s ease;
-}
-
-.section-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-}
-
-@media (min-width: 768px) {
-    .border-md-start {
-        border-left: 1px solid #dee2e6!important;
-    }
-}
-</style>
-@endpush
