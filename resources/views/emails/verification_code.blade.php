@@ -36,6 +36,16 @@
             border-radius: 5px;
             display: inline-block;
         }
+        .btn-reset {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
         .footer {
             text-align: center;
             color: #999999;
@@ -52,8 +62,14 @@
         </div>
         <div class="content">
             <p>{{ __('Bonjour,') }}</p>
-            <p>{{ __('Vous avez demandé un code de vérification pour votre inscription sur :app_name. Voici votre code :', ['app_name' => config('app.name')]) }}</p>
+            <p>{{ __('Vous avez demandé un code de vérification pour votre compte sur :app_name. Voici votre code :', ['app_name' => config('app.name')]) }}</p>
             <div class="code">{{ $code }}</div>
+
+            @if(isset($resetLink))
+                <p>{{ __('Vous pouvez également cliquer sur le bouton ci-dessous pour réinitialiser votre mot de passe directement :') }}</p>
+                <a href="{{ $resetLink }}" class="btn-reset">{{ __('Réinitialiser le mot de passe') }}</a>
+            @endif
+
             <p>{{ __('Ce code est valide pour les 10 prochaines minutes.') }}</p>
             <p>{{ __('Si vous n\'avez pas demandé ce code, vous pouvez ignorer cet email.') }}</p>
         </div>

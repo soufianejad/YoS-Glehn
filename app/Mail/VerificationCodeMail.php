@@ -14,13 +14,15 @@ class VerificationCodeMail extends Mailable
     use Queueable, SerializesModels;
 
     public $code;
+    public $resetLink;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($code)
+    public function __construct($code, $resetLink = null)
     {
         $this->code = $code;
+        $this->resetLink = $resetLink;
     }
 
     /**
@@ -42,6 +44,7 @@ class VerificationCodeMail extends Mailable
             view: 'emails.verification_code',
             with: [
                 'code' => $this->code,
+                'resetLink' => $this->resetLink,
             ]
         );
     }

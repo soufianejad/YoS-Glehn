@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use App\Services\NotificationService;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\VerificationCodeMail;
 
 class UserManagementController extends Controller
 {
@@ -278,5 +280,51 @@ class UserManagementController extends Controller
         session()->forget(['impersonating', 'impersonating_hash']);
 
         return redirect()->route('admin.users.index');
+    }
+
+    public function sendResetLink(User $user)
+    {
+        if (!$user->email) {
+            return back()->with('error', __('L\'utilisateur n\'a pas d\'adresse email.'));
+        }
+
+        $code = Str::random(6);
+        $expiresAt = now()->addMinutes(10);
+        $type = 'email';
+
+        // We store this in session for the user who will click the link,
+        // but wait, session is only for the current admin.
+        // For admin-initiated resets, we actually need to store it in the database
+        // or just rely on the magic link being generated and the session being set when THEY click it.
+        // Actually, the magic link method in ForgotPasswordController checks the session.
+        // So we SHOULD store it in a way that it can be retrieved by anyone with the link.
+        // For now, let's stick to the session-based approach and see if we can improve it.
+        // BUT session-based won't work if they open the link in a different browser.
+
+        // Let's reconsider. Maybe use the native Laravel password broker or just keep it simple with session but explain the limitation.
+        // OR better: use Cache with a key based on email and code.
+
+        $cacheKey = "password_reset_{$type}_{$user->email}";
+        \Illuminate\Support\Facades\Cache::put($cacheKey, [
+            'code' => $code,
+            'expires_at' => $expiresAt
+        ], $expiresAt);
+
+        $resetLink = route('password.reset.magic', [
+            'email' => $user->email,
+            'code' => $code,
+            'type' => 'email'
+        ]);
+
+        try {
+            Mail::to($user->email)->send(new VerificationCodeMail($code, $resetLink));
+            return back()->with('success', __('Lien de réinitialisation envoyé avec succès.'));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Admin UserManagementController: Erreur d'envoi email de réinitialisation", [
+                'email' => $user->email,
+                'error' => $e->getMessage()
+            ]);
+            return back()->with('error', __('Erreur lors de l\'envoi de l\'email.'));
+        }
     }
 }

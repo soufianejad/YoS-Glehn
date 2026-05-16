@@ -43,7 +43,20 @@ class ForgotPasswordController extends Controller
             ]);
 
             try {
-                Mail::to($request->email)->send(new VerificationCodeMail($code));
+                $resetLink = route('password.reset.magic', [
+                    'email' => $request->email,
+                    'code' => $code,
+                    'type' => 'email'
+                ]);
+
+                // Store in cache for cross-session/browser support
+                $cacheKey = "password_reset_{$type}_{$request->email}";
+                \Illuminate\Support\Facades\Cache::put($cacheKey, [
+                    'code' => $code,
+                    'expires_at' => $expiresAt
+                ], $expiresAt);
+
+                Mail::to($request->email)->send(new VerificationCodeMail($code, $resetLink));
                 return response()->json(['success' => true, 'message' => __('Code envoyé par email avec succès.')]);
             } catch (\Exception $e) {
                 Log::error("ForgotPasswordController: Erreur d'envoi email de réinitialisation", [
@@ -183,6 +196,43 @@ class ForgotPasswordController extends Controller
         session()->forget(["reset_code_{$type}", "reset_code_expires_at_{$type}", "reset_target_{$type}"]);
 
         return response()->json(['success' => true, 'message' => __('Vérification réussie.')]);
+    }
+
+    public function verifyCodeMagic(Request $request)
+    {
+        $request->validate([
+            'email' => ['required_if:type,email', 'email'],
+            'phone' => ['required_if:type,phone', 'string'],
+            'type' => ['required', 'in:email,phone'],
+            'code' => ['required', 'string'],
+        ]);
+
+        $type = $request->type;
+        $target = $type === 'email' ? $request->email : $request->phone;
+        $code = $request->code;
+
+        $sessionCode = session("reset_code_{$type}");
+        $expiresAt = session("reset_code_expires_at_{$type}");
+        $sessionTarget = session("reset_target_{$type}");
+
+        // Check cache first (for admin-initiated or cross-session resets)
+        $cacheKey = "password_reset_{$type}_{$target}";
+        $cachedData = \Illuminate\Support\Facades\Cache::get($cacheKey);
+
+        if ($cachedData && $cachedData['code'] === $code && now()->lessThan($cachedData['expires_at'])) {
+            session(["reset_verified_{$type}" => $target]);
+            \Illuminate\Support\Facades\Cache::forget($cacheKey);
+            return redirect()->route('password.request', ['verified' => 1, 'type' => $type, 'email' => $request->email, 'phone' => $request->phone]);
+        }
+
+        // Fallback to session
+        if ($code === $sessionCode && $target === $sessionTarget && now()->lessThan($expiresAt)) {
+            session(["reset_verified_{$type}" => $target]);
+            session()->forget(["reset_code_{$type}", "reset_code_expires_at_{$type}", "reset_target_{$type}"]);
+            return redirect()->route('password.request', ['verified' => 1, 'type' => $type, 'email' => $request->email, 'phone' => $request->phone]);
+        }
+
+        return redirect()->route('password.request')->withErrors(['verification' => __('Le lien de réinitialisation est invalide ou a expiré.')]);
     }
 
     public function update(Request $request)
