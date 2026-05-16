@@ -122,6 +122,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
     Route::post('/password/send-code', [ForgotPasswordController::class, 'sendVerificationCode'])->name('password.send-code');
     Route::post('/password/verify-code', [ForgotPasswordController::class, 'verifyCode'])->name('password.verify-code');
+    Route::get('/password/reset-magic', [ForgotPasswordController::class, 'verifyCodeMagic'])->name('password.reset.magic');
     Route::post('/password/update', [ForgotPasswordController::class, 'update'])->name('password.update');
 
 

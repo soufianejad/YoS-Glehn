@@ -42,6 +42,7 @@ Route::prefix('users')->name('users.')->group(function () {
     Route::post('/{user}/change-role', [UserManagementController::class, 'changeRole'])->name('change-role');
     Route::post('/{user}/toggle-messages', [AdminMessagingController::class, 'toggleUserMessageReception'])->name('toggle-messages');
     Route::get('/{user}/impersonate', [UserManagementController::class, 'impersonate'])->name('impersonate');
+    Route::post('/{user}/send-reset-link', [UserManagementController::class, 'sendResetLink'])->name('send-reset-link');
 });
 
 

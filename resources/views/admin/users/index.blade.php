@@ -108,6 +108,12 @@
                                     <li><a class="dropdown-item py-2" href="{{ route('admin.users.edit', $user) }}"><i class="fas fa-pencil-alt me-2 text-warning"></i>{{ __('Modifier') }}</a></li>
                                     @if(Auth::id() !== $user->id)
                                         <li><a class="dropdown-item py-2" href="{{ route('admin.users.impersonate', $user) }}"><i class="fas fa-user-secret me-2 text-secondary"></i>{{ __('Impersonate') }}</a></li>
+                                        <li>
+                                            <form action="{{ route('admin.users.send-reset-link', $user) }}" method="POST" id="reset-password-{{ $user->id }}">
+                                                @csrf
+                                                <button type="submit" class="dropdown-item py-2"><i class="fas fa-key me-2 text-primary"></i>{{ __('Réinitialiser MP') }}</button>
+                                            </form>
+                                        </li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
                                             <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('{{ __('Êtes-vous sûr ?') }}')">

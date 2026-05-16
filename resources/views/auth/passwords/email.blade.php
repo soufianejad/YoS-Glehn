@@ -296,10 +296,31 @@ document.addEventListener("DOMContentLoaded", function() {
         if (isVerifiedInput.value === "1") {
             newPasswordSection.classList.remove('d-none');
             submitBtn.disabled = false;
+            // Hide verification panels if already verified
+            document.getElementById('email-panel').classList.add('d-none');
+            document.getElementById('phone-panel').classList.add('d-none');
+            document.getElementById('verificationTabs').classList.add('d-none');
         } else {
             newPasswordSection.classList.add('d-none');
             submitBtn.disabled = true;
         }
+    }
+
+    // Check for URL parameters (Magic Link)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('verified') === '1') {
+        isVerifiedInput.value = "1";
+        const type = urlParams.get('type') || 'email';
+        verificationTypeInput.value = type;
+
+        if (type === 'email') {
+            document.getElementById('email').value = urlParams.get('email');
+        } else {
+            // Phone handling if needed
+        }
+
+        checkVerificationStatus();
+        toastr.success('{{ __("Vérification réussie. Veuillez définir votre nouveau mot de passe.") }}');
     }
 
     // --- EMAIL ---
